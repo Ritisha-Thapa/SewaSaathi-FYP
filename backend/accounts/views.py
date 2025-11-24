@@ -7,36 +7,38 @@ from rest_framework import status
 from rest_framework.views import APIView
 from .serializers import CustomerRegisterSerializer, ProviderRegisterSerializer, LoginSerializer
 
-# -------------------------------
-# Registration Views
-# -------------------------------
 
+# Registration views
+
+#for customer
 class CustomerRegisterView(APIView):
     def post(self, request):
+
+        #passing incoming json data for validation
         serializer = CustomerRegisterSerializer(data=request.data)
+        #validating before saving
         if serializer.is_valid():
+            # creating user 
             serializer.save()
             return Response({'message': 'Customer created successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+#for provider
 class ProviderRegisterView(APIView):
     def post(self, request):
         serializer = ProviderRegisterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'Provider registration submitted successfully. Awaiting admin approval.'},
+            return Response({'message': 'Provider registration submitted successfully. Awaiting admin approval.'"सेवा प्रदायक दर्ता सफलतापूर्वक पठाइयो। प्रशासकको अनुमोदनको प्रतीक्षा गर्दै।"},
                             status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# -------------------------------
-# Login View
-# -------------------------------
 
 class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        tokens = serializer.get_jwt_token(user)
-        return Response(tokens, status=status.HTTP_200_OK)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        response = serializer.get_jwt_token(serializer.validated_data['user'])# gets token
+        return Response(response, status=status.HTTP_200_OK)
+

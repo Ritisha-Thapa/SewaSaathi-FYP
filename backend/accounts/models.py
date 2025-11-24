@@ -11,7 +11,7 @@ class User(AbstractUser, BaseModel):
         ('admin', 'Admin'),
     )
     
-    
+    # columns of database
     phone = models.CharField(max_length=20, unique=True)
     
     
@@ -23,7 +23,7 @@ class User(AbstractUser, BaseModel):
     
 
     
-    address = models.CharField(max_length=255, blank=True, null=True)
+    address = models.CharField(max_length=255)
     city = models.CharField(max_length=100, default='Kathmandu')
     
      # Provider Fields
@@ -44,7 +44,7 @@ class User(AbstractUser, BaseModel):
     citizenship_image_back = models.ImageField(upload_to='citizenship/', blank=True, null=True)
  # Profile image
     profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
-    
+
     # Account status
     status = models.CharField(
         max_length=20,

@@ -22,17 +22,17 @@ class CustomerRegisterSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        # Auto-generate username
+        # for automatically setting fields role and username
         phone = validated_data['phone']
         validated_data['role'] = 'customer'
         validated_data['username'] = f"user_{phone}"
 
-        password = validated_data.pop('password')
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
+        password = validated_data.pop('password') # extracting pass to hash 
+        user = User(**validated_data) # user object
+        user.set_password(password) #hashing password
+        user.save() #saving data to database
         return user
-    
+
 class ProviderRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     
@@ -46,41 +46,62 @@ class ProviderRegisterSerializer(serializers.ModelSerializer):
             'citizenship_number', 'citizenship_image_front', 'citizenship_image_back',
             'profile_image'
         ]
+
+    # service provider must enter skills and citizenship 
     def validate(self, data):
         if not data.get('skills'):
-            raise serializers.ValidationError({"skills": "Provider must select a skill"})
+            raise serializers.ValidationError({
+                "skills": (
+                    "Provider must select at least one skill.\n"
+                    "सेवा प्रदायकले कम्तिमा एउटा कौशल चयन गर्नुपर्छ।"
+                )
+            })
 
         if not data.get('citizenship_number'):
-            raise serializers.ValidationError({"citizenship_number": "Citizenship number is required"})
+            raise serializers.ValidationError({
+                "citizenship_number": (
+                    "Citizenship number is required.\n"
+                    "नागरिकता नम्बर आवश्यक छ।"
+                )
+            })
 
-        return data 
-    
-    
+        return data
+
+    # Phone unique validation
     def validate_phone(self, value):
         if User.objects.filter(phone=value).exists():
-            raise serializers.ValidationError("This phone number already exists")
+            raise serializers.ValidationError(
+                "This phone number already exists.\n"
+                "यो फोन नम्बर पहिले नै दर्ता गरिएको छ।"
+            )
         return value
 
+    # Email unique validation
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("This email already exists")
+            raise serializers.ValidationError(
+                "This email already exists.\n"
+                "यो इमेल पहिले नै दर्ता गरिएको छ।"
+            )
         return value
 
     def create(self, validated_data):
-        # Auto-generate username from phone
+        # Generate username from phone
         phone = validated_data['phone']
         validated_data['username'] = f"user_{phone}"
-
-        # Set provider_status as pending
-        
         validated_data['role'] = 'provider'
+
+        # Provider accounts always start as 'pending'
         validated_data['provider_status'] = 'pending'
 
+        # Handle password hashing
         password = validated_data.pop('password')
         user = User(**validated_data)
         user.set_password(password)
         user.save()
-        return user 
+
+        return user
+
     
 
 
@@ -94,10 +115,29 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid phone or password")
 
         if user.status != 'active':
-            raise serializers.ValidationError("Your account is blocked")
+            raise serializers.ValidationError(
+                "Your account is blocked.\nतपाईंको खाता ब्लक गरिएको छ।"
+            )
 
-        if user.role == 'provider' and user.provider_status != 'approved':
-            raise serializers.ValidationError(f"Provider status: {user.provider_status}")
+        # ---- Provider checks ----
+        if user.role == 'provider':
+            
+            # 1. Pending
+            if user.provider_status == 'pending':
+                raise serializers.ValidationError(
+                    "Your account is not approved yet. Please wait for admin verification.\n"
+                    "You will be contacted for an interview if required.\n"
+                    "तपाईंको खाता अझै अनुमोदन भएको छैन। कृपया प्रशासकको प्रमाणिकरणको लागि पर्खनुहोस्।\n"
+                    "आवश्यक परेमा तपाईंलाई अन्तर्वार्ताका लागि सम्पर्क गरिनेछ।"
+                )
+
+
+            # 2. Rejected
+            if user.provider_status == 'rejected':
+                raise serializers.ValidationError(
+                    f"Your provider application was rejected.\n"
+                    "तपाईंको प्रदायक आवेदन अस्वीकृत गरिएको छ।"
+                )
 
         data['user'] = user
         return data
