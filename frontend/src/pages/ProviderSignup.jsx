@@ -1,108 +1,193 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState,useEffect } from "react";
+import { Link } from "react-router-dom";
+
+
+
+const skillsOptions = [
+  "plumber",
+  "electrician",
+  "cleaner",
+  "painter",
+  "gardener"
+];
+
+
 
 const ProviderSignup = () => {
+  // ---------------------
+  // STATE
+  // ---------------------
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    phone: '',
-    email: '',
-    address: '',
+    first_name: "",
+    last_name: "",
+    phone: "",
+    email: "",
+    address: "",
+    city: "",
+
     skills: [],
-    experience_years: '',
-    citizenship_number: '',
+    experience_years: "",
+    citizenship_number: "",
     citizenship_image: null,
-    profile_image: null
+    profile_image: null,
   });
 
   const [errors, setErrors] = useState({});
   const [previewCitizenship, setPreviewCitizenship] = useState(null);
   const [previewProfile, setPreviewProfile] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const skillsOptions = ['plumber', 'electrician', 'cleaner', 'painter', 'gardener'];
+    // ---------------------
+  // Auto-hide success message
+  // ---------------------
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(""), 5000); // hides after 5s
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
+  // ---------------------
+  // INPUT CHANGE
+  // ---------------------
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
   };
 
+  // ---------------------
+  // SKILLS CHECKBOX
+  // ---------------------
   const handleSkillChange = (skill) => {
-    setFormData(prev => ({
-      ...prev,
-      skills: prev.skills.includes(skill)
-        ? prev.skills.filter(s => s !== skill)
-        : [...prev.skills, skill]
-    }));
-    if (errors.skills) {
-      setErrors(prev => ({
+    setFormData((prev) => {
+      const updated = prev.skills.includes(skill)
+        ? prev.skills.filter((s) => s !== skill)
+        : [...prev.skills, skill];
+
+      return {
         ...prev,
-        skills: ''
-      }));
-    }
+        skills: updated,
+      };
+    });
   };
 
+  // ---------------------
+  // FILE HANDLING
+  // ---------------------
   const handleFileChange = (e, type) => {
     const file = e.target.files[0];
-    if (file) {
-      if (type === 'citizenship') {
-        setFormData(prev => ({
-          ...prev,
-          citizenship_image: file
-        }));
-        setPreviewCitizenship(URL.createObjectURL(file));
-      } else if (type === 'profile') {
-        setFormData(prev => ({
-          ...prev,
-          profile_image: file
-        }));
-        setPreviewProfile(URL.createObjectURL(file));
-      }
-    }
-    if (errors[type === 'citizenship' ? 'citizenship_image' : 'profile_image']) {
-      setErrors(prev => ({
+
+    if (type === "citizenship") {
+      setFormData((prev) => ({
         ...prev,
-        [type === 'citizenship' ? 'citizenship_image' : 'profile_image']: ''
+        citizenship_image: file,
       }));
+      setPreviewCitizenship(URL.createObjectURL(file));
+    }
+
+    if (type === "profile") {
+      setFormData((prev) => ({
+        ...prev,
+        profile_image: file,
+      }));
+      setPreviewProfile(URL.createObjectURL(file));
     }
   };
 
-  const handleSubmit = (e) => {
+  // ---------------------
+  // SUBMIT
+  // ---------------------
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     const newErrors = {};
 
-    // Validation
-    if (!formData.first_name.trim()) newErrors.first_name = 'First name is required';
-    if (!formData.last_name.trim()) newErrors.last_name = 'Last name is required';
-    if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
-    if (!formData.address.trim()) newErrors.address = 'Address is required';
-    if (formData.skills.length === 0) newErrors.skills = 'Please select at least one skill';
-    if (!formData.experience_years) newErrors.experience_years = 'Experience years is required';
-    else if (parseInt(formData.experience_years) < 0) newErrors.experience_years = 'Experience must be a positive number';
-    if (!formData.citizenship_number.trim()) newErrors.citizenship_number = 'Citizenship number is required';
-    if (!formData.citizenship_image) newErrors.citizenship_image = 'Citizenship image is required';
-    if (!formData.profile_image) newErrors.profile_image = 'Profile image is required';
+    if (!formData.first_name.trim()) newErrors.first_name = "Required";
+    if (!formData.last_name.trim()) newErrors.last_name = "Required";
+    if (!formData.phone.trim()) newErrors.phone = "Required";
+    if (!formData.email.trim()) newErrors.email = "Required";
+    if (!formData.address.trim()) newErrors.address = "Required";
+    if (!formData.city.trim()) newErrors.city = "Required";
+
+    if (formData.skills.length === 0) newErrors.skills = "Select at least one";
+    if (!formData.experience_years) newErrors.experience_years = "Required";
+    if (!formData.citizenship_number.trim()) newErrors.citizenship_number = "Required";
+    if (!formData.citizenship_image) newErrors.citizenship_image = "Required";
+    if (!formData.profile_image) newErrors.profile_image = "Required";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    // Handle form submission here
-    console.log('Provider signup data:', formData);
-    // TODO: API call to submit provider application
+    const form = new FormData();
+
+    form.append("first_name", formData.first_name);
+    form.append("last_name", formData.last_name);
+    form.append("phone", formData.phone);
+    form.append("email", formData.email);
+    form.append("address", formData.address);
+    form.append("city", formData.city);
+
+
+    formData.skills.forEach((skill) => form.append("skills", skill));
+    form.append("experience_years", formData.experience_years);
+    form.append("citizenship_number", formData.citizenship_number);
+    form.append("citizenship_image_front", formData.citizenship_image);
+    form.append("citizenship_image_back", formData.citizenship_image);
+    form.append("profile_image", formData.profile_image);
+
+    form.append("password", "provider123");
+    form.append("role", "provider");
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/accounts/provider-registration/", {
+        method: "POST",
+        body: form,
+      });
+
+      const data = await response.json();
+
+if (response.ok) {
+  // Set the success message from backend
+  setSuccessMessage(data.message || "Provider registration successful!");
+  // Optionally, clear form after success
+  setFormData({
+    first_name: "",
+    last_name: "",
+    phone: "",
+    email: "",
+    address: "",
+    skills: [],
+    experience_years: "",
+    citizenship_number: "",
+    citizenship_image: null,
+    profile_image: null,
+    city: ""
+  });
+  setPreviewCitizenship(null);
+  setPreviewProfile(null);
+  setErrors({});
+  return; // exit
+}
+
+
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Something went wrong");
+    }
   };
+
+
 
   return (
     <div className="min-h-screen bg-[#F9F5F0] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -233,6 +318,31 @@ const ProviderSignup = () => {
                 <p className="mt-1 text-sm text-red-600">{errors.address}</p>
               )}
             </div>
+            <div>
+  <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+    City *
+  </label>
+  <select
+    id="city"
+    name="city"
+    required
+    value={formData.city}
+    onChange={handleChange}
+    className={`appearance-none relative block w-full px-3 py-2 border ${
+      errors.city ? "border-red-300" : "border-gray-300"
+    } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
+  >
+    <option value="">Select City</option>
+    <option value="kathmandu">Kathmandu</option>
+    <option value="lalitpur">Lalitpur</option>
+    <option value="bhaktapur">Bhaktapur</option>
+  </select>
+
+  {errors.city && (
+    <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+  )}
+</div>
+
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -310,7 +420,7 @@ const ProviderSignup = () => {
                 accept="image/*"
                 required
                 onChange={(e) => handleFileChange(e, 'citizenship')}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#1B3C53] file:text-white hover:file:bg-[#1a3248] cursor-pointer"
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:t  ext-sm file:font-semibold file:bg-[#1B3C53] file:text-white hover:file:bg-[#1a3248] cursor-pointer"
               />
               {previewCitizenship && (
                 <div className="mt-2">
@@ -347,6 +457,11 @@ const ProviderSignup = () => {
           </div>
 
           <div>
+            {successMessage && (
+  <div className="mb-4 text-green-700 bg-green-100 px-4 py-2 rounded-lg border border-green-200 text-center">
+    {successMessage}
+  </div>
+)}
             <button
               type="submit"
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-[#1B3C53] hover:bg-[#1a3248] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B3C53] transition"

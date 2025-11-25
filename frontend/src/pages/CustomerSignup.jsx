@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const CustomerSignup = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -13,6 +15,17 @@ const CustomerSignup = () => {
   });
 
   const [errors, setErrors] = useState({});
+    const [successMessage, setSuccessMessage] = useState("");
+  
+      // ---------------------
+    // Auto-hide success message
+    // ---------------------
+    useEffect(() => {
+      if (successMessage) {
+        const timer = setTimeout(() => setSuccessMessage(""), 5000); // hides after 5s
+        return () => clearTimeout(timer);
+      }
+    }, [successMessage]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,7 +33,7 @@ const CustomerSignup = () => {
       ...prev,
       [name]: value
     }));
-    // Clear error when user starts typing
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -29,7 +42,7 @@ const CustomerSignup = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
@@ -42,6 +55,7 @@ const CustomerSignup = () => {
     if (!formData.address.trim()) newErrors.address = 'Address is required';
     if (!formData.password) newErrors.password = 'Password is required';
     else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+
     if (formData.password !== formData.confirm_password) {
       newErrors.confirm_password = 'Passwords do not match';
     }
@@ -51,9 +65,46 @@ const CustomerSignup = () => {
       return;
     }
 
-    // Handle form submission here
-    console.log('Customer signup data:', formData);
-    // TODO: API call to register customer
+    // Prepare data WITHOUT confirm_password
+    const payload = {
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      phone: formData.phone,
+      email: formData.email,
+      address: formData.address,
+      password: formData.password
+    };
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/accounts/customer-registration/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await response.json();
+      console.log("Signup response:", data);
+
+if (response.ok) {
+  // Set the success message from backend
+  setSuccessMessage(data.message || "Provider registration successful!");
+  setErrors({});
+    setTimeout(() => {
+    navigate("/login");
+  }, 2000); // wait 2 seconds before redirect
+  return; // exit
+}
+
+
+    } catch (error) {
+      console.error("Signup Error:", error);
+      alert("Something went wrong!");
+    }
   };
 
   return (
@@ -230,6 +281,11 @@ const CustomerSignup = () => {
           </div>
 
           <div>
+                        {successMessage && (
+  <div className="mb-4 text-green-700 bg-green-100 px-4 py-2 rounded-lg border border-green-200 text-center">
+    {successMessage}
+  </div>
+)}
             <button
               type="submit"
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-[#1B3C53] hover:bg-[#1a3248] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B3C53] transition"

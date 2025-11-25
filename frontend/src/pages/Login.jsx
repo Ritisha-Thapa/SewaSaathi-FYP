@@ -15,7 +15,7 @@ const Login = () => {
       ...prev,
       [name]: value
     }));
-    // Clear error when user starts typing
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -24,11 +24,10 @@ const Login = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
-    // Validation
     if (!formData.emailOrPhone.trim()) {
       newErrors.emailOrPhone = 'Email or phone is required';
     }
@@ -41,9 +40,40 @@ const Login = () => {
       return;
     }
 
-    // Handle form submission here
+    try {
+      const loginResponse = await fetch("http://127.0.0.1:8000/accounts/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone: formData.emailOrPhone,
+          password: formData.password,
+        }),
+      });
+
+      const data = await loginResponse.json();
+      console.log("Login response data:", data);
+
+      if (!loginResponse.ok) {
+        // Log the full error response for debugging
+        console.error("Backend error response:", data);
+        alert(data.detail || data.error || JSON.stringify(data) || "Login failed");
+        return;
+      }
+
+      // Save JWT tokens
+      localStorage.setItem("access", data.access);
+      localStorage.setItem("refresh", data.refresh);
+
+      alert("Login successful!");
+
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Network error. Please try again.");
+    }
+
     console.log('Login data:', formData);
-    // TODO: API call to login
   };
 
   return (
@@ -68,8 +98,10 @@ const Login = () => {
             Sign in as a customer
           </p>
         </div>
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">
+            
             <div>
               <label htmlFor="emailOrPhone" className="block text-sm font-medium text-gray-700 mb-1">
                 Email or Phone *
@@ -111,12 +143,13 @@ const Login = () => {
                 <p className="mt-1 text-sm text-red-600">{errors.password}</p>
               )}
             </div>
+
           </div>
 
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-[#1B3C53] hover:bg-[#1a3248] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B3C53] transition"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-[#1B3C53] hover:bg-[#1a3248] transition"
             >
               Login
             </button>
@@ -128,12 +161,9 @@ const Login = () => {
               <Link to="/signup/customer" className="font-medium text-[#1B3C53] hover:text-[#1a3248]">
                 Sign up as Customer
               </Link>
-              {/* {' or '} */}
-              {/* <Link to="/signup/provider" className="font-medium text-[#1B3C53] hover:text-[#1a3248]">
-                Become a Provider
-              </Link> */}
             </p>
           </div>
+
         </form>
       </div>
     </div>
@@ -141,4 +171,3 @@ const Login = () => {
 };
 
 export default Login;
-
