@@ -60,7 +60,7 @@ class User(AbstractUser, BaseModel):
     
     
     USERNAME_FIELD = 'phone'
-    REQUIRED_FIELDS = ['email', 'role']
+    REQUIRED_FIELDS = ['email', 'role','username']
     
     def save(self, *args, **kwargs):
         if not self.username:

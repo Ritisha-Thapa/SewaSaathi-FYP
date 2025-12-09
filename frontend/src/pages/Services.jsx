@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Header from "../components/Header";
+import DashboardHeader from "../components/DashboardHeader";
 import Footer from "../components/Footer";
 import plumbing from "../assets/images/services/plumbing.png";
 import cleaning from "../assets/images/services/cleaning.png";
@@ -177,7 +177,7 @@ const Services = () => {
 
   return (
     <div className="font-sans text-gray-900 min-h-screen bg-[#F9F5F0]">
-      <Header />
+      <DashboardHeader />
 
       {/* ---------------- HERO SECTION WITH BACKGROUND IMAGE ---------------- */}
       <section

@@ -1,16 +1,20 @@
 
 import React from 'react';
-import Header from '../components/DashboardHeader';
+import DashboardHeader from '../components/DashboardHeader';
 import Footer from '../components/Footer';
 import { Link } from 'react-router-dom';
 import aboutHero from '../assets/images/testimonials/image1.png';
+import member1 from '../assets/images/testimonials/image1.png';
+import member2 from '../assets/images/testimonials/image2.png';
+import member3 from '../assets/images/testimonials/image3.jpg';
+import member4 from '../assets/images/testimonials/image2.png';    
 
 const AboutUs = () => {
   const teamMembers = [
-    { name: 'Team Member 1', role: 'CEO & Founder', imageUrl: '/team/member1.jpg' },
-    { name: 'Team Member 2', role: 'CTO', imageUrl: '/team/member2.jpg' },
-    { name: 'Team Member 3', role: 'Head of Operations', imageUrl: '/team/member3.jpg' },
-    { name: 'Team Member 4', role: 'Customer Success', imageUrl: '/team/member4.jpg' }
+    { name: 'Team Member 1', role: 'CEO & Founder', imageUrl: member1 },
+    { name: 'Team Member 2', role: 'CTO', imageUrl: member2 },
+    { name: 'Team Member 3', role: 'Head of Operations', imageUrl: member3 },
+    { name: 'Team Member 4', role: 'Customer Success', imageUrl: member4  }
   ];
 
   const differentiators = [
@@ -54,7 +58,7 @@ const AboutUs = () => {
 
   return (
     <div className="font-sans text-gray-900 min-h-screen bg-[#F9F5F0]">
-      <Header />
+      <DashboardHeader />
 
       {/* HERO SECTION */}
       <section className="bg-[#F9F5F0] py-16 md:py-24">
