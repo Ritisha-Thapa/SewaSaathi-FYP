@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import DashboardHeader from "../components/DashboardHeader";
 import Footer from "../components/Footer";
 import plumbing from "../assets/images/services/plumbing.png";
@@ -6,13 +7,13 @@ import cleaning from "../assets/images/services/cleaning.png";
 import electrical from "../assets/images/services/electrical.png";
 import gardening from "../assets/images/services/gardening.png";
 import painting from "../assets/images/services/painting.png";
-import servicesBg from '../assets/images/services/electrical.png';
-
+import servicesBg from "../assets/images/services/electrical.png";
 
 const Services = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
+  // UPDATED: merged "home-maintenance" into "home-improvement"
   const services = [
     {
       id: 1,
@@ -20,13 +21,8 @@ const Services = () => {
       category: "home-repair",
       imageUrl: plumbing,
       description:
-        "Professional plumbing services including repairs, installations, and maintenance. Our verified plumbers handle everything from leaky faucets to complete bathroom renovations.",
-      features: [
-        "Leak Repairs",
-        "Pipe Installation",
-        "Drain Cleaning",
-        "Water Heater Service",
-      ],
+        "Professional plumbing services including repairs, installations, and maintenance.",
+      features: ["Leak Repairs", "Pipe Installation", "Drain Cleaning", "Water Heater Service"],
       icon: (
         <svg
           className="w-16 h-16 text-blue-600"
@@ -45,16 +41,11 @@ const Services = () => {
     {
       id: 2,
       name: "Cleaning",
-      category: "home-maintenance",
+      category: "home-improvement", // CHANGED from home-maintenance → home-improvement
       imageUrl: cleaning,
       description:
-        "Comprehensive cleaning services for homes and offices. From deep cleaning to regular maintenance, our professional cleaners ensure a spotless environment.",
-      features: [
-        "Deep Cleaning",
-        "Regular Maintenance",
-        "Office Cleaning",
-        "Post-Construction",
-      ],
+        "Comprehensive cleaning services for homes and offices. Our professional cleaners ensure a spotless environment.",
+      features: ["Deep Cleaning", "Regular Maintenance", "Office Cleaning", "Post-Construction"],
       icon: (
         <svg
           className="w-16 h-16 text-green-600"
@@ -77,13 +68,8 @@ const Services = () => {
       category: "home-repair",
       imageUrl: electrical,
       description:
-        "Safe and reliable electrical services by certified electricians. We handle wiring, installations, repairs, and electrical safety inspections.",
-      features: [
-        "Wiring & Installation",
-        "Repairs & Troubleshooting",
-        "Safety Inspections",
-        "Smart Home Setup",
-      ],
+        "Safe and reliable electrical services by certified electricians.",
+      features: ["Wiring", "Repairs", "Safety Inspections", "Smart Home Setup"],
       icon: (
         <svg
           className="w-16 h-16 text-yellow-600"
@@ -105,13 +91,8 @@ const Services = () => {
       category: "outdoor",
       imageUrl: gardening,
       description:
-        "Expert gardening and landscaping services to transform your outdoor spaces. From lawn care to garden design, we help create beautiful green spaces.",
-      features: [
-        "Lawn Care",
-        "Garden Design",
-        "Tree & Shrub Care",
-        "Landscaping",
-      ],
+        "Expert gardening and landscaping services to transform your outdoor spaces.",
+      features: ["Lawn Care", "Garden Design", "Tree Care", "Landscaping"],
       icon: (
         <svg
           className="w-16 h-16 text-emerald-600"
@@ -134,13 +115,8 @@ const Services = () => {
       category: "home-improvement",
       imageUrl: painting,
       description:
-        "Professional painting services for interior and exterior spaces. Quality finishes and attention to detail for homes and commercial properties.",
-      features: [
-        "Interior Painting",
-        "Exterior Painting",
-        "Wallpaper Installation",
-        "Color Consultation",
-      ],
+        "Professional painting services for interior and exterior spaces.",
+      features: ["Interior Painting", "Exterior Painting", "Wallpaper", "Color Consultation"],
       icon: (
         <svg
           className="w-16 h-16 text-purple-600"
@@ -158,11 +134,11 @@ const Services = () => {
     },
   ];
 
+  // UPDATED FILTER OPTIONS
   const categories = [
     { value: "all", label: "All Services" },
     { value: "home-repair", label: "Home Repair" },
-    { value: "home-maintenance", label: "Maintenance" },
-    { value: "home-improvement", label: "Home Improvement" },
+    { value: "home-improvement", label: "Home Improvement" }, // now includes maintenance
     { value: "outdoor", label: "Outdoor" },
   ];
 
@@ -170,8 +146,10 @@ const Services = () => {
     const matchesSearch =
       service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       service.description.toLowerCase().includes(searchQuery.toLowerCase());
+
     const matchesCategory =
       selectedCategory === "all" || service.category === selectedCategory;
+
     return matchesSearch && matchesCategory;
   });
 
@@ -179,32 +157,31 @@ const Services = () => {
     <div className="font-sans text-gray-900 min-h-screen bg-[#F9F5F0]">
       <DashboardHeader />
 
-      {/* ---------------- HERO SECTION WITH BACKGROUND IMAGE ---------------- */}
+      {/* HERO SECTION */}
       <section
         className="relative py-24 md:py-32 flex items-center"
         style={{
-          backgroundImage: `url(${servicesBg})`, // <-- replace with your Services BG image
+          backgroundImage: `url(${servicesBg})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
-        {/* overlay */}
         <div className="absolute inset-0 bg-[#1B3C53] opacity-70"></div>
 
         <div className="relative container mx-auto px-4 max-w-7xl text-center text-white">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Services</h1>
           <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
-            Explore a wide range of trusted and professional services available
-            near you.
+            Explore a wide range of trusted and professional services available near you.
           </p>
         </div>
       </section>
 
-      {/* Search and Filter Section */}
+      {/* SEARCH + FILTERS */}
       <section className="py-8 bg-white border-b border-gray-200">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            {/* Search Bar */}
+            
+            {/* SEARCH BAR */}
             <div className="w-full md:w-1/2">
               <div className="relative">
                 <input
@@ -230,7 +207,7 @@ const Services = () => {
               </div>
             </div>
 
-            {/* Category Filter */}
+            {/* FILTER BUTTONS */}
             <div className="w-full md:w-auto">
               <div className="flex flex-wrap gap-2 justify-center md:justify-end">
                 {categories.map((category) => (
@@ -252,21 +229,20 @@ const Services = () => {
         </div>
       </section>
 
-      {/* Services Grid */}
+      {/* SERVICES GRID */}
       <section className="py-16 md:py-20">
         <div className="container mx-auto px-4 max-w-7xl">
           {filteredServices.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-xl text-gray-500">
-                No services found matching your criteria.
-              </p>
+              <p className="text-xl text-gray-500">No services found matching your criteria.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredServices.map((service) => (
-                <div
+                <Link
+                  to={`/services/${service.name.toLowerCase()}`}
                   key={service.id}
-                  className="bg-white rounded-xl p-6 hover:shadow-xl transition shadow-lg"
+                  className="bg-white rounded-xl p-6 hover:shadow-xl transition shadow-lg block"
                 >
                   <div
                     className={`${service.color} rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center overflow-hidden`}
@@ -281,6 +257,7 @@ const Services = () => {
                         }}
                       />
                     ) : null}
+
                     <div
                       style={{ display: service.imageUrl ? "none" : "flex" }}
                       className="w-full h-full items-center justify-center"
@@ -292,44 +269,7 @@ const Services = () => {
                   <h3 className="text-2xl font-bold text-[#1B3C53] text-center mb-3">
                     {service.name}
                   </h3>
-
-                  <p className="text-gray-600 text-center mb-4 min-h-[60px]">
-                    {service.description}
-                  </p>
-
-                  <div className="border-t border-gray-200 pt-4">
-                    <h4 className="font-semibold text-[#1B3C53] mb-2">
-                      Key Features:
-                    </h4>
-                    <ul className="space-y-1">
-                      {service.features.map((feature, index) => (
-                        <li
-                          key={index}
-                          className="text-sm text-gray-600 flex items-center"
-                        >
-                          <svg
-                            className="w-4 h-4 text-green-500 mr-2"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="mt-6 text-center">
-                    <button className="px-6 py-2 bg-[#1B3C53] text-white rounded-full hover:bg-[#1a3248] transition">
-                      Book Now
-                    </button>
-                  </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -342,3 +282,5 @@ const Services = () => {
 };
 
 export default Services;
+
+

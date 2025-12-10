@@ -8,6 +8,8 @@ import ProviderSignup from './pages/ProviderSignup';
 import AboutUs from './pages/AboutUs'; 
 import Contact from './pages/Contact'; 
 import Services from './pages/Services'; 
+import SubServices from './pages/SubServices'; 
+import ServiceDetails from './pages/ServiceDetails';
 
 import './App.css'
 
@@ -23,6 +25,8 @@ function App() {
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/services" element={<Services />} />
+         <Route path="/services/:category" element={<SubServices />} />
+        <Route path="/services/:category/:serviceSlug" element={<ServiceDetails />} />
 
 
       </Routes>
