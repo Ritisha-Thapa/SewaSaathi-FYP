@@ -1,22 +1,20 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import serviceImage from '../assets/images/services/painting.png';
-const Hero = () => {
-  const [serviceType, setServiceType] = useState('');
-  const [location, setLocation] = useState('Kathmandu');
+const CustDashHero = () => {
 
   return (
-    <section id="home" className="bg-[#F9F5F0] py-16 md:py-24">
+    <section id="home" className="bg-white py-16 md:py-24">
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="flex flex-col md:flex-row items-center gap-12">
 
           {/* Left Content */}
           <div className="flex-1 text-center md:text-left">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#1B3C53] mb-6 leading-tight">
-              Find Trusted Service Providers Near You
+              Your Home. Our Service. Fully Simplified.
             </h1>
             <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
-              Book reliable electricians, plumbers, cleaners, and more — all verified and insured.
+             Explore services, manage appointments, and enjoy fast, reliable support — instantly from your dashboard
             </p>
 
             {/* CTA Buttons */}
@@ -25,7 +23,7 @@ const Hero = () => {
                 to="/services"
                 className="px-8 py-4 bg-[#1B3C53] text-white rounded-full font-semibold hover:bg-[#1a3248] transition shadow-lg text-center"
               >
-                Book a Service
+                Browse Services
               </Link>
 
               <Link
@@ -52,4 +50,4 @@ const Hero = () => {
   );
 };
 
-export default Hero;
+export default CustDashHero;

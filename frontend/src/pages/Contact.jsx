@@ -95,7 +95,7 @@ const Contact = () => {
   ];
 
   return (
-    <div className="font-sans text-gray-900 min-h-screen bg-[#F9F5F0]">
+    <div className="font-sans text-gray-900 min-h-screen bg-white">
       <Header />
 
       {/* ---------------- HERO SECTION WITH BACKGROUND IMAGE ---------------- */}

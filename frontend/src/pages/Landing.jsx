@@ -1,6 +1,6 @@
 import React from "react";
 import LandingHeader from "../components/LandingHeader";
-import Hero from "../components/Hero";
+import LandingHero from "../components/LandingHero";
 import HowItWorks from "../components/HowItWorks";
 import FeaturedServices from "../components/FeaturedServices";
 import OurFeatures from "../components/OurFeatures";
@@ -11,7 +11,7 @@ const Landing = () => {
   return (
     <div className="font-sans text-gray-900 min-h-screen bg-[#F9F5F0]">
       <LandingHeader />
-      <Hero />
+      <LandingHero />
       <HowItWorks />
       <FeaturedServices />
       <OurFeatures/>
