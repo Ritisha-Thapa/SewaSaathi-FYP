@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from base.models import BaseModel
+from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
 
@@ -69,3 +72,21 @@ class User(AbstractUser, BaseModel):
 
     def __str__(self):
         return f"{self.username} ({self.role})"
+    
+
+class PasswordResetOTP(BaseModel):
+    OTP_TYPE_CHOICES = [
+        ('send', 'Send'),
+        ('resend', 'Resend'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    otp = models.CharField(max_length=6)
+    otp_type = models.CharField(max_length=10, choices=OTP_TYPE_CHOICES, default='send')
+    is_verified = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timedelta(minutes=2)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.otp} ({self.otp_type})"
