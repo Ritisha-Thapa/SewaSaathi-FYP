@@ -50,10 +50,10 @@ const OurFeatures = () => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="card text-center"
+              className="bg-[#F9F5F0] rounded-2xl p-6 text-center hover:shadow-xl transition shadow-lg"
             >
               <div className="flex justify-center mb-4">
-                <div className="bg-[#F9F5F0] rounded-full p-4">
+                <div className="bg-white rounded-full p-4">
                   {feature.icon}
                 </div>
               </div>
@@ -68,4 +68,3 @@ const OurFeatures = () => {
 };
 
 export default OurFeatures;
-

@@ -19,7 +19,7 @@ const Testimonials = () => {
       rating: 5,
     },
     {
-      name: 'Rajan Khatri',
+      name: 'Rita Khatri',
       title: 'Used Electrical Service',
       quote:
         'Great platform! The electrician was verified and did an amazing job. The payment process was smooth too.',
@@ -30,7 +30,7 @@ const Testimonials = () => {
       rating: 5,
     },
     {
-      name: 'Anita Gurung',
+      name: 'Anish Gurung',
       title: 'Used Cleaning Service',
       quote:
         'I booked a cleaner through SewaSaathi and was impressed by the quality of service. Will definitely use again!',
@@ -53,7 +53,7 @@ const Testimonials = () => {
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="bg-gray-100 rounded-xl p-6 hover:shadow-xl transition shadow-lg"
+              className="bg-[#F9F5F0] rounded-xl p-6 hover:shadow-xl transition shadow-lg"
             >
               {/* Profile Picture and Name/Title Section */}
               <div className="flex items-start gap-4 mb-4">

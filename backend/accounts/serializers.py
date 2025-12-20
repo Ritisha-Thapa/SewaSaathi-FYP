@@ -8,6 +8,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.core.mail import send_mail
 from django.conf import settings
+from .utils import generate_otp
 
         
 class CustomerRegisterSerializer(serializers.ModelSerializer):
@@ -191,7 +192,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
             # is_verified=False
         ).count()
 
-        if otp_count >= 3:
+        if otp_count >= 5:
             raise serializers.ValidationError(
                 "Too many OTP requests. Please try again later."
             )
@@ -226,7 +227,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
         subject = (
             "Your OTP Has Been Resent"
             if req_type == "resend"
-            else "OTP for HCKonnect Password Reset"
+            else "OTP for SewaSathi Password Reset"
         )
 
         send_mail(

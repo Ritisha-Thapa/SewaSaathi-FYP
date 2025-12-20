@@ -3,7 +3,6 @@ import React from 'react';
 const HowItWorks = () => {
   const steps = [
     {
-      number: '1',
       title: 'Browse & Choose',
       description: 'Find the service you need',
       icon: (
@@ -13,7 +12,6 @@ const HowItWorks = () => {
       )
     },
     {
-      number: '2',
       title: 'Book & Pay',
       description: 'Schedule and pay via eSewa or COD',
       icon: (
@@ -23,7 +21,6 @@ const HowItWorks = () => {
       )
     },
     {
-      number: '3',
       title: 'Relax & Review',
       description: 'Get service done and give feedback',
       icon: (
@@ -49,7 +46,6 @@ const HowItWorks = () => {
                     {step.icon}
                   </div>
                 </div>
-                <div className="text-4xl font-bold text-[#1B3C53] mb-4">{step.number}️⃣</div>
                 <h3 className="text-xl font-bold text-[#1B3C53] mb-3">{step.title}</h3>
                 <p className="text-gray-600">{step.description}</p>
               </div>
@@ -62,4 +58,3 @@ const HowItWorks = () => {
 };
 
 export default HowItWorks;
-

@@ -5,10 +5,7 @@ from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import ServiceCategory, Service, ProviderService
 from .serializers import ServiceCategorySerializer,ServiceSerializer,ProviderServiceSerializer
-
 from .permissions import IsProvider
-
-
 from rest_framework.permissions import IsAdminUser
 
 class ServiceCategoryViewSet(viewsets.ModelViewSet):
@@ -32,7 +29,6 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
     filter_backends = [filters.SearchFilter]
     search_fields = ["name", "category__name"]
-
 
 
 class ProviderServiceViewSet(viewsets.ModelViewSet):
