@@ -40,7 +40,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'accounts',
     'services',
-    'corsheaders',  
+    'corsheaders', 
+    'django_filters',
+    'booking'
+
 ]
 
 
@@ -51,6 +54,11 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ]
 }
 
 from datetime import timedelta

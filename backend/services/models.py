@@ -1,8 +1,4 @@
 from django.db import models
-
-# Create your models here.
-
-from django.db import models
 from django.conf import settings
 from base.models import BaseModel
 
@@ -16,7 +12,22 @@ class ServiceCategory(BaseModel):
 
 
 class Service(BaseModel):
-    category = models.ForeignKey(ServiceCategory, on_delete=models.CASCADE, related_name="services")
+    PRICING_TYPE = (
+        ("fixed", "Fixed"),
+        ("hourly", "Hourly"),
+        ("unit", "Per Unit"),
+        ("starting", "Starting From"),
+    )
+
+    pricing_type = models.CharField(
+        max_length=20,
+        choices=PRICING_TYPE,
+        default="fixed"
+    )
+
+    category = models.ForeignKey(
+        ServiceCategory, on_delete=models.CASCADE, related_name="services"
+    )
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True, null=True)
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -26,6 +37,7 @@ class Service(BaseModel):
 
     def __str__(self):
         return f"{self.name} - {self.category.name}"
+
     
     
 class ProviderService(BaseModel):
@@ -35,12 +47,18 @@ class ProviderService(BaseModel):
         limit_choices_to={"role": "provider"},
         related_name="provider_services"
     )
-    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="provider_services")
+    service = models.ForeignKey(
+        Service, on_delete=models.CASCADE, related_name="provider_services"
+    )
+
+    pricing_type = models.CharField(
+        max_length=20,
+        choices=Service.PRICING_TYPE,
+        default="fixed"
+    )
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
     is_available = models.BooleanField(default=True)
-
-    # Auto-updated when reviews come
     rating = models.FloatField(default=0.0)
 
     class Meta:
@@ -50,19 +68,4 @@ class ProviderService(BaseModel):
         return f"{self.provider.username} → {self.service.name}"
 
 
-# class ServicePackage(BaseModel):
-#     PACKAGE_CHOICES = (
-#         ("weekly", "Weekly"),
-#         ("monthly", "Monthly"),
-#     )
 
-#     provider_service = models.ForeignKey(
-#         ProviderService, on_delete=models.CASCADE, related_name="packages"
-#     )
-
-#     package_type = models.CharField(max_length=20, choices=PACKAGE_CHOICES)
-#     visits_per_month = models.PositiveIntegerField(default=4)
-#     price = models.DecimalField(max_digits=10, decimal_places=2)
-
-#     def __str__(self):
-#         return f"{self.provider_service.provider.username} - {self.package_type} Package"

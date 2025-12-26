@@ -184,7 +184,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
 
 
 
-        # REQUEST LIMIT (max 3 OTPs per hour)
+        # REQUEST LIMIT (max 5 OTPs per hour)
         one_hour_ago = timezone.now() - timedelta(hours=1)
         otp_count = PasswordResetOTP.objects.filter(
             user=user,
@@ -214,7 +214,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
                 f"OTP already sent. Please wait {remaining} seconds."
             )
 
-        # 🔢 4. Generate OTP
+        #  4. Generate OTP
         otp = generate_otp()
 
         PasswordResetOTP.objects.create(
@@ -223,7 +223,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
             otp_type=req_type
         )
 
-        # 📧 5. Email
+        #  5. Email
         subject = (
             "Your OTP Has Been Resent"
             if req_type == "resend"
