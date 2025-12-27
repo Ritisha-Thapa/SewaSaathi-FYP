@@ -10,10 +10,10 @@ import member4 from '../assets/images/testimonials/image2.png';
 
 const AboutUs = () => {
   const teamMembers = [
-    { name: 'Team Member 1', role: 'CEO & Founder', imageUrl: member1 },
-    { name: 'Team Member 2', role: 'CTO', imageUrl: member2 },
-    { name: 'Team Member 3', role: 'Head of Operations', imageUrl: member3 },
-    { name: 'Team Member 4', role: 'Customer Success', imageUrl: member4 }
+    { name: 'Sita Karki', role: 'CEO & Founder', imageUrl: member1 },
+    { name: ' Rita Thapa', role: 'CTO', imageUrl: member2 },
+    { name: 'Ram Khatri', role: 'Head of Operations', imageUrl: member3 },
+    { name: 'Gita Basnet', role: 'Customer Success', imageUrl: member4 }
   ];
 
   const differentiators = [

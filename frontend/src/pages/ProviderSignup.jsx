@@ -14,9 +14,8 @@ const skillsOptions = [
 
 
 const ProviderSignup = () => {
-  // ---------------------
-  // STATE
-  // ---------------------
+
+  // STATES
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -37,9 +36,9 @@ const ProviderSignup = () => {
   const [previewProfile, setPreviewProfile] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
 
-    // ---------------------
+
   // Auto-hide success message
-  // ---------------------
+
   useEffect(() => {
     if (successMessage) {
       const timer = setTimeout(() => setSuccessMessage(""), 5000); // hides after 5s
@@ -47,9 +46,9 @@ const ProviderSignup = () => {
     }
   }, [successMessage]);
 
-  // ---------------------
+
   // INPUT CHANGE
-  // ---------------------
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -64,9 +63,9 @@ const ProviderSignup = () => {
     }));
   };
 
-  // ---------------------
+
   // SKILLS CHECKBOX
-  // ---------------------
+
   const handleSkillChange = (skill) => {
     setFormData((prev) => {
       const updated = prev.skills.includes(skill)
@@ -80,9 +79,9 @@ const ProviderSignup = () => {
     });
   };
 
-  // ---------------------
+
   // FILE HANDLING
-  // ---------------------
+
   const handleFileChange = (e, type) => {
     const file = e.target.files[0];
 
@@ -103,9 +102,9 @@ const ProviderSignup = () => {
     }
   };
 
-  // ---------------------
+
   // SUBMIT
-  // ---------------------
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 

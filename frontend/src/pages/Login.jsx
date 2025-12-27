@@ -225,7 +225,7 @@ const Login = () => {
           </div>
         </form>
 
-        {/* ---------- Forgot Password Modal (Email) ---------- */}
+        {/* ---------- Forgot Password Model (Email) ---------- */}
         {showForgot && (
           <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 px-4">
             <div className="bg-white w-full max-w-md rounded-xl p-6 shadow-lg space-y-4">
