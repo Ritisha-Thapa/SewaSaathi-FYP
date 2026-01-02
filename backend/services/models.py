@@ -19,15 +19,9 @@ class Service(BaseModel):
         ("starting", "Starting From"),
     )
 
-    pricing_type = models.CharField(
-        max_length=20,
-        choices=PRICING_TYPE,
-        default="fixed"
-    )
+    pricing_type = models.CharField(max_length=20,choices=PRICING_TYPE,default="fixed")
 
-    category = models.ForeignKey(
-        ServiceCategory, on_delete=models.CASCADE, related_name="services"
-    )
+    category = models.ForeignKey(ServiceCategory, on_delete=models.CASCADE, related_name="services")
     name = models.CharField(max_length=150)
     description = models.TextField(blank=True, null=True)
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -41,21 +35,10 @@ class Service(BaseModel):
     
     
 class ProviderService(BaseModel):
-    provider = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        limit_choices_to={"role": "provider"},
-        related_name="provider_services"
-    )
-    service = models.ForeignKey(
-        Service, on_delete=models.CASCADE, related_name="provider_services"
-    )
+    provider = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,limit_choices_to={"role": "provider"},related_name="provider_services")
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="provider_services")
 
-    pricing_type = models.CharField(
-        max_length=20,
-        choices=Service.PRICING_TYPE,
-        default="fixed"
-    )
+    pricing_type = models.CharField(max_length=20,choices=Service.PRICING_TYPE,default="fixed")
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
     is_available = models.BooleanField(default=True)
