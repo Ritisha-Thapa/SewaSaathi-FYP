@@ -1,9 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from base.models import BaseModel
-from django.conf import settings
-from django.utils import timezone
-from datetime import timedelta
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 
@@ -14,7 +11,7 @@ class User(AbstractUser, BaseModel):
         ('admin', 'Admin'),
     )
     
-    # columns of database
+    
     phone = models.CharField(max_length=20, unique=True)
     
     
@@ -42,18 +39,13 @@ class User(AbstractUser, BaseModel):
     skills = models.CharField(max_length=50, choices=SKILLS_CHOICES, blank=True, null=True)
     experience_years = models.PositiveIntegerField(default=0)
     
-    citizenship_number = models.CharField(max_length=50, blank=True, null=True)
     citizenship_image_front = models.ImageField(upload_to='citizenship/', blank=True, null=True)
     citizenship_image_back = models.ImageField(upload_to='citizenship/', blank=True, null=True)
  # Profile image
     profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
 
     # Account status
-    status = models.CharField(
-        max_length=20,
-        choices=[('active', 'Active'), ('blocked', 'Blocked')],
-        default='active'
-    )
+    status = models.CharField(max_length=20,choices=[('active', 'Active'), ('blocked', 'Blocked')],default='active')
     
     provider_status = models.CharField(
         max_length=20,
@@ -63,7 +55,7 @@ class User(AbstractUser, BaseModel):
     
     
     USERNAME_FIELD = 'phone'
-    REQUIRED_FIELDS = ['email', 'role','username']
+    REQUIRED_FIELDS = ['email', 'role']
     
     def save(self, *args, **kwargs):
         if not self.username:
@@ -73,20 +65,19 @@ class User(AbstractUser, BaseModel):
     def __str__(self):
         return f"{self.username} ({self.role})"
     
+    
+# These 2 models are not real database tables, they are just reusing the same User table 
+# Doing this to separate Customer and Provider in admin panel
 
-class PasswordResetOTP(BaseModel):
-    OTP_TYPE_CHOICES = [
-        ('send', 'Send'),
-        ('resend', 'Resend'),
-    ]
+class Customer(User):
+    class Meta:
+        proxy = True #This model is just another view of the same database table.
+        verbose_name = "Customer"
+        verbose_name_plural = "Customers"
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    otp = models.CharField(max_length=6)
-    otp_type = models.CharField(max_length=10, choices=OTP_TYPE_CHOICES, default='send')
-    is_verified = models.BooleanField(default=False)
 
-    def is_expired(self):
-        return timezone.now() > self.created_at + timedelta(minutes=2)
-
-    def __str__(self):
-        return f"{self.user.email} - {self.otp} ({self.otp_type})"
+class ServiceProvider(User):
+    class Meta:
+        proxy = True
+        verbose_name = "Service Provider"
+        verbose_name_plural = "Service Providers"
