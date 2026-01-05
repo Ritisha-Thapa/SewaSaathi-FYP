@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import DashboardHeader from "../components/DashboardHeader";
-import Footer from "../components/Footer";
-import plumbing from "../assets/images/services/plumbing.png";
-import cleaning from "../assets/images/services/cleaning.png";
-import electrical from "../assets/images/services/electrical.png";
-import gardening from "../assets/images/services/gardening.png";
-import painting from "../assets/images/services/painting.png";
-import servicesBg from "../assets/images/services/electrical.png";
+import DashboardHeader from "../../components/customer/DashboardHeader";
+import Footer from "../../components/customer/Footer";
+import plumbing from "../../assets/images/services/plumbing.png";
+import cleaning from "../../assets/images/services/cleaning.png";
+import electrical from "../../assets/images/services/electrical.png";
+import gardening from "../../assets/images/services/gardening.png";
+import painting from "../../assets/images/services/painting.png";
+import servicesBg from "../../assets/images/services/electrical.png";
 
 const Services = () => {
   const [searchQuery, setSearchQuery] = useState("");

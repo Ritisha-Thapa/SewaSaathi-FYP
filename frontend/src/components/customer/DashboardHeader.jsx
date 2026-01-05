@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell } from "lucide-react";
-import profileAvatar from '../assets/images/testimonials/image1.png';
+import profileAvatar from '../../assets/images/testimonials/image1.png';
 
 const DashboardHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

@@ -1,12 +1,12 @@
 import React from 'react';
-import DashboardHeader from '../components/DashboardHeader';
-import Footer from '../components/Footer';
+import DashboardHeader from '../../components/customer/DashboardHeader';
+import Footer from '../../components/customer/Footer';
 import { Link } from 'react-router-dom';
-import aboutHero from '../assets/images/testimonials/image1.png';
-import member1 from '../assets/images/testimonials/image1.png';
-import member2 from '../assets/images/testimonials/image2.png';
-import member3 from '../assets/images/testimonials/image3.jpg';
-import member4 from '../assets/images/testimonials/image2.png';    
+import aboutHero from '../../assets/images/testimonials/image1.png';
+import member1 from '../../assets/images/testimonials/image1.png';
+import member2 from '../../assets/images/testimonials/image2.png';
+import member3 from '../../assets/images/testimonials/image3.jpg';
+import member4 from '../../assets/images/testimonials/image2.png';    
 
 const AboutUs = () => {
   const teamMembers = [

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import Header from '../components/DashboardHeader';
-import Footer from '../components/Footer';
+import Header from '../../components/customer/DashboardHeader';
+import Footer from '../../components/customer/Footer';
 import contactBg from '../assets/images/services/plumbing.png'; 
 
 const Contact = () => {
