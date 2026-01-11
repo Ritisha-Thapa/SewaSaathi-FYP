@@ -6,19 +6,69 @@ const ForgotPassword = () => {
   const navigate = useNavigate();
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotError, setForgotError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleForgotChange = (e) => {
     setForgotEmail(e.target.value);
     if (forgotError) setForgotError("");
   };
 
-  const handleForgotSubmit = () => {
+  const handleForgotSubmit = async () => {
     const email = forgotEmail.trim();
     if (!email) {
       setForgotError("Email is required");
       return;
     }
-    navigate("/forgot/otp");
+
+    setForgotError("");
+    setSuccessMessage("Sending reset link...");
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/accounts/forgot-password/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, type: "send" }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        let errorMessage = "Failed to send reset link";
+
+        if (Array.isArray(data) && data.length > 0) {
+          // Backend returned a list
+          errorMessage = data[0];
+        } else if (data.detail) {
+          errorMessage = data.detail;
+        } else if (data.non_field_errors?.length) {
+          errorMessage = data.non_field_errors[0];
+        } else if (data.email?.length) {
+          errorMessage = data.email[0];
+        }
+
+        setForgotError(errorMessage);
+        setSuccessMessage("");
+        return;
+      }
+
+      // Success
+      setSuccessMessage(data.message || "OTP sent successfully");
+
+      setTimeout(() => {
+        navigate("/forgot/otp", { state: { email } });
+      }, 1200);
+    } catch (err) {
+      console.error(err);
+      setForgotError("Network error. Please try again.");
+      setSuccessMessage("");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,14 +108,22 @@ const ForgotPassword = () => {
             <p className="mt-1 text-sm text-red-600">{forgotError}</p>
           )}
         </div>
+        {successMessage && (
+          <div className="text-green-700 bg-green-100 border border-green-200 px-4 py-2 rounded-lg text-sm text-center">
+            {successMessage}
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <button
             type="button"
             onClick={handleForgotSubmit}
-            className="px-4 py-2 rounded-full text-white bg-[#1B3C53] hover:bg-[#1a3248]"
+            disabled={loading}
+            className="px-4 py-2 rounded-full text-white bg-[#1B3C53]"
           >
-            Send Reset Link
+            {loading ? "Sending..." : "Send Reset Link"}
           </button>
+
           <Link
             to="/login"
             className="text-sm text-gray-600 hover:text-[#1B3C53]"

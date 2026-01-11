@@ -37,7 +37,7 @@ const Reviews = () => {
                    </div>
                 </div>
                 <p className="text-gray-600 text-sm mt-3 bg-gray-50 p-3 rounded-lg flex gap-2">
-                   <MessageSquare size={16} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                   <MessageSquare size={16} className="text-gray-400 mt-0.5 shrink-0" />
                    "{review.comment}"
                 </p>
              </div>

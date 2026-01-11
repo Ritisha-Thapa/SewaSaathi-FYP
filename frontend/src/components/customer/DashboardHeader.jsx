@@ -18,7 +18,7 @@ const DashboardHeader = () => {
 
           <nav className="hidden md:flex items-center space-x-8">
             <Link to="/customer-dashboard" className="text-gray-700 hover:text-[#1B3C53] transition">Home</Link>
-            <Link to="/services" className="text-gray-700 hover:text-[#1B3C53] transition">Services</Link>
+            <Link to="/services-category" className="text-gray-700 hover:text-[#1B3C53] transition">Services</Link>
             <Link to="/about-us" className="text-gray-700 hover:text-[#1B3C53] transition">About Us</Link>
             <Link to="/contact" className="text-gray-700 hover:text-[#1B3C53] transition">Contact</Link>
           </nav>

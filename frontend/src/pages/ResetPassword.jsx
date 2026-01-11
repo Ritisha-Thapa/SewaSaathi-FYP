@@ -1,18 +1,30 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const email = location.state?.email; // email passed from OTP page
+
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  // Redirect if email is missing
+  useEffect(() => {
+    if (!email) navigate('/forgot'); 
+  }, [email, navigate]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setInfo('');
+
     if (!password || !confirm) {
       setError('Please fill in both fields');
       return;
@@ -21,14 +33,58 @@ const ResetPassword = () => {
       setError('Passwords do not match');
       return;
     }
-    navigate('/forgot/success');
+
+    setLoading(true);
+    setInfo('Resetting password...');
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/accounts/reset-password/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, new_password: password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle backend errors
+        let errorMessage = 'Failed to reset password';
+        if (Array.isArray(data) && data.length) {
+          errorMessage = data[0];
+        } else if (data.detail) {
+          errorMessage = data.detail;
+        } else if (data.non_field_errors?.length) {
+          errorMessage = data.non_field_errors[0];
+        } else if (data.email?.length) {
+          errorMessage = data.email[0];
+        } else if (data.new_password?.length) {
+          errorMessage = data.new_password[0];
+        }
+        setError(errorMessage);
+        setInfo('');
+        return;
+      }
+
+      // Success
+      setInfo('Password reset successfully');
+      setTimeout(() => navigate('/forgot/success'), 1200);
+    } catch (err) {
+      console.error(err);
+      setError('Network error. Please try again.');
+      setInfo('');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#F9F5F0] flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
         <div className="flex items-center justify-between mb-6">
-          <Link to="/login" className="inline-flex items-center gap-2 text-sm text-[#1B3C53] hover:text-[#1a3248]">
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-2 text-sm text-[#1B3C53] hover:text-[#1a3248]"
+          >
             <ArrowLeft size={18} />
             Back to Login
           </Link>
@@ -75,11 +131,13 @@ const ResetPassword = () => {
             </div>
           </div>
           {error && <div className="text-sm text-red-600">{error}</div>}
+          {info && <div className="text-sm text-green-600">{info}</div>}
           <button
             type="submit"
+            disabled={loading}
             className="w-full py-3 rounded-full text-white bg-[#1B3C53] hover:bg-[#1a3248]"
           >
-            Reset Password
+            {loading ? 'Resetting...' : 'Reset Password'}
           </button>
         </form>
       </div>
