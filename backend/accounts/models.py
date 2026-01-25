@@ -1,6 +1,10 @@
 from django.db import models
 from base.models import BaseModel
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+from .usermanager import UserManager
 
 # Create your models here.
 
@@ -56,6 +60,7 @@ class User(AbstractUser, BaseModel):
     
     USERNAME_FIELD = 'phone'
     REQUIRED_FIELDS = ['email', 'role']
+    objects = UserManager()
     
     def save(self, *args, **kwargs):
         if not self.username:
@@ -81,3 +86,20 @@ class ServiceProvider(User):
         proxy = True
         verbose_name = "Service Provider"
         verbose_name_plural = "Service Providers"
+
+class PasswordResetOTP(BaseModel):
+    OTP_TYPE_CHOICES = [
+        ('send', 'Send'),
+        ('resend', 'Resend'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    otp = models.CharField(max_length=6)
+    otp_type = models.CharField(max_length=10, choices=OTP_TYPE_CHOICES, default='send')
+    is_verified = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timedelta(minutes=2)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.otp} ({self.otp_type})"

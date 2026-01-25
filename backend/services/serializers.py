@@ -1,11 +1,12 @@
-from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField,StringRelatedField
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField,StringRelatedField, ImageField
 from .models import ServiceCategory, Service, ProviderService
 
 
 class ServiceCategorySerializer(ModelSerializer):
+    image = ImageField(required=False, allow_null=True)
     class Meta:
         model = ServiceCategory
-        fields = ["id", "name", "description", "created_at", "updated_at"]
+        fields = ["id", "name", "description","image", "created_at", "updated_at"]
 
 
 class ServiceSerializer(ModelSerializer):
@@ -17,10 +18,11 @@ class ServiceSerializer(ModelSerializer):
 
     # Nested serializer for response only
     category = ServiceCategorySerializer(read_only=True) # this is only for returning info instead of returning just the category id
+    image = ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Service
-        fields = ["id","name","description","base_price","pricing_type","category","category_id","created_at", "updated_at"]
+        fields = ["id","name","description","base_price","pricing_type","image","category","category_id","created_at", "updated_at"]
 
 
 # It connects a provider with a service with some extra info like price rating

@@ -1,8 +1,16 @@
-from rest_framework.serializers import ModelSerializer, Serializer, CharField, ValidationError
-from .models import User
+
+from rest_framework.serializers import ModelSerializer, Serializer, CharField, ValidationError, EmailField, ChoiceField
+from .models import User, PasswordResetOTP
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import AuthenticationFailed
+from django.core.mail import send_mail
+from .utils import generate_otp
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+from datetime import timedelta
+
 
 
 # the serializer is for customer registration only
@@ -132,3 +140,139 @@ class LoginSerializer(Serializer):
                 }
             }
         }
+
+
+User = get_user_model()
+
+class ForgotPasswordSerializer(Serializer):
+    email = EmailField() #email of the user requesting password reset
+    type = ChoiceField(choices=["send", "resend"],default="send")
+
+
+    def validate(self, data):
+        """
+        Checks email existance.
+        If exists! store the user obj in validated data
+        """
+        email = data["email"]
+        if not User.objects.filter(email=email).exists():
+            raise ValidationError("User with this email does not exist")
+        data["user"] = User.objects.get(email=email)
+        return data # drf now knows this input is valid
+
+    def save(self):
+        user = self.validated_data["user"] # data after validation
+        req_type = self.validated_data.get("type", "send") 
+
+        # request limit (max allowed 4)
+        one_hour_ago = timezone.now() - timedelta(hours=1)
+        otp_count = PasswordResetOTP.objects.filter(user=user,created_at__gte=one_hour_ago,).count()
+
+        if otp_count >= 8:
+            raise ValidationError(
+                "Too many OTP requests. Please try again later."
+            )
+
+        # if the otp is not expired cannot send otp request again till its expired
+        active_otp = PasswordResetOTP.objects.filter(user=user,is_verified=False).order_by("-created_at").first()
+
+
+        if active_otp and not active_otp.is_expired():
+
+            remaining = max(0,120 - int((timezone.now() - active_otp.created_at).total_seconds())
+            )
+            raise ValidationError(
+                f"OTP already sent. Please wait {remaining} seconds."
+            )
+
+        # Generate OTP
+        otp = generate_otp()
+
+        PasswordResetOTP.objects.create(user=user,otp=otp,otp_type=req_type)
+
+        # send through email
+        subject = (
+            "Your OTP Has Been Resent"
+            if req_type == "resend"
+            else "OTP for HCKonnect Password Reset"
+        )
+
+        send_mail(
+            subject=subject,
+            message=f"Your OTP is {otp}. It is valid for 2 minutes.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email]
+        )
+
+        return {"message": "OTP sent successfully"}
+
+
+
+
+
+
+class VerifyOTPSerializer(Serializer):
+    """
+    User submits email and otp
+    serializer validates
+    marks the otp as verified
+    returns user obj
+    """
+    email = EmailField()
+    otp = CharField(max_length=6)
+
+    def validate(self, data):
+        email = data['email']
+        otp = data['otp']
+        try:
+            user = User.objects.get(email=email)
+            
+            #record otp if its valid
+            otp_record = PasswordResetOTP.objects.filter(user=user, otp=otp, is_verified=False).last()
+            if not otp_record:
+                raise ValidationError("Invalid OTP")
+            
+            if otp_record.is_expired():
+                raise ValidationError("OTP expired")
+        except User.DoesNotExist:
+            raise ValidationError("User does not exist")
+        
+        #saving the otp obj and user obj in validated data
+        data['otp_record'] = otp_record
+        data['user'] = user
+        return data
+
+    def save(self):
+        otp_record = self.validated_data['otp_record']
+        otp_record.is_verified = True # finally verifying it
+        otp_record.save()
+        return self.validated_data['user']
+
+
+class ResetPasswordSerializer(Serializer):
+    email = EmailField()
+    new_password = CharField(write_only=True, min_length=8)
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise ValidationError("User does not exist")
+        return value
+
+    def validate(self, data):
+        user = User.objects.get(email=data['email'])
+        # Check if OTP is verified
+        if not PasswordResetOTP.objects.filter(user=user, is_verified=True).exists():
+            raise ValidationError("OTP not verified")
+        data['user'] = user
+        return data
+
+    def save(self):
+        user = self.validated_data['user']
+        user.set_password(self.validated_data['new_password'])
+        user.must_change_password = False  
+        user.save()
+        
+        # Clean up OTPs
+        PasswordResetOTP.objects.filter(user=user).delete()
+        return user
+

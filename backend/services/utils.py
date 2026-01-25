@@ -1,47 +1,35 @@
-from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField,StringRelatedField
-from .models import ServiceCategory, Service, ProviderService
+import django_filters
+from .models import Service,ProviderService, ServiceCategory
 
+class ServiceFilter(django_filters.FilterSet):
+    # Multi-select for category
+    category = django_filters.ModelMultipleChoiceFilter(queryset=ServiceCategory.objects.all(),field_name='category')
 
-class ServiceCategorySerializer(ModelSerializer):
-    class Meta:
-        model = ServiceCategory
-        fields = ["id", "name", "description", "created_at", "updated_at"]
-
-
-class ServiceSerializer(ModelSerializer):
-    # accepts category_id, validates if it exists
-    # with PrimaryKeyRelatedField it will expect only pk(ID)
-    # queryset=ServiceCategory.objects.all() this ensures the id existence 
-    # source="category" means this value will be assigned to the category field in the model
-    category_id = PrimaryKeyRelatedField(queryset=ServiceCategory.objects.all(),source="category",write_only=True)
-
-    # Nested serializer for response only
-    category = ServiceCategorySerializer(read_only=True) # this is only for returning info instead of returning just the category id
+    # Price range filters
+    min_price = django_filters.NumberFilter(field_name='base_price', lookup_expr='gte')
+    max_price = django_filters.NumberFilter(field_name='base_price', lookup_expr='lte')
 
     class Meta:
         model = Service
-        fields = ["id","name","description","base_price","pricing_type","category","category_id","created_at", "updated_at"]
+        fields = ['category', 'min_price', 'max_price']
 
 
-# It connects a provider with a service with some extra info like price rating
-# Its like a provider profile with his service or work details to book him
 
-class ProviderServiceSerializer(ModelSerializer):
-    provider = StringRelatedField(read_only=True) # we will be setting this on own so read_only
-    service = ServiceSerializer(read_only=True) # only for info its a nested serializer so client doesnt send its data but only service_ID
-
-    # Client sends only the service ID
-    # source="service" assigns it to the service FK in the model
-    service_id = PrimaryKeyRelatedField(queryset=Service.objects.all(),source="service",write_only=True)
-
+class ProviderServiceFilter(django_filters.FilterSet):
+    # Price range
+    min_price = django_filters.NumberFilter(field_name="price", lookup_expr="gte")
+    max_price = django_filters.NumberFilter(field_name="price", lookup_expr="lte")
+    
+    # Service name (partial match)
+    service_name = django_filters.CharFilter(field_name="service__name", lookup_expr="icontains")
+    
+    # Rating (exact or you could add min_rating, max_rating)
+    min_rating = django_filters.NumberFilter(field_name="rating", lookup_expr="gte")
+    max_rating = django_filters.NumberFilter(field_name="rating", lookup_expr="lte")
+    
+    # Availability
+    is_available = django_filters.BooleanFilter(field_name="is_available")
+    
     class Meta:
         model = ProviderService
-        fields = ["id","provider","service","service_id","price","pricing_type","is_available","rating","created_at", "updated_at"]
-
-    def create(self, validated_data):
-        # logged-in user will be set as provider
-        # self.context["request"] is passed from the view
-        # This enforces ownership 
-        validated_data["provider"] = self.context["request"].user
-        return super().create(validated_data)
-
+        fields = []  # all filters are custom defined above

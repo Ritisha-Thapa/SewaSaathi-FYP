@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from . views import CustomerRegisterView, ProviderRegisterView, LoginView, ForgotPasswordView, VerifyOTPView, ResetPasswordView
+from .views import CustomerRegisterView, ProviderRegisterView, LoginView, ForgotPasswordView, VerifyOTPView, ResetPasswordView
 
 urlpatterns = [
 
