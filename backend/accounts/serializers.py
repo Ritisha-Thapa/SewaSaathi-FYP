@@ -67,7 +67,7 @@ class ProviderRegisterSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['phone', 'email','first_name', 'last_name', 'address', 'city','skills', 'experience_years','citizenship_number', 'citizenship_image_front', 'citizenship_image_back','profile_image']
+        fields = ['phone', 'email','first_name', 'last_name', 'address', 'city','skills', 'experience_years', 'citizenship_image_front', 'citizenship_image_back','profile_image']
 
     # Global validation for required provider fields
     def validate(self, data):

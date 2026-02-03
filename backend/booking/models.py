@@ -6,11 +6,13 @@ from services.models import Service
 # Create your models here.
 class Booking(BaseModel):
     STATUS_CHOICES = (
-        ("requested", "Requested"),
+        ("pending", "Pending"),
         ("assigned", "Assigned"),
         ("accepted", "Accepted"),
+        ("in_progress", "In Progress"),
         ("completed", "Completed"),
         ("cancelled", "Cancelled"),
+        ("rejected", "Rejected"),
     )
 
     customer = models.ForeignKey(
@@ -31,16 +33,27 @@ class Booking(BaseModel):
 
     scheduled_date = models.DateField()
     scheduled_time = models.TimeField()
+    
+    issue_description = models.TextField(blank=True, null=True)
+    issue_images = models.ImageField(upload_to="booking_issues/", blank=True, null=True)
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="requested")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
 
-    estimated_price = models.DecimalField(max_digits=10, decimal_places=2)
-    final_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-
-    insurance_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    # Prices
+    service_price = models.DecimalField(max_digits=10, decimal_places=2, default=0) # Price of service at booking time
+    insurance_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0) # 1% of service_price
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0) # service_price + insurance_fee
 
     payment_method = models.CharField(
         max_length=20,
         choices=(("cash", "Cash"), ("online", "Online")),
         default="cash"
     )
+    is_paid = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        # Calculate pricing on save if not set
+        if not self.total_price:
+            self.insurance_fee = self.service_price * 0.01  # 1% insurance
+            self.total_price = float(self.service_price) + float(self.insurance_fee)
+        super().save(*args, **kwargs)
