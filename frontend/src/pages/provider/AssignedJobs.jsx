@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Calendar, ArrowRight, User } from 'lucide-react';
-import { assignedJobs, activeJobs } from '../../data/providerMockData';
+import { api } from '../../utils/api';
 
-const JobCard = ({ job, type }) => (
+const JobCard = ({ job, type, onUpdateStatus }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div className="flex-1">
       <div className="flex items-center gap-2 mb-2">
@@ -11,24 +11,24 @@ const JobCard = ({ job, type }) => (
         }`}>
           {job.status}
         </span>
-        <h3 className="font-bold text-[#1B3C53]">{job.serviceName}</h3>
+        <h3 className="font-bold text-[#1B3C53]">{job.service_name}</h3>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-6 text-sm text-gray-600 mt-2">
          <div className="flex items-center">
-            <User size={14} className="mr-2" /> {job.customerName}
+            <User size={14} className="mr-2" /> {job.customer_name}
          </div>
          <div className="flex items-center">
-           <MapPin size={14} className="mr-2" /> {job.location}
+           <MapPin size={14} className="mr-2" /> {job.customer_address ? `${job.customer_address}, ${job.customer_city}` : "Location not provided"}
          </div>
          <div className="flex items-center">
-           <Calendar size={14} className="mr-2" /> {job.dateTime}
+           <Calendar size={14} className="mr-2" /> {job.scheduled_date} at {job.scheduled_time}
          </div>
       </div>
       
-      {job.details && (
+      {job.issue_description && (
         <p className="text-sm text-gray-500 mt-3 bg-gray-50 p-2 rounded">
-          <span className="font-semibold">Note:</span> {job.details}
+          <span className="font-semibold">Note:</span> {job.issue_description}
         </p>
       )}
     </div>
@@ -36,16 +36,22 @@ const JobCard = ({ job, type }) => (
     <div className="flex flex-col sm:flex-row gap-3 min-w-[150px] justify-end">
       {type === 'Assigned' ? (
         <>
-           <button className="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 text-sm">
+           <button 
+             onClick={() => onUpdateStatus(job.id, 'rejected')}
+             className="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 text-sm">
              Reject
            </button>
-           <button className="px-4 py-2 bg-[#1B3C53] text-white rounded-lg hover:bg-[#1a3248] text-sm">
+           <button 
+             onClick={() => onUpdateStatus(job.id, 'in_progress')}
+             className="px-4 py-2 bg-[#1B3C53] text-white rounded-lg hover:bg-[#1a3248] text-sm">
              Start Job
            </button>
         </>
       ) : (
         <>
-           <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center justify-center gap-2">
+           <button 
+             onClick={() => onUpdateStatus(job.id, 'completed')}
+             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center justify-center gap-2">
              <ArrowRight size={16} /> Mark Complete
            </button>
         </>
@@ -55,33 +61,97 @@ const JobCard = ({ job, type }) => (
 );
 
 const AssignedJobs = () => {
+    const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchJobs();
+    }, []);
+
+    const fetchJobs = async () => {
+        try {
+            const data = await api.get('/api/booking/bookings/');
+            setJobs(data);
+        } catch (err) {
+            console.error("Failed to fetch jobs", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUpdateStatus = async (id, newStatus) => {
+        try {
+            await api.post(`/api/booking/bookings/${id}/update-status/`, { status: newStatus });
+            // Refresh list or update local state
+            fetchJobs();
+        } catch (err) {
+            console.error("Failed to update status", err);
+            alert("Failed to update status");
+        }
+    };
+
+    // Filter jobs
+    const assigned = jobs.filter(j => j.status === 'accepted' || j.status === 'assigned');
+
+  if (loading) return <div>Loading...</div>;
+
   return (
     <div className="space-y-8">
-      
       {/* Assigned Section */}
       <div>
         <h2 className="text-2xl font-bold text-[#1B3C53] mb-4">Assigned Jobs</h2>
         <div className="space-y-4">
-          {assignedJobs.map(job => (
-            <JobCard key={job.id} job={job} type="Assigned" />
+          {assigned.map(job => (
+            <JobCard key={job.id} job={job} type="Assigned" onUpdateStatus={handleUpdateStatus} />
           ))}
-          {assignedJobs.length === 0 && <p className="text-gray-500">No assigned jobs.</p>}
+          {assigned.length === 0 && <p className="text-gray-500">No assigned jobs.</p>}
         </div>
       </div>
-
     </div>
   );
 };
 
 export const ActiveJobs = () => {
+    const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchJobs();
+    }, []);
+
+    const fetchJobs = async () => {
+        try {
+            const data = await api.get('/api/booking/bookings/');
+            setJobs(data);
+        } catch (err) {
+            console.error("Failed to fetch jobs", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUpdateStatus = async (id, newStatus) => {
+        try {
+            await api.post(`/api/booking/bookings/${id}/update-status/`, { status: newStatus });
+            fetchJobs();
+        } catch (err) {
+             console.error("Failed to update status", err);
+             alert("Failed to update status");
+        }
+    };
+
+    const active = jobs.filter(j => j.status === 'in_progress');
+
+    if (loading) return <div>Loading...</div>;
+
     return (
         <div>
             <h2 className="text-2xl font-bold text-[#1B3C53] mb-4">Active Jobs</h2>
              <div className="space-y-4">
-              {activeJobs.map(job => (
-                <JobCard key={job.id} job={job} type="Active" />
+              {active.map(job => (
+                <JobCard key={job.id} job={job} type="Active" onUpdateStatus={handleUpdateStatus} />
               ))}
-              {activeJobs.length === 0 && <p className="text-gray-500">No active jobs running.</p>}
+              {active.length === 0 && <p className="text-gray-500">No active jobs running.</p>}
             </div>
         </div>
     )

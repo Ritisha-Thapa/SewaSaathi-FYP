@@ -16,9 +16,12 @@ import cloudinary_storage
 from dotenv import load_dotenv
 from datetime import timedelta
 from urllib.parse import urlparse, parse_qsl
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
+
 load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -194,7 +197,7 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
 
 EMAIL_HOST = os.getenv("EMAIL_HOST")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT"))
+EMAIL_PORT = int(os.getenv("EMAIL_PORT",587))
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS") == "True"
 
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")

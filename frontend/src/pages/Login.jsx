@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { useAuth } from "../context/AuthContext";
+
 const Login = () => {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     phone: "",
     password: "",
@@ -69,25 +72,31 @@ const Login = () => {
         }
       );
 
-      const data = await loginResponse.json();
-      console.log("Login response:", data);
+      const responseData = await loginResponse.json();
+      console.log("Login response:", responseData);
 
       if (!loginResponse.ok) {
         setApiError(
-          data.detail ||
-            data.non_field_errors?.[0] ||
-            data.error ||
-            "Invalid phone or password"
+          responseData.detail ||
+          responseData.non_field_errors?.[0] ||
+          responseData.error ||
+          "Invalid phone or password"
         );
         return;
       }
 
-      localStorage.setItem("access", data.access);
-      localStorage.setItem("refresh", data.refresh);
+      // data contains { msg, data: { token, user } }
+      const { data } = responseData;
+      login(data);
 
       setSuccessMessage("Login successful! Redirecting...");
+
       setTimeout(() => {
-        navigate("/customer-dashboard");
+        if (data.user.role === "provider") {
+          navigate("/provider/dashboard");
+        } else {
+          navigate("/customer-dashboard");
+        }
       }, 1200);
     } catch (error) {
       console.error("Login error:", error);
@@ -126,9 +135,7 @@ const Login = () => {
           <h2 className="mt-6 text-center text-3xl font-bold text-[#1B3C53]">
             Login to Your Account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in as a customer
-          </p>
+
         </div>
 
         {/* Form */}
@@ -145,9 +152,8 @@ const Login = () => {
                 required
                 value={formData.phone}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-lg ${
-                  errors.phone ? "border-red-300" : "border-gray-300"
-                }`}
+                className={`w-full px-3 py-2 border rounded-lg ${errors.phone ? "border-red-300" : "border-gray-300"
+                  }`}
                 placeholder="Enter phone"
               />
               {errors.phone && (
@@ -167,9 +173,8 @@ const Login = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-lg ${
-                    errors.password ? "border-red-300" : "border-gray-300"
-                  }`}
+                  className={`w-full px-3 py-2 border rounded-lg ${errors.password ? "border-red-300" : "border-gray-300"
+                    }`}
                   placeholder="Password"
                 />
 
@@ -180,9 +185,9 @@ const Login = () => {
                   className="absolute inset-y-0 right-2 flex items-center text-gray-500"
                 >
                   {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
                     <Eye className="w-5 h-5" />
+                  ) : (
+                    <EyeOff className="w-5 h-5" />
                   )}
                 </button>
               </div>

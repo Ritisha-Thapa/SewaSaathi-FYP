@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import SubCatHeader from "../../components/customer/SubCatHeader";
 import Footer from "../../components/customer/Footer";
+import ServiceCard from "../../components/customer/services/ServiceCard"; // Import ServiceCard
 
 const formatPrice = (n) => `Rs. ${n.toLocaleString()}`;
 
@@ -96,43 +97,7 @@ const SubServices = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {services.map((item) => (
-              <Link
-                key={item.id}
-                to={`/services/${category}/${item.id}`}
-                className="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden block"
-              >
-                {item.image && (
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-52 object-cover"
-                  />
-                )}
-
-                <div className="p-6 space-y-3">
-                  <span className="inline-block px-3 py-1 text-xs bg-[#1B3C53]/10 text-[#1B3C53] rounded-full capitalize">
-                    {categoryData?.name}
-                  </span>
-
-                  <h3 className="text-xl font-semibold text-[#1B3C53]">
-                    {item.name}
-                  </h3>
-
-                  <p className="text-sm text-gray-600">{item.description}</p>
-
-                  <div className="mt-4 pt-3 border-t border-gray-200 text-sm text-gray-700 space-y-2">
-                    <div className="flex justify-between">
-                      <span>Service price</span>
-                      <span>{formatPrice(item.base_price)}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                      <span className="inline-block px-2 py-1 bg-blue-50 rounded">
-                        Extra 1% insurance charge will be added later
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
+              <ServiceCard key={item.id} service={{ ...item, category: categoryData }} />
             ))}
           </div>
         )}

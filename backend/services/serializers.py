@@ -1,5 +1,8 @@
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField,StringRelatedField, ImageField
 from .models import ServiceCategory, Service, ProviderService
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class ServiceCategorySerializer(ModelSerializer):
@@ -28,8 +31,14 @@ class ServiceSerializer(ModelSerializer):
 # It connects a provider with a service with some extra info like price rating
 # Its like a provider profile with his service or work details to book him
 
+
+class ProviderSummarySerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "first_name", "last_name", "profile_image", "city"]
+
 class ProviderServiceSerializer(ModelSerializer):
-    provider = StringRelatedField(read_only=True) # we will be setting this on own so read_only
+    provider = ProviderSummarySerializer(read_only=True) # we will be setting this on own so read_only
     service = ServiceSerializer(read_only=True) # only for info its a nested serializer so client doesnt send its data but only service_ID
 
     # Client sends only the service ID

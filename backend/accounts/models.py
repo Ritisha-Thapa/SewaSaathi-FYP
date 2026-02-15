@@ -33,19 +33,21 @@ class User(AbstractUser, BaseModel):
      # Provider Fields
 
     SKILLS_CHOICES = (
-        ('plumber', 'Plumber'),
-        ('electrician', 'Electrician'),
-        ('cleaner', 'Cleaner'),
-        ('painter', 'Painter'),
-        ('gardener', 'Gardener'),
-    )
+        ('plumber', 'Plumbing'),
+        ('electrician', 'Electrical Repairing'),
+        ('cleaner', 'Cleaning'),
+        ('painter', 'Painting'),
+        ('gardener', 'Gardening'),
+        ('carpenter', 'Carpentry'),
+    )   
 
     skills = models.CharField(max_length=50, choices=SKILLS_CHOICES, blank=True, null=True)
     experience_years = models.PositiveIntegerField(default=0)
     
     citizenship_image_front = models.ImageField(upload_to='citizenship/', blank=True, null=True)
     citizenship_image_back = models.ImageField(upload_to='citizenship/', blank=True, null=True)
- # Profile image
+    
+    # Profile image
     profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
 
     # Account status

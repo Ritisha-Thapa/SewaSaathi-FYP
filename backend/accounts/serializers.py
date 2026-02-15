@@ -1,5 +1,5 @@
 
-from rest_framework.serializers import ModelSerializer, Serializer, CharField, ValidationError, EmailField, ChoiceField
+from rest_framework.serializers import ModelSerializer, Serializer, CharField, ValidationError, EmailField, ChoiceField, SerializerMethodField
 from .models import User, PasswordResetOTP
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -10,6 +10,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from datetime import timedelta
+
+User = get_user_model()
+from services.serializers import ProviderServiceSerializer
 
 
 
@@ -137,12 +140,16 @@ class LoginSerializer(Serializer):
                 'token': {
                     'refresh': str(refresh),
                     'access': str(refresh.access_token) # main token to access authenticated apis
+                },
+                'user': {
+                    'id': user.id,
+                    'first_name': user.first_name,
+                    'role': user.role
                 }
             }
         }
 
 
-User = get_user_model()
 
 class ForgotPasswordSerializer(Serializer):
     email = EmailField() #email of the user requesting password reset
@@ -194,7 +201,7 @@ class ForgotPasswordSerializer(Serializer):
         subject = (
             "Your OTP Has Been Resent"
             if req_type == "resend"
-            else "OTP for HCKonnect Password Reset"
+            else "OTP for Sewasathi Password Reset"
         )
 
         send_mail(
@@ -276,3 +283,19 @@ class ResetPasswordSerializer(Serializer):
         PasswordResetOTP.objects.filter(user=user).delete()
         return user
 
+
+# class ProviderSerializer(ModelSerializer):
+#     average_rating = SerializerMethodField()
+#     provider_services = ProviderServiceSerializer(many=True, read_only=True)
+
+#     class Meta:
+#         model = User
+#         fields = ['id', 'first_name', 'last_name', 'profile_image', 'skills', 'experience_years', 'city', 'average_rating', 'provider_services']
+
+#     def get_average_rating(self, obj):
+#         # Calculate average rating from ProviderService or return 0
+#         services = obj.provider_services.all()
+#         if services.exists():
+#              total_rating = sum([s.rating for s in services])
+#              return round(total_rating / services.count(), 1)
+#         return 0.0

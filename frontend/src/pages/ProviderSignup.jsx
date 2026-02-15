@@ -1,20 +1,15 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-
-
 
 const skillsOptions = [
   "plumber",
   "electrician",
   "cleaner",
   "painter",
-  "gardener"
+  "gardener",
 ];
 
-
-
 const ProviderSignup = () => {
-
   // STATES
   const [formData, setFormData] = useState({
     first_name: "",
@@ -26,7 +21,6 @@ const ProviderSignup = () => {
 
     skills: [],
     experience_years: "",
-    citizenship_number: "",
     citizenship_image: null,
     profile_image: null,
   });
@@ -36,7 +30,6 @@ const ProviderSignup = () => {
   const [previewProfile, setPreviewProfile] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
 
-
   // Auto-hide success message
 
   useEffect(() => {
@@ -45,7 +38,6 @@ const ProviderSignup = () => {
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
-
 
   // INPUT CHANGE
 
@@ -63,7 +55,6 @@ const ProviderSignup = () => {
     }));
   };
 
-
   // SKILLS CHECKBOX
 
   const handleSkillChange = (skill) => {
@@ -78,7 +69,6 @@ const ProviderSignup = () => {
       };
     });
   };
-
 
   // FILE HANDLING
 
@@ -102,7 +92,6 @@ const ProviderSignup = () => {
     }
   };
 
-
   // SUBMIT
 
   const handleSubmit = async (e) => {
@@ -119,7 +108,6 @@ const ProviderSignup = () => {
 
     if (formData.skills.length === 0) newErrors.skills = "Select at least one";
     if (!formData.experience_years) newErrors.experience_years = "Required";
-    if (!formData.citizenship_number.trim()) newErrors.citizenship_number = "Required";
     if (!formData.citizenship_image) newErrors.citizenship_image = "Required";
     if (!formData.profile_image) newErrors.profile_image = "Required";
 
@@ -137,10 +125,9 @@ const ProviderSignup = () => {
     form.append("address", formData.address);
     form.append("city", formData.city);
 
-
     formData.skills.forEach((skill) => form.append("skills", skill));
     form.append("experience_years", formData.experience_years);
-    form.append("citizenship_number", formData.citizenship_number);
+
     form.append("citizenship_image_front", formData.citizenship_image);
     form.append("citizenship_image_back", formData.citizenship_image);
     form.append("profile_image", formData.profile_image);
@@ -149,55 +136,63 @@ const ProviderSignup = () => {
     form.append("role", "provider");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/accounts/provider-registration/", {
-        method: "POST",
-        body: form,
-      });
+      const response = await fetch(
+        "http://127.0.0.1:8000/accounts/provider-registration/",
+        {
+          method: "POST",
+          body: form,
+        },
+      );
 
       const data = await response.json();
 
-if (response.ok) {
-  // Set the success message from backend
-  setSuccessMessage(data.message || "Provider registration successful!");
-  // Optionally, clear form after success
-  setFormData({
-    first_name: "",
-    last_name: "",
-    phone: "",
-    email: "",
-    address: "",
-    skills: [],
-    experience_years: "",
-    citizenship_number: "",
-    citizenship_image: null,
-    profile_image: null,
-    city: ""
-  });
-  setPreviewCitizenship(null);
-  setPreviewProfile(null);
-  setErrors({});
-  return; // exit
-}
-
-
+      if (response.ok) {
+        // Set the success message from backend
+        setSuccessMessage(data.message || "Provider registration successful!");
+        // Optionally, clear form after success
+        setFormData({
+          first_name: "",
+          last_name: "",
+          phone: "",
+          email: "",
+          address: "",
+          skills: [],
+          experience_years: "",
+          citizenship_image: null,
+          profile_image: null,
+          city: "",
+        });
+        setPreviewCitizenship(null);
+        setPreviewProfile(null);
+        setErrors({});
+        return; // exit
+      }
     } catch (error) {
       console.error("Error:", error);
       alert("Something went wrong");
     }
   };
 
-
-
   return (
     <div className="min-h-screen bg-[#F9F5F0] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl w-full space-y-8">
         <div className="flex justify-start">
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="inline-flex items-center text-sm text-[#1B3C53] hover:text-[#1a3248] transition"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
             </svg>
             Back
           </Link>
@@ -214,7 +209,10 @@ if (response.ok) {
           <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="first_name"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   First Name *
                 </label>
                 <input
@@ -225,16 +223,21 @@ if (response.ok) {
                   value={formData.first_name}
                   onChange={handleChange}
                   className={`appearance-none relative block w-full px-3 py-2 border ${
-                    errors.first_name ? 'border-red-300' : 'border-gray-300'
+                    errors.first_name ? "border-red-300" : "border-gray-300"
                   } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
                   placeholder="First name"
                 />
                 {errors.first_name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.first_name}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.first_name}
+                  </p>
                 )}
               </div>
               <div>
-                <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="last_name"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Last Name *
                 </label>
                 <input
@@ -245,18 +248,23 @@ if (response.ok) {
                   value={formData.last_name}
                   onChange={handleChange}
                   className={`appearance-none relative block w-full px-3 py-2 border ${
-                    errors.last_name ? 'border-red-300' : 'border-gray-300'
+                    errors.last_name ? "border-red-300" : "border-gray-300"
                   } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
                   placeholder="Last name"
                 />
                 {errors.last_name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.last_name}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.last_name}
+                  </p>
                 )}
               </div>
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Phone *
               </label>
               <input
@@ -267,7 +275,7 @@ if (response.ok) {
                 value={formData.phone}
                 onChange={handleChange}
                 className={`appearance-none relative block w-full px-3 py-2 border ${
-                  errors.phone ? 'border-red-300' : 'border-gray-300'
+                  errors.phone ? "border-red-300" : "border-gray-300"
                 } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
                 placeholder="Phone number"
               />
@@ -277,7 +285,10 @@ if (response.ok) {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Email *
               </label>
               <input
@@ -288,7 +299,7 @@ if (response.ok) {
                 value={formData.email}
                 onChange={handleChange}
                 className={`appearance-none relative block w-full px-3 py-2 border ${
-                  errors.email ? 'border-red-300' : 'border-gray-300'
+                  errors.email ? "border-red-300" : "border-gray-300"
                 } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
                 placeholder="Email address"
               />
@@ -298,7 +309,10 @@ if (response.ok) {
             </div>
 
             <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="address"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Address *
               </label>
               <input
@@ -309,7 +323,7 @@ if (response.ok) {
                 value={formData.address}
                 onChange={handleChange}
                 className={`appearance-none relative block w-full px-3 py-2 border ${
-                  errors.address ? 'border-red-300' : 'border-gray-300'
+                  errors.address ? "border-red-300" : "border-gray-300"
                 } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
                 placeholder="Address"
               />
@@ -318,30 +332,32 @@ if (response.ok) {
               )}
             </div>
             <div>
-  <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-    City *
-  </label>
-  <select
-    id="city"
-    name="city"
-    required
-    value={formData.city}
-    onChange={handleChange}
-    className={`appearance-none relative block w-full px-3 py-2 border ${
-      errors.city ? "border-red-300" : "border-gray-300"
-    } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
-  >
-    <option value="">Select City</option>
-    <option value="kathmandu">Kathmandu</option>
-    <option value="lalitpur">Lalitpur</option>
-    <option value="bhaktapur">Bhaktapur</option>
-  </select>
+              <label
+                htmlFor="city"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                City *
+              </label>
+              <select
+                id="city"
+                name="city"
+                required
+                value={formData.city}
+                onChange={handleChange}
+                className={`appearance-none relative block w-full px-3 py-2 border ${
+                  errors.city ? "border-red-300" : "border-gray-300"
+                } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
+              >
+                <option value="">Select City</option>
+                <option value="kathmandu">Kathmandu</option>
+                <option value="lalitpur">Lalitpur</option>
+                <option value="bhaktapur">Bhaktapur</option>
+              </select>
 
-  {errors.city && (
-    <p className="mt-1 text-sm text-red-600">{errors.city}</p>
-  )}
-</div>
-
+              {errors.city && (
+                <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+              )}
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -349,14 +365,19 @@ if (response.ok) {
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {skillsOptions.map((skill) => (
-                  <label key={skill} className="flex items-center space-x-2 cursor-pointer">
+                  <label
+                    key={skill}
+                    className="flex items-center space-x-2 cursor-pointer"
+                  >
                     <input
                       type="checkbox"
                       checked={formData.skills.includes(skill)}
                       onChange={() => handleSkillChange(skill)}
                       className="w-4 h-4 text-[#1B3C53] border-gray-300 rounded focus:ring-[#1B3C53]"
                     />
-                    <span className="text-sm text-gray-700 capitalize">{skill}</span>
+                    <span className="text-sm text-gray-700 capitalize">
+                      {skill}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -366,7 +387,10 @@ if (response.ok) {
             </div>
 
             <div>
-              <label htmlFor="experience_years" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="experience_years"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Years of Experience *
               </label>
               <input
@@ -378,38 +402,22 @@ if (response.ok) {
                 value={formData.experience_years}
                 onChange={handleChange}
                 className={`appearance-none relative block w-full px-3 py-2 border ${
-                  errors.experience_years ? 'border-red-300' : 'border-gray-300'
+                  errors.experience_years ? "border-red-300" : "border-gray-300"
                 } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
                 placeholder="Years of experience"
               />
               {errors.experience_years && (
-                <p className="mt-1 text-sm text-red-600">{errors.experience_years}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.experience_years}
+                </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="citizenship_number" className="block text-sm font-medium text-gray-700 mb-1">
-                Citizenship Number *
-              </label>
-              <input
-                id="citizenship_number"
-                name="citizenship_number"
-                type="text"
-                required
-                value={formData.citizenship_number}
-                onChange={handleChange}
-                className={`appearance-none relative block w-full px-3 py-2 border ${
-                  errors.citizenship_number ? 'border-red-300' : 'border-gray-300'
-                } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
-                placeholder="Citizenship number"
-              />
-              {errors.citizenship_number && (
-                <p className="mt-1 text-sm text-red-600">{errors.citizenship_number}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="citizenship_image" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="citizenship_image"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Citizenship Image *
               </label>
               <input
@@ -418,21 +426,30 @@ if (response.ok) {
                 type="file"
                 accept="image/*"
                 required
-                onChange={(e) => handleFileChange(e, 'citizenship')}
+                onChange={(e) => handleFileChange(e, "citizenship")}
                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:t  ext-sm file:font-semibold file:bg-[#1B3C53] file:text-white hover:file:bg-[#1a3248] cursor-pointer"
               />
               {previewCitizenship && (
                 <div className="mt-2">
-                  <img src={previewCitizenship} alt="Citizenship preview" className="max-w-xs h-32 object-cover rounded-lg border border-gray-300" />
+                  <img
+                    src={previewCitizenship}
+                    alt="Citizenship preview"
+                    className="max-w-xs h-32 object-cover rounded-lg border border-gray-300"
+                  />
                 </div>
               )}
               {errors.citizenship_image && (
-                <p className="mt-1 text-sm text-red-600">{errors.citizenship_image}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.citizenship_image}
+                </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="profile_image" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="profile_image"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Profile Image *
               </label>
               <input
@@ -441,26 +458,32 @@ if (response.ok) {
                 type="file"
                 accept="image/*"
                 required
-                onChange={(e) => handleFileChange(e, 'profile')}
+                onChange={(e) => handleFileChange(e, "profile")}
                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#1B3C53] file:text-white hover:file:bg-[#1a3248] cursor-pointer"
               />
               {previewProfile && (
                 <div className="mt-2">
-                  <img src={previewProfile} alt="Profile preview" className="max-w-xs h-32 object-cover rounded-lg border border-gray-300" />
+                  <img
+                    src={previewProfile}
+                    alt="Profile preview"
+                    className="max-w-xs h-32 object-cover rounded-lg border border-gray-300"
+                  />
                 </div>
               )}
               {errors.profile_image && (
-                <p className="mt-1 text-sm text-red-600">{errors.profile_image}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.profile_image}
+                </p>
               )}
             </div>
           </div>
 
           <div>
             {successMessage && (
-  <div className="mb-4 text-green-700 bg-green-100 px-4 py-2 rounded-lg border border-green-200 text-center">
-    {successMessage}
-  </div>
-)}
+              <div className="mb-4 text-green-700 bg-green-100 px-4 py-2 rounded-lg border border-green-200 text-center">
+                {successMessage}
+              </div>
+            )}
             <button
               type="submit"
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-[#1B3C53] hover:bg-[#1a3248] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B3C53] transition"
@@ -471,8 +494,11 @@ if (response.ok) {
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{' '}
-              <Link to="/login" className="font-medium text-[#1B3C53] hover:text-[#1a3248]">
+              Already have an account?{" "}
+              <Link
+                to="/login"
+                className="font-medium text-[#1B3C53] hover:text-[#1a3248]"
+              >
                 Login
               </Link>
             </p>
@@ -484,4 +510,3 @@ if (response.ok) {
 };
 
 export default ProviderSignup;
-

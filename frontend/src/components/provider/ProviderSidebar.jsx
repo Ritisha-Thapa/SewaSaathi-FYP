@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  ClipboardList, 
-  Briefcase, 
-  PlayCircle, 
-  Wrench, 
-  Wallet, 
-  Star, 
-  Calendar, 
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Briefcase,
+  PlayCircle,
+  Wrench,
+  Wallet,
+  Star,
+  Calendar,
   UserCircle,
-  Menu,
   X,
   LogOut
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
+  const { logout } = useAuth();
+
   const navItems = [
     { to: '/provider/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/provider/requests', icon: ClipboardList, label: 'Job Requests' },
@@ -28,11 +30,16 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
     { to: '/provider/profile', icon: UserCircle, label: 'Profile' },
   ];
 
+  const handleLogout = () => {
+    logout();
+    window.location.href = '/login';
+  };
+
   return (
     <>
       {/* Mobile Overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
           onClick={toggleSidebar}
         />
@@ -67,9 +74,12 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
               <span>{item.label}</span>
             </NavLink>
           ))}
-          
+
           <div className="pt-8 mt-4 border-t border-[#2a4d69]">
-            <button className="flex items-center space-x-3 px-4 py-3 w-full text-left text-red-300 hover:bg-red-900/30 rounded-lg transition-colors">
+            <button
+              onClick={handleLogout}
+              className="flex items-center space-x-3 px-4 py-3 w-full text-left text-red-300 hover:bg-red-900/30 rounded-lg transition-colors"
+            >
               <LogOut size={20} />
               <span>Logout</span>
             </button>

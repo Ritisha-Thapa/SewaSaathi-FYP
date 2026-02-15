@@ -1,199 +1,133 @@
-// import React from 'react';
-// import plumbing from "../assets/images/services/plumbing.png";
-// import cleaning from "../assets/images/services/cleaning.png";
-// import electrical from "../assets/images/services/electrical.png";
-// import gardening from "../assets/images/services/gardening.png";
-// import painting from "../assets/images/services/painting.png";
-
-// const FeaturedServices = () => {
-//   const services = [
-//     {
-//       name: 'Plumbing',
-//       imageUrl: plumbing,
-//       icon: (
-//         <svg className="w-16 h-16 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//           <path d="M14 7h2a3 3 0 0 1 0 6h-1m-6 0H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2m8 0V3a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v2m8 0h-2" />
-//         </svg>
-//       ),
-//       color: 'bg-blue-100'
-//     },
-//     {
-//       name: 'Cleaning',
-//       imageUrl: cleaning,
-//       icon: (
-//         <svg className="w-16 h-16 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//           <path d="M12 2v4m0 12v4M2 12h4m12 0h4" />
-//           <path d="M6.34 6.34l2.83 2.83m7.66 7.66l2.83 2.83M17.66 6.34l-2.83 2.83M6.34 17.66l-2.83-2.83" />
-//         </svg>
-//       ),
-//       color: 'bg-green-100'
-//     },
-//     {
-//       name: 'Electrical',
-//       imageUrl: electrical,
-//       icon: (
-//         <svg className="w-16 h-16 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//           <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-//         </svg>
-//       ),
-//       color: 'bg-yellow-100'
-//     },
-//     {
-//       name: 'Gardening',
-//       imageUrl: gardening,
-//       icon: (
-//         <svg className="w-16 h-16 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//           <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-//           <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-//         </svg>
-//       ),
-//       color: 'bg-emerald-100'
-//     },
-//     {
-//       name: 'Painting',
-//       imageUrl: painting,
-//       icon: (
-//         <svg className="w-16 h-16 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-//           <path d="M9.06 2.06l-5 5a1.5 1.5 0 0 0 0 2.12l8.84 8.84a1.5 1.5 0 0 0 2.12 0l5-5a1.5 1.5 0 0 0 0-2.12L11.18 2.06a1.5 1.5 0 0 0-2.12 0z" />
-//         </svg>
-//       ),
-//       color: 'bg-purple-100'
-//     }
-//   ];
-
-//   return (
-//     <section id="services" className="bg-white py-16 md:py-20">
-//       <div className="container mx-auto px-4 max-w-7xl">
-//         <h2 className="text-3xl md:text-4xl font-bold text-[#1B3C53] text-center mb-12">
-//           Featured Services
-//         </h2>
-//         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-//           {services.map((service, index) => (
-//             <div key={index} className="card text-center">
-//               <div className={`${service.color} rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center overflow-hidden`}>
-//                 {service.imageUrl ? (
-//                   <img 
-//                     src={service.imageUrl} 
-//                     alt={service.name}
-//                     className="w-full h-full object-cover"
-//                     onError={(e) => {
-//                       e.target.style.display = 'none';
-//                     }}
-//                   />
-//                 ) : null}
-
-//                 <div style={{ display: service.imageUrl ? 'none' : 'flex' }} className="w-full h-full items-center justify-center">
-//                   {service.icon}
-//                 </div>
-//               </div>
-
-//               <h3 className="text-xl font-bold text-[#1B3C53]">{service.name}</h3>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default FeaturedServices;
-
-import React from 'react';
-import plumbing from "../../assets/images/services/plumbing.png";
-import cleaning from "../../assets/images/services/cleaning.png";
-import electrical from "../../assets/images/services/electrical.png";
-import gardening from "../../assets/images/services/gardening.png";
-import painting from "../../assets/images/services/painting.png";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 const FeaturedServices = () => {
-  const services = [
-    {
-      name: 'Plumbing',
-      imageUrl: plumbing,
-      icon: (
-        <svg className="w-16 h-16 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 7h2a3 3 0 0 1 0 6h-1m-6 0H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2m8 0V3a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v2m8 0h-2" />
-        </svg>
-      ),
-      color: 'bg-blue-100'
-    },
-    {
-      name: 'Cleaning',
-      imageUrl: cleaning,
-      icon: (
-        <svg className="w-16 h-16 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2v4m0 12v4M2 12h4m12 0h4" />
-          <path d="M6.34 6.34l2.83 2.83m7.66 7.66l2.83 2.83M17.66 6.34l-2.83 2.83M6.34 17.66l-2.83-2.83" />
-        </svg>
-      ),
-      color: 'bg-green-100'
-    },
-    {
-      name: 'Electrical',
-      imageUrl: electrical,
-      icon: (
-        <svg className="w-16 h-16 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-        </svg>
-      ),
-      color: 'bg-yellow-100'
-    },
-    {
-      name: 'Gardening',
-      imageUrl: gardening,
-      icon: (
-        <svg className="w-16 h-16 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-        </svg>
-      ),
-      color: 'bg-emerald-100'
-    },
-    {
-      name: 'Painting',
-      imageUrl: painting,
-      icon: (
-        <svg className="w-16 h-16 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M9.06 2.06l-5 5a1.5 1.5 0 0 0 0 2.12l8.84 8.84a1.5 1.5 0 0 0 2.12 0l5-5a1.5 1.5 0 0 0 0-2.12L11.18 2.06a1.5 1.5 0 0 0-2.12 0z" />
-        </svg>
-      ),
-      color: 'bg-purple-100'
-    }
-  ];
+    const [services, setServices] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
-  return (
-    <section id="services" className="bg-white py-16 md:py-20">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <h2 className="text-3xl md:text-4xl font-bold text-[#1B3C53] text-center mb-12">
-          Featured Services
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-          {services.map((service, index) => (
-            <div key={index} className="bg-[#F9F5F0] rounded-xl p-6 text-center hover:shadow-xl transition hover:scale-105 shadow-lg">
-              <div className={`${service.color} rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center overflow-hidden`}>
-                {service.imageUrl ? (
-                  <img 
-                    src={service.imageUrl} 
-                    alt={service.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
-                  />
-                ) : null}
+    useEffect(() => {
+        // Fetch random services (simulate random by simple sorting or backend support if added)
+        // For now fetch all and shuffle in frontend as requested to keep it simple if backend logic is fixed
+        fetch("http://127.0.0.1:8000/services/service/")
+            .then((res) => res.json())
+            .then((data) => {
+                // Shuffle array
+                const shuffled = data.sort(() => 0.5 - Math.random());
+                setServices(shuffled.slice(0, 10)); // Take top 10
+                setLoading(false);
+            })
+            .catch((err) => {
+                console.error("Error fetching services:", err);
+                setLoading(false);
+            });
+    }, []);
 
-                <div style={{ display: service.imageUrl ? 'none' : 'flex' }} className="w-full h-full items-center justify-center">
-                  {service.icon}
+    const nextSlide = () => {
+        if (currentIndex < services.length - 4) { // Show 4 items
+            setCurrentIndex(prev => prev + 1);
+        } else {
+            setCurrentIndex(0); // loop back
+        }
+    };
+
+    const prevSlide = () => {
+        if (currentIndex > 0) {
+            setCurrentIndex(prev => prev - 1);
+        } else {
+            setCurrentIndex(services.length - 4 > 0 ? services.length - 4 : 0);
+        }
+    };
+
+    if (loading) return null;
+
+    if (services.length === 0) return null;
+
+    // Determine number of items to show based on screen size (responsive logic can be detailed in CSS or JS)
+    // For simplicity, we assume 4 items on large screens.
+
+    return (
+        <section className="bg-white py-16 md:py-24 border-t border-gray-100">
+            <div className="container mx-auto px-4 max-w-7xl">
+
+                <div className="relative mb-8">
+                    <div className="flex flex-col items-center text-center">
+                        <h2 className="text-3xl md:text-4xl font-bold text-[#1B3C53] mb-3">
+                            Featured Services
+                        </h2>
+                        {/* <p className="text-gray-600 text-lg max-w-2xl">
+                            Top rated services selected just for you.
+                        </p> */}
+                    </div>
+
+                    <Link
+                        to="/services"
+                        className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 text-[#1B3C53] font-medium hover:text-orange-500 transition-colors"
+                    >
+                        View All →
+                    </Link>
                 </div>
-              </div>
 
-              <h3 className="text-xl font-bold text-[#1B3C53]">{service.name}</h3>
+
+                <div className="relative">
+                    {/* Carousel Controls */}
+                    <button
+                        onClick={prevSlide}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 bg-white shadow-lg rounded-full p-3 text-[#1B3C53] hover:bg-gray-50 transition border border-gray-100 hidden md:block"
+                    >
+                        <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    <button
+                        onClick={nextSlide}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 bg-white shadow-lg rounded-full p-3 text-[#1B3C53] hover:bg-gray-50 transition border border-gray-100 hidden md:block"
+                    >
+                        <ChevronRight className="w-6 h-6" />
+                    </button>
+
+
+                    {/* Carousel Track */}
+                    <div className="overflow-hidden">
+                        <div
+                            className="flex transition-transform duration-500 ease-in-out gap-6"
+                            style={{ transform: `translateX(-${currentIndex * (100 / 4)}%)` }} // naive scrolling for 4 items
+                        >
+                            {/* Mobile view might override this translate logic with CSS handling or media query based JS */}
+                            {services.map((service) => (
+                                <div key={service.id} className="min-w-[100%] md:min-w-[calc(50%-12px)] lg:min-w-[calc(25%-18px)] flex-shrink-0">
+                                    <Link to={`/services/${service.category.name}/${service.id}`} className="block group">
+                                        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition">
+                                            <div className="h-48 overflow-hidden relative">
+                                                <img
+                                                    src={service.image}
+                                                    alt={service.name}
+                                                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                                />
+                                            </div>
+                                            <div className="p-5">
+                                                <h3 className="font-bold text-[#1B3C53] text-lg mb-1 truncate">{service.name}</h3>
+                                                <p className="text-sm text-gray-500 mb-3">{service.category.name}</p>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-semibold text-[#1B3C53]">Rs. {service.base_price}</span>
+                                                    <span className="text-sm text-blue-600 font-medium">Book Now</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-8 md:hidden text-center">
+                    <Link to="/services" className="inline-flex items-center text-[#1B3C53] font-semibold">
+                        View All <ArrowRight className="w-5 h-5 ml-2" />
+                    </Link>
+                </div>
             </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+        </section>
+    );
 };
 
 export default FeaturedServices;

@@ -2,7 +2,9 @@ import React from "react";
 import DashboardHeader from "../../components/customer/DashboardHeader";
 import CustDashHero from "../../components/customer/CustDashHero";
 import HowItWorks from "../../components/customer/HowItWorks";
+import FeaturedCategories from "../../components/customer/FeaturedCategories";
 import FeaturedServices from "../../components/customer/FeaturedServices";
+// import FeaturedProviders from "../../components/customer/FeaturedProviders";
 import OurFeatures from "../../components/customer/OurFeatures";
 import Testimonials from "../../components/customer/Testimonials";
 import Footer from "../../components/customer/Footer";
@@ -14,11 +16,13 @@ const CustomerDashboard = () => {
       <DashboardHeader />
       <CustDashHero />
       <HowItWorks />
-      <FeaturedServices />
+      <FeaturedCategories />
+      {/* <FeaturedProviders /> */}
       <OurFeatures />
+      <FeaturedServices />
       <Testimonials />
       <Footer />
-      
+
     </div>
   );
 };

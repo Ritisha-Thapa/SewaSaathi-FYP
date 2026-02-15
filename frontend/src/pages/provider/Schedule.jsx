@@ -19,7 +19,7 @@ const Schedule = () => {
        <h2 className="text-2xl font-bold text-[#1B3C53]">Schedule & Availability</h2>
 
        {/* Emergency Toggle */}
-       <div className="bg-red-50 border border-red-100 p-6 rounded-xl flex items-center justify-between">
+       {/* <div className="bg-red-50 border border-red-100 p-6 rounded-xl flex items-center justify-between">
           <div>
             <h3 className="text-lg font-bold text-red-800">Emergency Services</h3>
             <p className="text-sm text-red-600">Enable this to receive urgent job requests outside your normal schedule.</p>
@@ -32,7 +32,7 @@ const Schedule = () => {
           >
              {emergency ? 'Enabled' : 'Disabled'}
           </button>
-       </div>
+       </div> */}
 
        {/* Weekly Schedule */}
        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">

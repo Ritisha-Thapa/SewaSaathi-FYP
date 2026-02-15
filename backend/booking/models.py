@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.conf import settings
 from base.models import BaseModel
@@ -37,6 +38,10 @@ class Booking(BaseModel):
     issue_description = models.TextField(blank=True, null=True)
     issue_images = models.ImageField(upload_to="booking_issues/", blank=True, null=True)
 
+    # Added fields for explicit location and contact if different from profile
+    address = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
 
     # Prices
@@ -54,6 +59,6 @@ class Booking(BaseModel):
     def save(self, *args, **kwargs):
         # Calculate pricing on save if not set
         if not self.total_price:
-            self.insurance_fee = self.service_price * 0.01  # 1% insurance
-            self.total_price = float(self.service_price) + float(self.insurance_fee)
+            self.insurance_fee = self.service_price * Decimal('0.01')  # 1% insurance
+            self.total_price = self.service_price + self.insurance_fee
         super().save(*args, **kwargs)

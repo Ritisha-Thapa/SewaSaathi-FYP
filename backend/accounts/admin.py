@@ -3,10 +3,11 @@ from .models import User, ServiceProvider, Customer
 from django.utils.html import format_html
 from django.urls import path
 from django.shortcuts import redirect, get_object_or_404
-
+from .models import User
 from django.core.mail import send_mail
 from .utils import generate_password
 
+# admin.site.register(User)
 
 # -----------------------------
 # SERVICE PROVIDER ADMIN

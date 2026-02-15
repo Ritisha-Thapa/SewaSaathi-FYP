@@ -1,9 +1,19 @@
 from django.shortcuts import render
 # Create your views here.
-from .serializers import CustomerRegisterSerializer, ProviderRegisterSerializer, LoginSerializer,ForgotPasswordSerializer, VerifyOTPSerializer, ResetPasswordSerializer
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, generics, permissions
 from rest_framework.response import Response
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
+from .models import User
+from .serializers import (
+    CustomerRegisterSerializer, 
+    ProviderRegisterSerializer, 
+    LoginSerializer,
+    ForgotPasswordSerializer, 
+    VerifyOTPSerializer, 
+    ResetPasswordSerializer
+)
 
 
 
@@ -75,3 +85,18 @@ class ResetPasswordView(APIView):
             serializer.save()
             return Response({"message": "Password reset successfully"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class ProviderListView(generics.ListAPIView):
+#     queryset = User.objects.filter(role='provider', provider_status='approved')
+#     serializer_class = ProviderSerializer
+#     permission_classes = [permissions.AllowAny]
+#     filter_backends = [SearchFilter, DjangoFilterBackend]
+#     search_fields = ['first_name', 'last_name', 'city', 'skills']
+#     filterset_fields = ['skills', 'city']
+
+
+# class ProviderDetailView(generics.RetrieveAPIView):
+#     queryset = User.objects.filter(role='provider', provider_status='approved')
+#     serializer_class = ProviderSerializer
+#     permission_classes = [permissions.AllowAny]

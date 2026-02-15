@@ -22,10 +22,10 @@ const Earnings = () => {
            <p className="text-gray-500 text-sm font-medium">This Month</p>
            <h3 className="text-3xl font-bold mt-2 text-green-600">Rs. 45,000</h3>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        {/* <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
            <p className="text-gray-500 text-sm font-medium">Insurance Deductions (1%)</p>
            <h3 className="text-3xl font-bold mt-2 text-red-500">Rs. 450</h3>
-        </div>
+        </div> */}
       </div>
 
       {/* Transaction History */}
@@ -40,7 +40,7 @@ const Earnings = () => {
                    <th className="px-4 py-3">Service</th>
                    <th className="px-4 py-3">Method</th>
                    <th className="px-4 py-3 text-right">Job Amount</th>
-                   <th className="px-4 py-3 text-right">Deduction (1%)</th>
+                   {/* <th className="px-4 py-3 text-right">Deduction (1%)</th> */}
                    <th className="px-4 py-3 text-right">Net Earning</th>
                 </tr>
              </thead>
@@ -58,7 +58,7 @@ const Earnings = () => {
                        </span>
                     </td>
                     <td className="px-4 py-3 text-right text-gray-800">Rs. {txn.amount}</td>
-                    <td className="px-4 py-3 text-right text-red-500">- Rs. {txn.deduction}</td>
+                    {/* <td className="px-4 py-3 text-right text-red-500">- Rs. {txn.deduction}</td> */}
                     <td className="px-4 py-3 text-right font-bold text-green-600">Rs. {txn.finalAmount}</td>
                   </tr>
                 ))}

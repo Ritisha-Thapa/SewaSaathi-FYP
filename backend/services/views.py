@@ -44,7 +44,7 @@ class ProviderServiceViewSet(ModelViewSet):
     queryset = ProviderService.objects.select_related("provider", "service") #fetch related provider and service in one query
 
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
-    filterset_fields = ProviderServiceFilter  
+    filterset_class = ProviderServiceFilter  
     search_fields = ["service__name","provider__first_name","provider__last_name","provider__phone",]
     ordering_fields = ["price", "rating", "created_at"]
     ordering = ["created_at"]
@@ -54,11 +54,9 @@ class ProviderServiceViewSet(ModelViewSet):
         return [IsAuthenticated()]
 
     def get_queryset(self):
-        user = self.request.user
-
-        if user.is_staff:
-            return self.queryset
-
-        return self.queryset.filter(provider=user)
+        # Allow all users to see all provider services (for Featured Providers etc)
+        # We can add is_available filtering here or in frontend. 
+        # The filter_backends will handle other filters.
+        return self.queryset
 
 

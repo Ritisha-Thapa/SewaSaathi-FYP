@@ -1,17 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import painting from "../../assets/images/services/painting.png";
 
 const CustDashHero = () => {
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/services/service-categories/");
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchValue.trim()) {
-      // Navigate to /services with the search query in state
-      navigate("/services", { state: { searchQuery: searchValue } });
+    const query = searchValue.trim().toLowerCase();
+
+    if (!query) {
+      navigate("/services");
+      return;
+    }
+
+    // Find if the query matches any category name (case-insensitive)
+    const match = categories.find(c => c.name.toLowerCase() === query);
+
+    if (match) {
+      navigate(`/services/${match.name}`);
     } else {
+      // Fallback to services page if no category matches
       navigate("/services");
     }
   };
@@ -34,11 +60,7 @@ const CustDashHero = () => {
             </p>
 
             {/* Search Box Container */}
-            <div className="max-w-xl">
-              {/* <p className="text-sm font-medium text-gray-500 mb-3 px-1">
-                Search, compare and match with Service Providers of your choice in 60 Seconds
-               </p> */}
-
+            <div className="max-w-xl relative">
               {/* Input Area */}
               <form
                 onSubmit={handleSearch}
@@ -46,7 +68,7 @@ const CustDashHero = () => {
               >
                 <input
                   type="text"
-                  placeholder="Search for electricians, plumbers, cleaner"
+                  placeholder="Search for plumbing, cleaning, painting"
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                   className="flex-1 px-6 py-3 text-gray-700 placeholder-gray-400 focus:outline-none text-lg h-full"
@@ -70,6 +92,8 @@ const CustDashHero = () => {
                   </svg>
                 </button>
               </form>
+
+
             </div>
           </div>
 

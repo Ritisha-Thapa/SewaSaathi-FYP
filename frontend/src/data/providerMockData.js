@@ -12,7 +12,7 @@ export const jobRequests = [
     serviceName: "Pipe Leak Repair",
     customerName: "Ram Sharma",
     location: "Baneshwor, Kathmandu",
-    dateTime: "2024-01-20 10:00 AM",
+    dateTime: "2025-09-20 10:00 AM",
     estimatedPrice: 1500,
     expiresIn: 300, // seconds
   },
@@ -21,7 +21,7 @@ export const jobRequests = [
     serviceName: "Kitchen Sink Installation",
     customerName: "Sita Karki",
     location: "Kupandole, Lalitpur",
-    dateTime: "2024-01-21 02:00 PM",
+    dateTime: "2025-09-21 02:00 PM",
     estimatedPrice: 2500,
     expiresIn: 1800,
   },
@@ -30,7 +30,7 @@ export const jobRequests = [
     serviceName: "Bathroom Tap Replacement",
     customerName: "Hari Prasad",
     location: "Bhaktapur Durbar Square",
-    dateTime: "2024-01-22 11:00 AM",
+    dateTime: "2025-10-22 11:00 AM",
     estimatedPrice: 800,
     expiresIn: 50,
   },
@@ -55,7 +55,8 @@ export const activeJobs = [
     customerName: "Radha Krishna",
     location: "Kalanki, Kathmandu",
     dateTime: "2024-01-19 01:00 PM", // Today
-    details: "1000L tank needs cleaning. Customer has requested eco-friendly cleaner.",
+    details:
+      "1000L tank needs cleaning. Customer has requested eco-friendly cleaner.",
     status: "In Progress",
   },
   {
@@ -106,7 +107,7 @@ export const earningsHistory = [
     date: "2024-01-18",
     service: "Pipe Leak Repair",
     amount: 1500,
-    deduction: 15, // 1%
+    // deduction: 15, // 1%
     finalAmount: 1485,
     method: "Cash",
   },
@@ -115,7 +116,7 @@ export const earningsHistory = [
     date: "2024-01-17",
     service: "Water Tank Cleaning",
     amount: 2000,
-    deduction: 20,
+    // deduction: 20,
     finalAmount: 1980,
     method: "Online",
   },
@@ -124,7 +125,7 @@ export const earningsHistory = [
     date: "2024-01-15",
     service: "Tap Replacement",
     amount: 500,
-    deduction: 5,
+    // deduction: 5,
     finalAmount: 495,
     method: "Cash",
   },

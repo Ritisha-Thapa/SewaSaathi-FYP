@@ -16,11 +16,11 @@ class BookingSerializer(serializers.ModelSerializer):
             'id', 'customer', 'customer_name', 'customer_address', 'customer_city', 
             'provider', 'provider_name', 
             'service', 'service_name', 'scheduled_date', 'scheduled_time', 
-            'issue_description', 'issue_images', 'status', 
+            'issue_description', 'issue_images', 'status', 'address', 'phone',
             'service_price', 'insurance_fee', 'total_price', 
             'payment_method', 'is_paid', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'total_price', 'insurance_fee', 'status', 'is_paid']
+        read_only_fields = ['id', 'customer', 'service_price', 'created_at', 'updated_at', 'total_price', 'insurance_fee', 'status', 'is_paid']
 
     def create(self, validated_data):
         # Override create to set service_price from ProviderService or Service
