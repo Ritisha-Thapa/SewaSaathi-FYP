@@ -299,3 +299,9 @@ class ResetPasswordSerializer(Serializer):
 #              total_rating = sum([s.rating for s in services])
 #              return round(total_rating / services.count(), 1)
 #         return 0.0
+
+class UserProfileSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'city', 'profile_image']
+        read_only_fields = ['email']

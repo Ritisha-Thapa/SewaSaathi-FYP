@@ -52,5 +52,10 @@ class ProviderService(BaseModel):
     def __str__(self):
         return f"{self.provider.username} → {self.service.name}"
 
-
-
+class ProviderAvailability(BaseModel):
+    provider = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="availability", limit_choices_to={"role": "provider"})
+    # JSONField to store true/false for days: {"Sunday": true, "Monday": true, ...}
+    days = models.JSONField(default=dict)
+    
+    def __str__(self):
+        return f"Availability for {self.provider.username}"

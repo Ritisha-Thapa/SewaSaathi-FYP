@@ -12,7 +12,8 @@ from .serializers import (
     LoginSerializer,
     ForgotPasswordSerializer, 
     VerifyOTPSerializer, 
-    ResetPasswordSerializer
+    ResetPasswordSerializer,
+    UserProfileSerializer
 )
 
 
@@ -100,3 +101,18 @@ class ResetPasswordView(APIView):
 #     queryset = User.objects.filter(role='provider', provider_status='approved')
 #     serializer_class = ProviderSerializer
 #     permission_classes = [permissions.AllowAny]
+
+
+class UserProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserProfileSerializer(request.user)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

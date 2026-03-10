@@ -52,8 +52,8 @@ INSTALLED_APPS = [
     'services',
     'corsheaders', 
     'django_filters',
-    'booking'
-
+    'booking',
+    'insurance',
 ]
 
 

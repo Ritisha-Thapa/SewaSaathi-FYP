@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField,StringRelatedField, ImageField
-from .models import ServiceCategory, Service, ProviderService
+from .models import ServiceCategory, Service, ProviderService, ProviderAvailability
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -54,5 +54,15 @@ class ProviderServiceSerializer(ModelSerializer):
         # self.context["request"] is passed from the view
         # This enforces ownership 
         validated_data["provider"] = self.context["request"].user
+        return super().create(validated_data)
+
+class ProviderAvailabilitySerializer(ModelSerializer):
+    class Meta:
+        model = ProviderAvailability
+        fields = ['id', 'provider', 'days', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'provider', 'created_at', 'updated_at']
+
+    def create(self, validated_data):
+        validated_data['provider'] = self.context['request'].user
         return super().create(validated_data)
 
