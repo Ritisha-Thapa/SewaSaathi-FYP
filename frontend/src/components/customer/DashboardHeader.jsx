@@ -1,12 +1,33 @@
 import { useAuth } from '../../context/AuthContext';
-import profileAvatar from '../../assets/images/testimonials/image1.png';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell } from 'lucide-react';
 
 const DashboardHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const [profileImg, setProfileImg] = useState(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("access");
+        if (!token) return;
+        const response = await fetch("http://127.0.0.1:8000/accounts/profile/", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.profile_image) {
+            setProfileImg(data.profile_image.startsWith('http') ? data.profile_image : `http://127.0.0.1:8000${data.profile_image}`);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching profile for header:", error);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -26,6 +47,7 @@ const DashboardHeader = () => {
           <nav className="hidden md:flex items-center space-x-8">
             <Link to="/customer-dashboard" className="text-gray-700 hover:text-[#1B3C53] transition">Home</Link>
             <Link to="/services-category" className="text-gray-700 hover:text-[#1B3C53] transition">Services</Link>
+            <Link to="/my-bookings" className="text-gray-700 hover:text-[#1B3C53] transition">My Bookings</Link>
             <Link to="/about-us" className="text-gray-700 hover:text-[#1B3C53] transition">About Us</Link>
             <Link to="/contact" className="text-gray-700 hover:text-[#1B3C53] transition">Contact</Link>
           </nav>
@@ -43,7 +65,7 @@ const DashboardHeader = () => {
 
             <Link to="/profile" className="p-1 rounded-full hover:bg-gray-200 transition" aria-label="Profile">
               <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300">
-                <img src={profileAvatar} alt="Profile" className="w-full h-full object-cover" />
+                <img src={profileImg || `https://ui-avatars.com/api/?name=${user?.first_name || "U"}&background=E5E7EB`} alt="Profile" className="w-full h-full object-cover" />
               </div>
             </Link>
 

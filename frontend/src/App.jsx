@@ -15,6 +15,9 @@ import Contact from './pages/customer/Contact';
 import ServicesCategory from './pages/customer/ServicesCategory';
 import SubServices from './pages/customer/SubServices';
 import ServiceDetails from './pages/customer/ServiceDetails';
+import MyBookings from './pages/customer/MyBookings';
+import ClaimInsurancePage from './pages/customer/ClaimInsurancePage';
+import CustomerProfile from './pages/customer/CustomerProfile';
 
 // Provider Pages
 import ProviderSignup from './pages/ProviderSignup';
@@ -22,6 +25,7 @@ import ProviderLayout from './components/provider/ProviderLayout';
 import ProviderDashboard from './pages/provider/ProviderDashboard';
 import JobRequests from './pages/provider/JobRequests';
 import AssignedJobs, { ActiveJobs } from './pages/provider/AssignedJobs';
+import BookingHistory from './pages/provider/BookingHistory';
 import MyServices from './pages/provider/MyServices';
 import Earnings from './pages/provider/Earnings';
 import Schedule from './pages/provider/Schedule';
@@ -62,6 +66,9 @@ function App() {
           {/* Customer Protected Routes */}
           <Route element={<ProtectedRoute allowedRoles={['customer']} />}>
             <Route path="/customer-dashboard" element={<CustomerDashboard />} />
+            <Route path="/my-bookings" element={<MyBookings />} />
+            <Route path="/claim-insurance/:bookingId" element={<ClaimInsurancePage />} />
+            <Route path="/profile" element={<CustomerProfile />} />
           </Route>
 
           {/* Provider Protected Routes */}
@@ -69,8 +76,8 @@ function App() {
             <Route element={<ProviderLayout />}>
               <Route path="dashboard" element={<ProviderDashboard />} />
               <Route path="requests" element={<JobRequests />} />
-              <Route path="assigned" element={<AssignedJobs />} />
               <Route path="active" element={<ActiveJobs />} />
+              <Route path="history" element={<BookingHistory />} />
               <Route path="services" element={<MyServices />} />
               <Route path="earnings" element={<Earnings />} />
               <Route path="schedule" element={<Schedule />} />

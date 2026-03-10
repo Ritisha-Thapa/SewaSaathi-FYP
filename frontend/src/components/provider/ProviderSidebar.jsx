@@ -11,7 +11,8 @@ import {
   Calendar,
   UserCircle,
   X,
-  LogOut
+  LogOut,
+  Clock
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -21,8 +22,8 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
   const navItems = [
     { to: '/provider/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/provider/requests', icon: ClipboardList, label: 'Job Requests' },
-    { to: '/provider/assigned', icon: Briefcase, label: 'Assigned Jobs' },
     { to: '/provider/active', icon: PlayCircle, label: 'Active Jobs' },
+    { to: '/provider/history', icon: Clock, label: 'Booking History' },
     { to: '/provider/services', icon: Wrench, label: 'My Services' },
     { to: '/provider/earnings', icon: Wallet, label: 'Earnings' },
     { to: '/provider/schedule', icon: Calendar, label: 'Schedule' },

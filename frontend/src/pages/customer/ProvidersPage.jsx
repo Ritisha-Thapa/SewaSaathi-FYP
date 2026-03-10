@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ProviderCard from "../../components/customer/providers/ProviderCard";
+import Skeleton from "../../components/Skeleton";
 import DashboardHeader from "../../components/customer/DashboardHeader";
 import Footer from "../../components/customer/Footer";
 
@@ -88,7 +89,17 @@ const ProvidersPage = () => {
                 {/* Providers Grid */}
                 <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {loading ? (
-                        <p>Loading providers...</p>
+                        Array.from({ length: 6 }).map((_, i) => (
+                            <div key={i} className="bg-white rounded-2xl shadow-md overflow-hidden p-6 space-y-4">
+                                <Skeleton className="w-full h-48 rounded-xl" />
+                                <Skeleton className="w-3/4 h-8" />
+                                <Skeleton className="w-1/2 h-6" />
+                                <div className="pt-4 border-t border-gray-100 flex justify-between">
+                                    <Skeleton className="w-16 h-6" />
+                                    <Skeleton className="w-20 h-6" />
+                                </div>
+                            </div>
+                        ))
                     ) : providers.length === 0 ? (
                         <p>No providers found.</p>
                     ) : (

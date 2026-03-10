@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import painting from "../../assets/images/services/painting.png";
+import painting from "../../assets/images/services/electricianman.png";
 
 const CustDashHero = () => {
   const navigate = useNavigate();

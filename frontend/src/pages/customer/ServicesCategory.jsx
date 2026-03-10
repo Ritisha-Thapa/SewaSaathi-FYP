@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Skeleton from "../../components/Skeleton";
 import DashboardHeader from "../../components/customer/DashboardHeader";
 import Footer from "../../components/customer/Footer";
 import servicesBg from "../../assets/images/services/electrical.png";
@@ -28,8 +29,24 @@ const ServicesCategory = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading categories...
+      <div className="font-sans text-gray-900 min-h-screen bg-[#F9F5F0]">
+        <DashboardHeader />
+        <Skeleton className="w-full h-80 rounded-none" />
+        <section className="py-16 md:py-20">
+          <div className="container mx-auto px-4 max-w-7xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl p-8 shadow-lg space-y-4 flex flex-col items-center">
+                  <Skeleton className="w-24 h-24 rounded-full" />
+                  <Skeleton className="w-48 h-8" />
+                  <Skeleton className="w-full h-4" />
+                  <Skeleton className="w-3/4 h-4" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        <Footer />
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import SubCatHeader from "../../components/customer/SubCatHeader";
+import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
 import ServiceCard from "../../components/customer/services/ServiceCard"; // Import ServiceCard
 
@@ -50,8 +51,27 @@ const SubServices = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading services...
+      <div className="min-h-screen bg-[#F9F5F0]">
+        <SubCatHeader />
+        <Skeleton className="w-full h-56 rounded-none" />
+        <div className="container mx-auto px-4 max-w-7xl py-12">
+          <div className="flex items-center justify-between mb-6">
+            <Skeleton className="w-64 h-8" />
+            <Skeleton className="w-32 h-4" />
+          </div>
+          <Skeleton className="w-full h-4 mb-10 max-w-2xl" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl shadow-md overflow-hidden p-6 space-y-4">
+                <Skeleton className="w-full h-48 rounded-xl" />
+                <Skeleton className="w-24 h-6 rounded-full" />
+                <Skeleton className="w-3/4 h-8" />
+                <Skeleton className="w-1/2 h-5" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <Footer />
       </div>
     );
   }

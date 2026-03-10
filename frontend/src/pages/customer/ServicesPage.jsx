@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ServiceCard from "../../components/customer/services/ServiceCard";
+import Skeleton from "../../components/Skeleton";
 import ServiceFilters from "../../components/customer/services/ServiceFilters";
 import DashboardHeader from "../../components/customer/DashboardHeader"; // Navbar/Header
 import Footer from "../../components/customer/Footer"; // Footer
@@ -61,33 +62,44 @@ const ServicesPage = () => {
 
   return (
     <div className="min-h-screen bg-[#F9F5F0]">
-    <DashboardHeader />
-    <div className="container mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-4 gap-8">
-      {/* Filters */}
-      <ServiceFilters
-        categories={categories}
-        selectedCategories={selectedCategories}
-        setSelectedCategories={setSelectedCategories}
-        minPrice={minPrice}
-        setMinPrice={setMinPrice}
-        maxPrice={maxPrice}
-        setMaxPrice={setMaxPrice}
-        ordering={ordering}
-        setOrdering={setOrdering}
-      />
+      <DashboardHeader />
+      <div className="container mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Filters */}
+        <ServiceFilters
+          categories={categories}
+          selectedCategories={selectedCategories}
+          setSelectedCategories={setSelectedCategories}
+          minPrice={minPrice}
+          setMinPrice={setMinPrice}
+          maxPrice={maxPrice}
+          setMaxPrice={setMaxPrice}
+          ordering={ordering}
+          setOrdering={setOrdering}
+        />
 
-      {/* Services Grid */}
-      <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {loading ? (
-          <p>Loading services...</p>
-        ) : services.length === 0 ? (
-          <p>No services found.</p>
-        ) : (
-          services.map((service) => <ServiceCard key={service.id} service={service} />)
-        )}
+        {/* Services Grid */}
+        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {loading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl shadow-md overflow-hidden p-6 space-y-4">
+                <Skeleton className="w-full h-48 rounded-xl" />
+                <Skeleton className="w-24 h-6 rounded-full" />
+                <Skeleton className="w-3/4 h-8" />
+                <Skeleton className="w-1/2 h-5" />
+                <div className="pt-4 border-t border-gray-100 flex justify-between">
+                  <Skeleton className="w-20 h-6" />
+                  <Skeleton className="w-16 h-6" />
+                </div>
+              </div>
+            ))
+          ) : services.length === 0 ? (
+            <p>No services found.</p>
+          ) : (
+            services.map((service) => <ServiceCard key={service.id} service={service} />)
+          )}
+        </div>
       </div>
-    </div>
-         {/* Footer */}
+      {/* Footer */}
       <Footer />
     </div>
   );

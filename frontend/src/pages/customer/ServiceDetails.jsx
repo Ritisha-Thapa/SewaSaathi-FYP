@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload, CheckCircle, Clock, CreditCard } from "lucide-react";
+import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
 
 const formatPrice = (n) => `Rs. ${Number(n).toLocaleString()}`;
@@ -25,6 +26,7 @@ const ServiceDetails = () => {
   const [orderingStatus, setOrderingStatus] = useState(""); // '', 'submitting', 'success'
   const [bookingDetails, setBookingDetails] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [existingBooking, setExistingBooking] = useState(null);
 
   useEffect(() => {
     const fetchService = async () => {
@@ -35,16 +37,45 @@ const ServiceDetails = () => {
         if (!res.ok) throw new Error("Failed to fetch service");
         const data = await res.json();
         setItem(data);
+
+        // Check if user already has a booking for this service
+        const token = localStorage.getItem("access_token");
+        if (token) {
+          try {
+            const bookingRes = await fetch(
+              `http://127.0.0.1:8000/booking/bookings/?service=${serviceId}`,
+              {
+                headers: {
+                  "Authorization": `Bearer ${token}`
+                }
+              }
+            );
+            if (bookingRes.ok) {
+              const bookings = await bookingRes.json();
+              const activeBooking = bookings.find(b =>
+                !['cancelled', 'rejected'].includes(b.status) &&
+                b.customer &&
+                (JSON.parse(localStorage.getItem('user') || '{}').id === b.customer)
+              );
+              if (activeBooking) {
+                setExistingBooking(activeBooking);
+                setBookingDetails(activeBooking);
+                setOrderingStatus('success');
+              }
+            }
+          } catch (err) {
+            console.error('Failed to check existing booking:', err);
+          }
+        }
       } catch (err) {
         console.error(err);
-        setItem(null);
       } finally {
         setLoading(false);
       }
     };
 
     fetchService();
-  }, [serviceId]);
+  }, [category, serviceId]);
 
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -138,8 +169,36 @@ const ServiceDetails = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading service details...
+      <div className="min-h-screen bg-[#F9F5F0]">
+        <div className="container mx-auto px-4 max-w-7xl py-10">
+          <div className="flex flex-col mb-8 gap-2">
+            <Skeleton className="w-32 h-4" />
+            <Skeleton className="w-1/2 h-10" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="lg:col-span-2 space-y-8">
+              <Skeleton className="w-full h-[400px] rounded-2xl" />
+              <div className="bg-white rounded-2xl p-8 space-y-4">
+                <Skeleton className="w-full h-4" />
+                <Skeleton className="w-full h-4" />
+                <Skeleton className="w-3/4 h-4" />
+                <div className="mt-8 pt-8 border-t border-gray-100 flex items-center gap-4">
+                  <Skeleton className="w-24 h-6" />
+                  <Skeleton className="w-32 h-10 rounded-xl" />
+                </div>
+              </div>
+            </div>
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden p-6 space-y-6">
+                <Skeleton className="w-full h-12 rounded-xl" />
+                <Skeleton className="w-full h-12 rounded-xl" />
+                <Skeleton className="w-full h-40 rounded-xl" />
+                <Skeleton className="w-full h-14 rounded-xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
       </div>
     );
   }
@@ -218,12 +277,13 @@ const ServiceDetails = () => {
 
                 {orderingStatus === "success" && bookingDetails ? (
                   <div className="text-center space-y-6">
-                    <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
-                      <CheckCircle size={32} />
+                    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto">
+                      <Clock size={32} />
                     </div>
                     <div>
-                      <h4 className="text-xl font-bold text-gray-800">Booking Confirmed!</h4>
+                      <h4 className="text-xl font-bold text-gray-800">Booking Request Sent!</h4>
                       <p className="text-gray-500 text-sm mt-1">ID: #{bookingDetails.id}</p>
+                      <p className="text-gray-600 text-xs mt-2">Waiting for provider acceptance</p>
                     </div>
 
                     <div className="bg-gray-50 p-4 rounded-xl text-left text-sm space-y-2">
@@ -240,14 +300,19 @@ const ServiceDetails = () => {
                         <span className="font-medium">{bookingDetails.scheduled_time}</span>
                       </div>
                       <div className="flex justify-between border-t pt-2 mt-2">
-                        <span className="text-gray-500">Total Price:</span>
+                        <span className="text-gray-500">Estimated Price:</span>
                         <span className="font-bold text-[#1B3C53]">{formatPrice(bookingDetails.total_price)}</span>
                       </div>
                       <div className="flex justify-between items-center bg-white p-2 rounded border">
                         <span className="text-gray-500">Status:</span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-semibold uppercase ${bookingDetails.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
-                          }`}>
-                          {bookingDetails.status}
+                        <span className={`px-2 py-0.5 rounded text-xs font-semibold uppercase ${
+                          bookingDetails.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          bookingDetails.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
+                          bookingDetails.status === 'in_progress' ? 'bg-orange-100 text-orange-700' :
+                          bookingDetails.status === 'completed' ? 'bg-green-100 text-green-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {bookingDetails.status.replace('_', ' ')}
                         </span>
                       </div>
                       <div className="flex justify-between items-center bg-white p-2 rounded border">
@@ -259,14 +324,23 @@ const ServiceDetails = () => {
                       </div>
                     </div>
 
-                    {!bookingDetails.is_paid && (
+                    {bookingDetails.status === 'completed' && !bookingDetails.is_paid && (
                       <button
                         onClick={handlePayNow}
                         className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg flex items-center justify-center gap-2"
                       >
                         <CreditCard size={20} />
-                        Pay Now (Mock)
+                        Pay Now
                       </button>
+                    )}
+
+                    {bookingDetails.status === 'pending' && (
+                      <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                        <p className="font-semibold mb-1">Next Steps:</p>
+                        <p>1. Provider will review your request</p>
+                        <p>2. You'll be notified when accepted</p>
+                        <p>3. Payment available after completion</p>
+                      </div>
                     )}
 
                     <div className="pt-2">

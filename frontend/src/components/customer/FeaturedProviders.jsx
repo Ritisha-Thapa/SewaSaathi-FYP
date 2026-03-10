@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import Skeleton from "../Skeleton";
 
 /**
  * Lists featured providers in a horizontal carousel.
@@ -42,7 +43,26 @@ const FeaturedProviders = () => {
         }
     };
 
-    if (loading) return null;
+    if (loading) {
+        return (
+            <section className="bg-white py-16 md:py-24 border-t border-gray-100">
+                <div className="container mx-auto px-4 max-w-7xl">
+                    <div className="flex flex-col items-center text-center mb-8">
+                        <Skeleton className="w-64 h-10 mb-3" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i} className="bg-white rounded-2xl shadow-md overflow-hidden p-6 space-y-4 border border-gray-100">
+                                <Skeleton className="w-full h-48 rounded-xl" />
+                                <Skeleton className="w-3/4 h-8" />
+                                <Skeleton className="w-1/2 h-6" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+    }
     if (!providers.length) return null;
 
     return (

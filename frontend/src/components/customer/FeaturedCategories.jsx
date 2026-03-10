@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import Skeleton from "../Skeleton";
 
 const FeaturedCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -19,7 +20,23 @@ const FeaturedCategories = () => {
   }, []);
 
   if (loading) {
-    return null;
+    return (
+      <section className="bg-white py-12">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="flex justify-center mb-12">
+            <Skeleton className="w-64 h-10" />
+          </div>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-8 w-full justify-items-center">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-3 w-full">
+                <Skeleton className="w-20 h-20 md:w-28 md:h-28 rounded-full flex-shrink-0" />
+                <Skeleton className="w-16 h-4" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
   }
 
   if (categories.length === 0) return null;

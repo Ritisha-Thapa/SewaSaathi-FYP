@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   ClipboardList,
   Briefcase,
@@ -6,7 +6,7 @@ import {
   DollarSign,
   Star,
 } from "lucide-react";
-import { providerStats, jobRequests } from "../../data/providerMockData";
+import { api } from "../../utils/api";
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
@@ -21,6 +21,62 @@ const StatCard = ({ title, value, icon: Icon, color }) => (
 );
 
 const ProviderDashboard = () => {
+  const [stats, setStats] = useState({
+    pendingRequests: 0,
+    activeJobs: 0,
+    completedJobs: 0,
+    totalEarnings: 0,
+    averageRating: 0
+  });
+  const [jobRequests, setJobRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const [bookingsData] = await Promise.all([
+        api.get('/booking/bookings/')
+      ]);
+
+      // Calculate stats from real data
+      const pending = bookingsData.filter(b => b.status === 'pending').length;
+      const active = bookingsData.filter(b => b.status === 'in_progress').length;
+      const completed = bookingsData.filter(b => b.status === 'completed' || b.status === 'paid').length;
+      const earnings = bookingsData
+        .filter(b => b.is_paid && b.status === 'paid') // Only count paid bookings
+        .reduce((sum, b) => sum + parseFloat(b.total_price), 0);
+
+      setStats({
+        pendingRequests: pending,
+        activeJobs: active,
+        completedJobs: completed,
+        totalEarnings: earnings,
+        averageRating: 4.5 // TODO: Calculate from reviews API
+      });
+
+      // Get recent pending requests
+      const recentRequests = bookingsData
+        .filter(b => b.status === 'pending')
+        .slice(0, 5)
+        .map(b => ({
+          id: b.id,
+          serviceName: b.service_name,
+          customerName: b.customer_name,
+          location: b.address || b.customer_address,
+          dateTime: `${b.scheduled_date} at ${b.scheduled_time}`,
+          estimatedPrice: b.total_price
+        }));
+
+      setJobRequests(recentRequests);
+    } catch (err) {
+      console.error("Failed to fetch dashboard data", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-[#1B3C53]">Dashboard Overview</h2>
@@ -29,31 +85,31 @@ const ProviderDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         <StatCard
           title="Pending Requests"
-          value={providerStats.pendingRequests}
+          value={stats.pendingRequests}
           icon={ClipboardList}
           color="bg-blue-500"
         />
         <StatCard
           title="Active Jobs"
-          value={providerStats.activeJobs}
+          value={stats.activeJobs}
           icon={Briefcase}
           color="bg-orange-500"
         />
         <StatCard
           title="Completed Jobs"
-          value={providerStats.completedJobs}
+          value={stats.completedJobs}
           icon={CheckCircle}
           color="bg-green-500"
         />
         <StatCard
           title="Total Earnings"
-          value={`Rs. ${providerStats.totalEarnings.toLocaleString()}`}
+          value={`Rs. ${stats.totalEarnings.toLocaleString()}`}
           icon={DollarSign}
           color="bg-indigo-500"
         />
         <StatCard
           title="Rating"
-          value={providerStats.averageRating}
+          value={stats.averageRating}
           icon={Star}
           color="bg-yellow-500"
         />

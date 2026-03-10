@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import DashboardHeader from "../../components/customer/DashboardHeader";
+import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
 import { Calendar, Clock, MapPin, Phone, CreditCard, Image as ImageIcon, AlertCircle, CheckCircle } from "lucide-react";
 
@@ -131,7 +132,7 @@ const ProviderDetails = () => {
             if (!res.ok) throw new Error("Payment failed");
 
             // Update local state to show 'Paid'
-            setBookingDetails({ ...bookingDetails, is_paid: true, payment_method: 'online', status: 'assigned' });
+            setBookingDetails({ ...bookingDetails, is_paid: true, payment_method: 'online', status: 'paid' });
             alert("Payment Successful! (Mock)");
 
         } catch (err) {
@@ -140,7 +141,42 @@ const ProviderDetails = () => {
         }
     };
 
-    if (loading) return <div className="p-10 text-center">Loading provider details...</div>;
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#F9F5F0]">
+                <DashboardHeader />
+                <main className="container mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    <div className="lg:col-span-2 space-y-8">
+                        <div className="bg-white rounded-3xl p-8 shadow-sm flex flex-col md:flex-row gap-8 items-start">
+                            <Skeleton className="w-32 h-32 md:w-40 md:h-40 rounded-full flex-shrink-0" />
+                            <div className="flex-1 space-y-4">
+                                <div className="flex gap-3">
+                                    <Skeleton className="w-20 h-6 rounded-full" />
+                                    <Skeleton className="w-16 h-6 rounded-full" />
+                                </div>
+                                <Skeleton className="w-1/2 h-10" />
+                                <Skeleton className="w-3/4 h-6" />
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-3xl p-8 shadow-sm space-y-6">
+                            <Skeleton className="w-48 h-8" />
+                            <div className="space-y-4">
+                                {Array.from({ length: 3 }).map((_, i) => (
+                                    <Skeleton key={i} className="w-full h-24 rounded-xl" />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="lg:col-span-1">
+                        <div className="bg-white rounded-3xl p-6 shadow-xl space-y-6">
+                            <Skeleton className="w-full h-[400px] rounded-2xl" />
+                        </div>
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
     if (!provider) return <div className="p-10 text-center">Provider not found.</div>;
 
     return (
@@ -206,13 +242,14 @@ const ProviderDetails = () => {
 
                         {orderingStatus === "success" && bookingDetails ? (
                             <div className="text-center py-10 space-y-4">
-                                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <CheckCircle size={32} />
+                                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Clock size={32} />
                                 </div>
-                                <h2 className="text-2xl font-bold text-[#1B3C53]">Booking Requested!</h2>
+                                <h2 className="text-2xl font-bold text-[#1B3C53]">Booking Request Sent!</h2>
                                 <p className="text-gray-600">
                                     Your booking ID is <span className="font-mono font-bold text-[#1B3C53]">#{bookingDetails.id}</span>
                                 </p>
+                                <p className="text-xs text-gray-500 mt-2">Waiting for provider acceptance</p>
 
                                 <div className="bg-gray-50 p-4 rounded-xl text-left space-y-2 text-sm mt-6">
                                     <div className="flex justify-between">
@@ -224,8 +261,20 @@ const ProviderDetails = () => {
                                         <span className="font-medium">{bookingDetails.scheduled_date} at {bookingDetails.scheduled_time}</span>
                                     </div>
                                     <div className="flex justify-between border-t pt-2 mt-2">
-                                        <span className="text-gray-500">Total Price</span>
+                                        <span className="text-gray-500">Estimated Price</span>
                                         <span className="font-bold text-[#1B3C53]">Rs. {Number(bookingDetails.total_price).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-500">Status</span>
+                                        <span className={`font-bold px-2 py-1 rounded text-xs uppercase ${
+                                            bookingDetails.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                            bookingDetails.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
+                                            bookingDetails.status === 'in_progress' ? 'bg-orange-100 text-orange-700' :
+                                            bookingDetails.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                            'bg-gray-100 text-gray-700'
+                                        }`}>
+                                            {bookingDetails.status.replace('_', ' ')}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-gray-500">Payment Status</span>
@@ -235,13 +284,22 @@ const ProviderDetails = () => {
                                     </div>
                                 </div>
 
-                                {!bookingDetails.is_paid && (
+                                {bookingDetails.status === 'completed' && !bookingDetails.is_paid && (
                                     <button
                                         onClick={handleMockPay}
-                                        className="w-full mt-6 py-3 bg-[#1B3C53] text-white rounded-xl font-semibold hover:bg-[#152e40] transition-colors shadow-lg shadow-blue-900/20"
+                                        className="w-full mt-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors shadow-lg"
                                     >
-                                        Pay Now (Mock)
+                                        Pay Now
                                     </button>
+                                )}
+
+                                {bookingDetails.status === 'pending' && (
+                                    <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg border border-blue-100 mt-4">
+                                        <p className="font-semibold mb-1">Next Steps:</p>
+                                        <p>1. Provider will review your request</p>
+                                        <p>2. You'll be notified when accepted</p>
+                                        <p>3. Payment available after completion</p>
+                                    </div>
                                 )}
 
                                 <Link to="/customer-dashboard" className="block mt-4 text-[#1B3C53] font-medium hover:underline">
