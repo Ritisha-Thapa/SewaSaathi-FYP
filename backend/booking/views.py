@@ -5,6 +5,7 @@ from django.db.models import Q
 from decimal import Decimal
 from .models import Booking, Review
 from .serializers import BookingSerializer, BookingStatusUpdateSerializer, ReviewSerializer
+from notifications.models import Notification
 
 
 class BookingViewSet(viewsets.ModelViewSet):
@@ -47,13 +48,36 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         booking = serializer.save(customer=self.request.user)
-        # Notify Provider
-        # if booking.provider:
-        #     Notification.objects.create(
-        #         user=booking.provider,
-        #         message=f"New Booking Request from {booking.customer.username} for {booking.service.name}",
-        #         booking=booking
-        #     )
+        # Notify Provider if assigned
+        if booking.provider:
+            Notification.objects.create(
+                recipient=booking.provider,
+                title="New Booking Request",
+                message=f"You have a new booking request from {booking.customer.first_name} for {booking.service.name}.",
+                booking=booking
+            )
+        else:
+            # Broadcast to all providers with matching skills
+            category_name = booking.service.category.name
+            skill_map = {
+                'Cleaning': 'cleaner',
+                'Painting': 'painter',
+                'Electrical Repairing': 'electrician',
+                'Gardening': 'gardener',
+                'Carpentry': 'carpenter',
+                'Plumbing': 'plumber'
+            }
+            target_skill = skill_map.get(category_name)
+            if target_skill:
+                from accounts.models import User
+                eligible_providers = User.objects.filter(role='provider', skills=target_skill)
+                for provider in eligible_providers:
+                    Notification.objects.create(
+                        recipient=provider,
+                        title="New Job Available",
+                        message=f"A new request for {booking.service.name} is available in {category_name}.",
+                        booking=booking
+                    )
 
     @action(detail=True, methods=['post'], url_path='update-status')
     def update_status(self, request, pk=None):
@@ -88,7 +112,49 @@ class BookingViewSet(viewsets.ModelViewSet):
         
         booking.status = new_status
         booking.save()
-        
+
+        # Send Notifications based on status change
+        if new_status == 'accepted':
+            # Ensure provider is assigned if it was a general request
+            if not booking.provider:
+                booking.provider = request.user
+                booking.save()
+                
+            Notification.objects.create(
+                recipient=booking.customer,
+                title="Booking Accepted",
+                message=f"Your provider {booking.provider.first_name} has accepted the booking for {booking.service.name} and is on the way.",
+                booking=booking
+            )
+        elif new_status == 'rejected':
+            Notification.objects.create(
+                recipient=booking.customer,
+                title="Booking Rejected",
+                message=f"Your booking for {booking.service.name} was rejected.",
+                booking=booking
+            )
+        elif new_status == 'in_progress':
+            Notification.objects.create(
+                recipient=booking.customer,
+                title="Service Started",
+                message=f"The provider has started working on your booking for {booking.service.name}.",
+                booking=booking
+            )
+        elif new_status == 'completed':
+            Notification.objects.create(
+                recipient=booking.customer,
+                title="Service Completed",
+                message=f"Your booking for {booking.service.name} has been marked as completed. Please review and pay.",
+                booking=booking
+            )
+        elif new_status == 'cancelled':
+            # Notify the other party
+            recipient = booking.provider if request.user.role == 'customer' else booking.customer
+            title = "Booking Cancelled"
+            message = f"Booking for {booking.service.name} has been cancelled."
+            if recipient:
+                Notification.objects.create(recipient=recipient, title=title, message=message, booking=booking)
+
         return Response(BookingSerializer(booking).data)
     
     def _is_valid_status_transition(self, current_status, new_status, user):
@@ -129,6 +195,23 @@ class BookingViewSet(viewsets.ModelViewSet):
         booking.status = 'paid'
         booking.payment_method = 'online'
         booking.save()
+
+        # Notify Provider of payment
+        if booking.provider:
+            Notification.objects.create(
+                recipient=booking.provider,
+                title="Payment Received",
+                message=f"Payment received successfully from {booking.customer.first_name} for {booking.service.name}.",
+                booking=booking
+            )
+        
+        # Notify Customer of payment success
+        Notification.objects.create(
+            recipient=booking.customer,
+            title="Payment Successful",
+            message=f"Payment of Rs. {booking.total_price} for {booking.service.name} was successful.",
+            booking=booking
+        )
         return Response(BookingSerializer(booking).data)
 
 class ReviewViewSet(viewsets.ModelViewSet):
