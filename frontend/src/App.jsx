@@ -10,6 +10,7 @@ import OTPVerification from "./pages/OTPVerification";
 import ResetPassword from "./pages/ResetPassword";
 import PasswordResetSuccess from "./pages/PasswordResetSuccess";
 import ForgotPassword from "./pages/ForgotPassword";
+import NotificationsPage from "./pages/NotificationsPage";
 import CustomerDashboard from "./pages/customer/CustomerDashboard";
 import AboutUs from './pages/customer/AboutUs';
 import Contact from './pages/customer/Contact';
@@ -37,6 +38,7 @@ import ProvidersPage from './pages/customer/ProvidersPage';
 import ProviderDetails from './pages/customer/ProviderDetails';
 
 import { AuthProvider } from "./context/AuthContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import './App.css'
@@ -44,7 +46,8 @@ import './App.css'
 function App() {
   return (
     <AuthProvider>
-      <Toaster position="top-right" />
+      <NotificationProvider>
+        <Toaster position="top-right" />
       <Router>
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -64,6 +67,7 @@ function App() {
           <Route path="/services/:category/:serviceId" element={<ServiceDetails />} />
           <Route path="/service-providers" element={<ProvidersPage />} />
           <Route path="/service-providers/:providerId" element={<ProviderDetails />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
 
           {/* Customer Protected Routes */}
           <Route element={<ProtectedRoute allowedRoles={['customer']} />}>
@@ -89,6 +93,7 @@ function App() {
           </Route>
         </Routes>
       </Router>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

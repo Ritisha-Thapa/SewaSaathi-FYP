@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload, CheckCircle, Clock, CreditCard } from "lucide-react";
+import toast from "react-hot-toast";
 import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
 import { api } from "../../utils/api";
@@ -41,7 +42,7 @@ const ServiceDetails = () => {
           try {
             const bookings = await api.get(`/booking/bookings/`);
             const activeBooking = bookings.find(b =>
-              !['cancelled', 'rejected'].includes(b.status) &&
+              !['cancelled', 'rejected', 'completed', 'paid'].includes(b.status) &&
               b.service === Number(serviceId)
             );
             if (activeBooking) {
@@ -116,8 +117,19 @@ const ServiceDetails = () => {
 
     try {
       await api.post(`/booking/bookings/${bookingDetails.id}/pay/`);
-      // Update local state to reflect payment
-      setBookingDetails(prev => ({ ...prev, is_paid: true, payment_method: 'online' }));
+      toast.success("Payment successful! You can now book another service.");
+      
+      // Delay for a better UX before resetting
+      setTimeout(() => {
+        setOrderingStatus("");
+        setBookingDetails(null);
+        setExistingBooking(null);
+        // Optional: clear form fields if they aren't already cleared
+        setDate("");
+        setTime("");
+        setIssueDescription("");
+        setIssueImage(null);
+      }, 2000);
     } catch (err) {
       console.error("Payment Error", err);
       alert("Payment error.");

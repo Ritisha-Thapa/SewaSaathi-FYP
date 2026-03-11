@@ -12,12 +12,16 @@ import {
   UserCircle,
   X,
   LogOut,
-  Clock
+  Clock,
+  Bell
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useNotifications } from '../../context/NotificationContext';
+
 
 const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
   const { logout } = useAuth();
+  const { unreadCount } = useNotifications();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const navItems = [
@@ -30,6 +34,7 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
     { to: '/provider/schedule', icon: Calendar, label: 'Schedule' },
     { to: '/provider/reviews', icon: Star, label: 'Reviews' },
     { to: '/provider/profile', icon: UserCircle, label: 'Profile' },
+    { to: '/notifications', icon: Bell, label: 'Notifications' },
   ];
 
   const handleLogout = () => {
@@ -71,12 +76,19 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
               to={item.to}
               onClick={() => window.innerWidth < 1024 && toggleSidebar()} // Close on mobile click
               className={({ isActive }) => `
-                flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
+                flex items-center justify-between px-4 py-3 rounded-lg transition-colors w-full
                 ${isActive ? 'bg-[#2a4d69] text-white shadow-md' : 'text-gray-300 hover:bg-[#2a4d69] hover:text-white'}
               `}
             >
-              <item.icon size={20} />
-              <span>{item.label}</span>
+              <div className="flex items-center space-x-3">
+                <item.icon size={20} />
+                <span>{item.label}</span>
+              </div>
+              {item.label === 'Notifications' && unreadCount > 0 && (
+                <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
             </NavLink>
           ))}
 

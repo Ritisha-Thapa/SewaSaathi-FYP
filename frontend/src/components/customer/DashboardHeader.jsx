@@ -2,10 +2,12 @@ import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell } from 'lucide-react';
+import { useNotifications } from '../../context/NotificationContext';
 
 const DashboardHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { logout, user } = useAuth();
+  const { unreadCount } = useNotifications();
   const [profileImg, setProfileImg] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -61,10 +63,15 @@ const DashboardHeader = () => {
             {/* Notification Icon */}
             <Link
               to="/notifications"
-              className="p-2 rounded-full hover:bg-gray-200 transition"
+              className="p-2 rounded-full hover:bg-gray-200 transition relative"
               aria-label="Notifications"
             >
               <Bell className="w-6 h-6 text-[#1B3C53]" />
+              {unreadCount > 0 && (
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full border-2 border-white">
+                  {unreadCount}
+                </span>
+              )}
             </Link>
 
             <Link to="/profile" className="p-1 rounded-full hover:bg-gray-200 transition" aria-label="Profile">
@@ -117,6 +124,14 @@ const DashboardHeader = () => {
             <Link to="/services" className="block text-gray-700 hover:text-[#1B3C53]">Services</Link>
             <Link to="/about" className="block text-gray-700 hover:text-[#1B3C53]">About Us</Link>
             <Link to="/contact" className="block text-gray-700 hover:text-[#1B3C53]">Contact</Link>
+            <Link to="/notifications" className="flex items-center justify-between text-gray-700 hover:text-[#1B3C53]">
+              <span>Notifications</span>
+              {unreadCount > 0 && (
+                <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+            </Link>
 
             <div className="flex flex-col space-y-2 pt-2">
               <Link to="/profile" className="w-full px-6 py-2 border border-gray-300 rounded-full text-center text-[#1B3C53]">

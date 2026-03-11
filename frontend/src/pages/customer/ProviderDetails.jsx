@@ -4,6 +4,7 @@ import DashboardHeader from "../../components/customer/DashboardHeader";
 import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
 import { Calendar, Clock, MapPin, Phone, CreditCard, Image as ImageIcon, AlertCircle, CheckCircle } from "lucide-react";
+import toast from "react-hot-toast";
 import { api } from "../../utils/api";
 
 /**
@@ -65,7 +66,7 @@ const ProviderDetails = () => {
             try {
                 const bookings = await api.get("/booking/bookings/");
                 const activeBooking = bookings.find(b =>
-                    !['cancelled', 'rejected'].includes(b.status) &&
+                    !['cancelled', 'rejected', 'completed', 'paid'].includes(b.status) &&
                     b.provider === Number(providerId) &&
                     b.service === Number(selectedServiceId)
                 );
@@ -134,9 +135,19 @@ const ProviderDetails = () => {
         try {
             await api.post(`/booking/bookings/${bookingDetails.id}/pay/`);
 
-            // Update local state to show 'Paid'
-            setBookingDetails({ ...bookingDetails, is_paid: true, payment_method: 'online', status: 'paid' });
-            alert("Payment Successful! (Mock)");
+            toast.success("Payment successful! You can now book again.");
+
+            setTimeout(() => {
+                setOrderingStatus("");
+                setBookingDetails(null);
+                // Clear form fields
+                setDate("");
+                setTime("");
+                setAddress("");
+                setPhone("");
+                setIssueDescription("");
+                setIssueImage(null);
+            }, 2000);
 
         } catch (err) {
             console.error(err);
