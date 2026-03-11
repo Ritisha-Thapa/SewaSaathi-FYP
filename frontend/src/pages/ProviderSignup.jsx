@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const skillsOptions = [
   "plumber",
@@ -28,16 +29,9 @@ const ProviderSignup = () => {
   const [errors, setErrors] = useState({});
   const [previewCitizenship, setPreviewCitizenship] = useState(null);
   const [previewProfile, setPreviewProfile] = useState(null);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Auto-hide success message
-
-  useEffect(() => {
-    if (successMessage) {
-      const timer = setTimeout(() => setSuccessMessage(""), 5000); // hides after 5s
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage]);
+  // Auto-hide success message (No longer needed since we use toast)
 
   // INPUT CHANGE
 
@@ -135,6 +129,7 @@ const ProviderSignup = () => {
     form.append("password", "provider123");
     form.append("role", "provider");
 
+    setIsLoading(true);
     try {
       const response = await fetch(
         "http://127.0.0.1:8000/accounts/provider-registration/",
@@ -147,9 +142,7 @@ const ProviderSignup = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Set the success message from backend
-        setSuccessMessage(data.message || "Provider registration successful!");
-        // Optionally, clear form after success
+        toast.success(data.message || "Provider registration successful!");
         setFormData({
           first_name: "",
           last_name: "",
@@ -165,11 +158,16 @@ const ProviderSignup = () => {
         setPreviewCitizenship(null);
         setPreviewProfile(null);
         setErrors({});
+        setIsLoading(false);
         return; // exit
+      } else {
+        toast.error(data.message || data.error || "Registration failed");
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Something went wrong");
+      toast.error("Something went wrong");
+      setIsLoading(false);
     }
   };
 
@@ -222,9 +220,8 @@ const ProviderSignup = () => {
                   required
                   value={formData.first_name}
                   onChange={handleChange}
-                  className={`appearance-none relative block w-full px-3 py-2 border ${
-                    errors.first_name ? "border-red-300" : "border-gray-300"
-                  } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
+                  className={`appearance-none relative block w-full px-3 py-2 border ${errors.first_name ? "border-red-300" : "border-gray-300"
+                    } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
                   placeholder="First name"
                 />
                 {errors.first_name && (
@@ -247,9 +244,8 @@ const ProviderSignup = () => {
                   required
                   value={formData.last_name}
                   onChange={handleChange}
-                  className={`appearance-none relative block w-full px-3 py-2 border ${
-                    errors.last_name ? "border-red-300" : "border-gray-300"
-                  } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
+                  className={`appearance-none relative block w-full px-3 py-2 border ${errors.last_name ? "border-red-300" : "border-gray-300"
+                    } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
                   placeholder="Last name"
                 />
                 {errors.last_name && (
@@ -274,9 +270,8 @@ const ProviderSignup = () => {
                 required
                 value={formData.phone}
                 onChange={handleChange}
-                className={`appearance-none relative block w-full px-3 py-2 border ${
-                  errors.phone ? "border-red-300" : "border-gray-300"
-                } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
+                className={`appearance-none relative block w-full px-3 py-2 border ${errors.phone ? "border-red-300" : "border-gray-300"
+                  } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
                 placeholder="Phone number"
               />
               {errors.phone && (
@@ -298,9 +293,8 @@ const ProviderSignup = () => {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className={`appearance-none relative block w-full px-3 py-2 border ${
-                  errors.email ? "border-red-300" : "border-gray-300"
-                } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
+                className={`appearance-none relative block w-full px-3 py-2 border ${errors.email ? "border-red-300" : "border-gray-300"
+                  } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
                 placeholder="Email address"
               />
               {errors.email && (
@@ -322,9 +316,8 @@ const ProviderSignup = () => {
                 required
                 value={formData.address}
                 onChange={handleChange}
-                className={`appearance-none relative block w-full px-3 py-2 border ${
-                  errors.address ? "border-red-300" : "border-gray-300"
-                } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
+                className={`appearance-none relative block w-full px-3 py-2 border ${errors.address ? "border-red-300" : "border-gray-300"
+                  } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
                 placeholder="Address"
               />
               {errors.address && (
@@ -344,9 +337,8 @@ const ProviderSignup = () => {
                 required
                 value={formData.city}
                 onChange={handleChange}
-                className={`appearance-none relative block w-full px-3 py-2 border ${
-                  errors.city ? "border-red-300" : "border-gray-300"
-                } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
+                className={`appearance-none relative block w-full px-3 py-2 border ${errors.city ? "border-red-300" : "border-gray-300"
+                  } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
               >
                 <option value="">Select City</option>
                 <option value="kathmandu">Kathmandu</option>
@@ -401,9 +393,8 @@ const ProviderSignup = () => {
                 required
                 value={formData.experience_years}
                 onChange={handleChange}
-                className={`appearance-none relative block w-full px-3 py-2 border ${
-                  errors.experience_years ? "border-red-300" : "border-gray-300"
-                } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
+                className={`appearance-none relative block w-full px-3 py-2 border ${errors.experience_years ? "border-red-300" : "border-gray-300"
+                  } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
                 placeholder="Years of experience"
               />
               {errors.experience_years && (
@@ -479,16 +470,20 @@ const ProviderSignup = () => {
           </div>
 
           <div>
-            {successMessage && (
-              <div className="mb-4 text-green-700 bg-green-100 px-4 py-2 rounded-lg border border-green-200 text-center">
-                {successMessage}
-              </div>
-            )}
+            {/* Removed inline successMessage in favor of toast */}
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-[#1B3C53] hover:bg-[#1a3248] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B3C53] transition"
+              disabled={isLoading}
+              className={`group relative w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-medium rounded-full text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B3C53] transition ${isLoading ? "bg-[#1B3C53]/70 cursor-not-allowed" : "bg-[#1B3C53] hover:bg-[#1a3248]"
+                }`}
             >
-              Submit Application
+              {isLoading ? (
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : null}
+              {isLoading ? "Submitting Application..." : "Submit Application"}
             </button>
           </div>
 

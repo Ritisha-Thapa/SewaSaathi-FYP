@@ -4,6 +4,7 @@ import DashboardHeader from "../../components/customer/DashboardHeader";
 import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
 import { Calendar, Clock, MapPin, Phone, CreditCard, Image as ImageIcon, AlertCircle, CheckCircle } from "lucide-react";
+import { api } from "../../utils/api";
 
 /**
  * Helper to get today's date in YYYY-MM-DD format
@@ -40,9 +41,7 @@ const ProviderDetails = () => {
     useEffect(() => {
         const fetchProvider = async () => {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/accounts/providers/${providerId}/`);
-                if (!res.ok) throw new Error("Failed to fetch provider");
-                const data = await res.json();
+                const data = await api.get(`/accounts/providers/${providerId}/`);
                 setProvider(data);
                 // Pre-select first service if available
                 if (data.provider_services && data.provider_services.length > 0) {
@@ -56,6 +55,33 @@ const ProviderDetails = () => {
         };
         fetchProvider();
     }, [providerId]);
+
+    // Check for existing booking when service changes
+    useEffect(() => {
+        const fetchBookings = async () => {
+            if (!selectedServiceId) return;
+            const token = localStorage.getItem("access");
+            if (!token) return;
+            try {
+                const bookings = await api.get("/booking/bookings/");
+                const activeBooking = bookings.find(b =>
+                    !['cancelled', 'rejected'].includes(b.status) &&
+                    b.provider === Number(providerId) &&
+                    b.service === Number(selectedServiceId)
+                );
+                if (activeBooking) {
+                    setBookingDetails(activeBooking);
+                    setOrderingStatus("success");
+                } else {
+                    setBookingDetails(null);
+                    setOrderingStatus("");
+                }
+            } catch (err) {
+                console.error("Error fetching existing bookings:", err);
+            }
+        };
+        fetchBookings();
+    }, [selectedServiceId, providerId]);
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
@@ -74,7 +100,7 @@ const ProviderDetails = () => {
         setOrderingStatus("submitting");
 
         try {
-            const token = localStorage.getItem("access_token");
+            const token = localStorage.getItem("access");
             if (!token) {
                 alert("You must be logged in to book.");
                 setOrderingStatus("");
@@ -93,21 +119,7 @@ const ProviderDetails = () => {
             if (issueDescription) formData.append("issue_description", issueDescription);
             if (issueImage) formData.append("issue_images", issueImage);
 
-            const res = await fetch("http://127.0.0.1:8000/booking/bookings/", {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                body: formData,
-            });
-
-            if (!res.ok) {
-                const errData = await res.json();
-                console.error("Booking Error:", errData);
-                throw new Error("Failed to create booking");
-            }
-
-            const data = await res.json();
+            const data = await api.post("/booking/bookings/", formData);
             setBookingDetails(data);
             setOrderingStatus("success");
         } catch (err) {
@@ -120,16 +132,7 @@ const ProviderDetails = () => {
     const handleMockPay = async () => {
         if (!bookingDetails) return;
         try {
-            const token = localStorage.getItem("access_token");
-            const res = await fetch(`http://127.0.0.1:8000/booking/bookings/${bookingDetails.id}/pay/`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            if (!res.ok) throw new Error("Payment failed");
+            await api.post(`/booking/bookings/${bookingDetails.id}/pay/`);
 
             // Update local state to show 'Paid'
             setBookingDetails({ ...bookingDetails, is_paid: true, payment_method: 'online', status: 'paid' });
@@ -266,13 +269,12 @@ const ProviderDetails = () => {
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-gray-500">Status</span>
-                                        <span className={`font-bold px-2 py-1 rounded text-xs uppercase ${
-                                            bookingDetails.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                        <span className={`font-bold px-2 py-1 rounded text-xs uppercase ${bookingDetails.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                                             bookingDetails.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
-                                            bookingDetails.status === 'in_progress' ? 'bg-orange-100 text-orange-700' :
-                                            bookingDetails.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                            'bg-gray-100 text-gray-700'
-                                        }`}>
+                                                bookingDetails.status === 'in_progress' ? 'bg-orange-100 text-orange-700' :
+                                                    bookingDetails.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                                        'bg-gray-100 text-gray-700'
+                                            }`}>
                                             {bookingDetails.status.replace('_', ' ')}
                                         </span>
                                     </div>

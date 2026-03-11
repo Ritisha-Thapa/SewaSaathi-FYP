@@ -7,6 +7,7 @@ const DashboardHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { logout, user } = useAuth();
   const [profileImg, setProfileImg] = useState(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -30,8 +31,11 @@ const DashboardHeader = () => {
   }, []);
 
   const handleLogout = () => {
-    logout();
-    window.location.href = '/login';
+    setIsLoggingOut(true);
+    setTimeout(() => {
+      logout();
+      window.location.href = '/login';
+    }, 1500);
   };
 
   return (
@@ -78,9 +82,16 @@ const DashboardHeader = () => {
 
             <button
               onClick={handleLogout}
-              className="inline-block px-6 py-2 bg-[#1B3C53] text-white rounded-full hover:bg-[#1a3248] transition"
+              disabled={isLoggingOut}
+              className={`inline-flex items-center justify-center px-6 py-2 rounded-full transition ${isLoggingOut ? 'bg-[#1B3C53]/70 text-white cursor-not-allowed' : 'bg-[#1B3C53] text-white hover:bg-[#1a3248]'}`}
             >
-              Log Out
+              {isLoggingOut ? (
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              ) : null}
+              {isLoggingOut ? 'Logging Out...' : 'Log Out'}
             </button>
           </div>
 
@@ -120,8 +131,18 @@ const DashboardHeader = () => {
                 <span>Voice Support</span>
               </button>
 
-              <button className="w-full px-6 py-2 bg-[#1B3C53] text-white rounded-full">
-                Log Out
+              <button
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className={`w-full px-6 py-2 rounded-full flex justify-center items-center transition ${isLoggingOut ? 'bg-[#1B3C53]/70 text-white cursor-not-allowed' : 'bg-[#1B3C53] text-white hover:bg-[#1a3248]'}`}
+              >
+                {isLoggingOut ? (
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                ) : null}
+                {isLoggingOut ? 'Logging Out...' : 'Log Out'}
               </button>
             </div>
           </div>

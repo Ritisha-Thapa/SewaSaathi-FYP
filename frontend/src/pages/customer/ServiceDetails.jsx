@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload, CheckCircle, Clock, CreditCard } from "lucide-react";
 import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
+import { api } from "../../utils/api";
 
 const formatPrice = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -31,37 +32,22 @@ const ServiceDetails = () => {
   useEffect(() => {
     const fetchService = async () => {
       try {
-        const res = await fetch(
-          `http://127.0.0.1:8000/services/service/${serviceId}/`
-        );
-        if (!res.ok) throw new Error("Failed to fetch service");
-        const data = await res.json();
+        const data = await api.get(`/services/service/${serviceId}/`);
         setItem(data);
 
         // Check if user already has a booking for this service
-        const token = localStorage.getItem("access_token");
+        const token = localStorage.getItem("access");
         if (token) {
           try {
-            const bookingRes = await fetch(
-              `http://127.0.0.1:8000/booking/bookings/?service=${serviceId}`,
-              {
-                headers: {
-                  "Authorization": `Bearer ${token}`
-                }
-              }
+            const bookings = await api.get(`/booking/bookings/`);
+            const activeBooking = bookings.find(b =>
+              !['cancelled', 'rejected'].includes(b.status) &&
+              b.service === Number(serviceId)
             );
-            if (bookingRes.ok) {
-              const bookings = await bookingRes.json();
-              const activeBooking = bookings.find(b =>
-                !['cancelled', 'rejected'].includes(b.status) &&
-                b.customer &&
-                (JSON.parse(localStorage.getItem('user') || '{}').id === b.customer)
-              );
-              if (activeBooking) {
-                setExistingBooking(activeBooking);
-                setBookingDetails(activeBooking);
-                setOrderingStatus('success');
-              }
+            if (activeBooking) {
+              setExistingBooking(activeBooking);
+              setBookingDetails(activeBooking);
+              setOrderingStatus('success');
             }
           } catch (err) {
             console.error('Failed to check existing booking:', err);
@@ -114,20 +100,7 @@ const ServiceDetails = () => {
     if (issueImage) formData.append("issue_images", issueImage);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/booking/bookings/", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        },
-        body: formData
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(JSON.stringify(data));
-      }
-
+      const data = await api.post("/booking/bookings/", formData);
       setBookingDetails(data);
       setOrderingStatus("success");
 
@@ -140,23 +113,11 @@ const ServiceDetails = () => {
 
   const handlePayNow = async () => {
     if (!bookingDetails) return;
-    const token = localStorage.getItem("access");
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/booking/bookings/${bookingDetails.id}/pay/`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-
-      if (res.ok) {
-        // Update local state to reflect payment
-        setBookingDetails(prev => ({ ...prev, is_paid: true, payment_method: 'online' }));
-      } else {
-        alert("Payment failed. Try again.");
-      }
+      await api.post(`/booking/bookings/${bookingDetails.id}/pay/`);
+      // Update local state to reflect payment
+      setBookingDetails(prev => ({ ...prev, is_paid: true, payment_method: 'online' }));
     } catch (err) {
       console.error("Payment Error", err);
       alert("Payment error.");
@@ -305,13 +266,12 @@ const ServiceDetails = () => {
                       </div>
                       <div className="flex justify-between items-center bg-white p-2 rounded border">
                         <span className="text-gray-500">Status:</span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-semibold uppercase ${
-                          bookingDetails.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                        <span className={`px-2 py-0.5 rounded text-xs font-semibold uppercase ${bookingDetails.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                           bookingDetails.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
-                          bookingDetails.status === 'in_progress' ? 'bg-orange-100 text-orange-700' :
-                          bookingDetails.status === 'completed' ? 'bg-green-100 text-green-700' :
-                          'bg-gray-100 text-gray-700'
-                        }`}>
+                            bookingDetails.status === 'in_progress' ? 'bg-orange-100 text-orange-700' :
+                              bookingDetails.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                'bg-gray-100 text-gray-700'
+                          }`}>
                           {bookingDetails.status.replace('_', ' ')}
                         </span>
                       </div>

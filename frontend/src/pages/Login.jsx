@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -13,18 +14,13 @@ const Login = () => {
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState("");
   const [apiError, setApiError] = useState("");
 
-  // Auto-hide success message
-  useEffect(() => {
-    if (successMessage) {
-      const timer = setTimeout(() => setSuccessMessage(""), 1200);
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage]);
+  // Auto-hide success message (No longer needed since we use toast, but kept apiError)
 
   // Input change handling
   const handleChange = (e) => {
@@ -59,6 +55,7 @@ const Login = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
       const loginResponse = await fetch(
         "http://127.0.0.1:8000/accounts/login/",
@@ -82,14 +79,14 @@ const Login = () => {
           responseData.error ||
           "Invalid phone or password"
         );
+        setIsLoading(false);
         return;
       }
 
-      // data contains { msg, data: { token, user } }
       const { data } = responseData;
       login(data);
 
-      setSuccessMessage("Login successful! Redirecting...");
+      toast.success("Login successful! Redirecting...");
 
       setTimeout(() => {
         if (data.user.role === "provider") {
@@ -100,7 +97,8 @@ const Login = () => {
       }, 1200);
     } catch (error) {
       console.error("Login error:", error);
-      alert("Network error. Please try again.");
+      toast.error("Network error. Please try again.");
+      setIsLoading(false);
     }
   };
 
@@ -206,11 +204,7 @@ const Login = () => {
             </div>
           </div>
           {/* SUCCESS MESSAGE */}
-          {successMessage && (
-            <div className="mb-4 text-green-700 bg-green-100 px-4 py-2 rounded-lg border border-green-200 text-center">
-              {successMessage}
-            </div>
-          )}
+          {/* Removed inline successMessage in favor of toast */}
 
           {apiError && (
             <div className="mb-4 text-red-700 bg-red-100 px-4 py-2 rounded-lg border border-red-200 text-center">
@@ -221,9 +215,17 @@ const Login = () => {
           {/* Login Button */}
           <button
             type="submit"
-            className="w-full py-3 rounded-full bg-[#1B3C53] text-white hover:bg-[#1a3248] transition"
+            disabled={isLoading}
+            className={`w-full py-3 rounded-full text-white transition flex justify-center items-center ${isLoading ? "bg-[#1B3C53]/70 cursor-not-allowed" : "bg-[#1B3C53] hover:bg-[#1a3248]"
+              }`}
           >
-            Login
+            {isLoading ? (
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : null}
+            {isLoading ? "Logging in..." : "Login"}
           </button>
 
           {/* Signup */}

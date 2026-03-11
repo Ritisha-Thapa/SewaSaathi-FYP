@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
 
 const CustomerSignup = () => {
   const navigate = useNavigate();
@@ -16,18 +17,10 @@ const CustomerSignup = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Auto-hide success message
-  useEffect(() => {
-    if (successMessage) {
-      const timer = setTimeout(() => setSuccessMessage(""), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -77,6 +70,7 @@ const CustomerSignup = () => {
       password: formData.password
     };
 
+    setIsLoading(true);
     try {
       const response = await fetch(
         "http://127.0.0.1:8000/accounts/customer-registration/",
@@ -91,7 +85,7 @@ const CustomerSignup = () => {
       console.log("Signup response:", data);
 
       if (response.ok) {
-        setSuccessMessage(data.message || "Customer registration successful!");
+        toast.success(data.message || "Customer registration successful!");
         setErrors({});
 
         setTimeout(() => {
@@ -99,11 +93,15 @@ const CustomerSignup = () => {
         }, 2000);
 
         return;
+      } else {
+        toast.error(data.message || data.error || "Registration failed");
+        setIsLoading(false);
       }
 
     } catch (error) {
       console.error("Signup Error:", error);
-      alert("Something went wrong!");
+      toast.error("Something went wrong!");
+      setIsLoading(false);
     }
   };
 
@@ -111,8 +109,8 @@ const CustomerSignup = () => {
     <div className="min-h-screen bg-[#F9F5F0] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="flex justify-start">
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="inline-flex items-center text-sm text-[#1B3C53] hover:text-[#1a3248] transition"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,7 +131,7 @@ const CustomerSignup = () => {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">
-            
+
             {/* FIRST NAME & LAST NAME */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -145,9 +143,8 @@ const CustomerSignup = () => {
                   type="text"
                   value={formData.first_name}
                   onChange={handleChange}
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    errors.first_name ? 'border-red-300' : 'border-gray-300'
-                  } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.first_name ? 'border-red-300' : 'border-gray-300'
+                    } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
                   placeholder="First name"
                 />
                 {errors.first_name && (
@@ -164,9 +161,8 @@ const CustomerSignup = () => {
                   type="text"
                   value={formData.last_name}
                   onChange={handleChange}
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    errors.last_name ? 'border-red-300' : 'border-gray-300'
-                  } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.last_name ? 'border-red-300' : 'border-gray-300'
+                    } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
                   placeholder="Last name"
                 />
                 {errors.last_name && (
@@ -185,9 +181,8 @@ const CustomerSignup = () => {
                 type="tel"
                 value={formData.phone}
                 onChange={handleChange}
-                className={`appearance-none block w-full px-3 py-2 border ${
-                  errors.phone ? 'border-red-300' : 'border-gray-300'
-                } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                className={`appearance-none block w-full px-3 py-2 border ${errors.phone ? 'border-red-300' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
                 placeholder="Phone number"
               />
               {errors.phone && (
@@ -205,9 +200,8 @@ const CustomerSignup = () => {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`appearance-none block w-full px-3 py-2 border ${
-                  errors.email ? 'border-red-300' : 'border-gray-300'
-                } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                className={`appearance-none block w-full px-3 py-2 border ${errors.email ? 'border-red-300' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
                 placeholder="Email address"
               />
               {errors.email && (
@@ -225,9 +219,8 @@ const CustomerSignup = () => {
                 type="text"
                 value={formData.address}
                 onChange={handleChange}
-                className={`appearance-none block w-full px-3 py-2 border ${
-                  errors.address ? 'border-red-300' : 'border-gray-300'
-                } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                className={`appearance-none block w-full px-3 py-2 border ${errors.address ? 'border-red-300' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
                 placeholder="Address"
               />
               {errors.address && (
@@ -247,9 +240,8 @@ const CustomerSignup = () => {
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={handleChange}
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
-                  } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.password ? 'border-red-300' : 'border-gray-300'
+                    } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
                   placeholder="Password"
                 />
 
@@ -279,9 +271,8 @@ const CustomerSignup = () => {
                   type={showConfirmPassword ? "text" : "password"}
                   value={formData.confirm_password}
                   onChange={handleChange}
-                  className={`appearance-none block w-full px-3 py-2 border ${
-                    errors.confirm_password ? 'border-red-300' : 'border-gray-300'
-                  } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.confirm_password ? 'border-red-300' : 'border-gray-300'
+                    } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
                   placeholder="Confirm password"
                 />
 
@@ -302,19 +293,23 @@ const CustomerSignup = () => {
           </div>
 
           {/* SUCCESS MESSAGE */}
-          {successMessage && (
-            <div className="mb-4 text-green-700 bg-green-100 px-4 py-2 rounded-lg border border-green-200 text-center">
-              {successMessage}
-            </div>
-          )}
+          {/* Removed inline successMessage in favor of toast */}
 
           {/* SUBMIT BUTTON */}
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 text-sm font-medium rounded-full text-white bg-[#1B3C53] hover:bg-[#1a3248] transition"
+              disabled={isLoading}
+              className={`group relative w-full flex justify-center items-center py-3 px-4 text-sm font-medium rounded-full text-white transition ${isLoading ? "bg-[#1B3C53]/70 cursor-not-allowed" : "bg-[#1B3C53] hover:bg-[#1a3248]"
+                }`}
             >
-              Sign Up
+              {isLoading ? (
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : null}
+              {isLoading ? "Signing Up..." : "Sign Up"}
             </button>
           </div>
 
