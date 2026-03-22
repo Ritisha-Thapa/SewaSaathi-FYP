@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { MapPin, Calendar, User, DollarSign, CheckCircle, Clock, Filter } from 'lucide-react';
+import { MapPin, Calendar, User, Banknote, CheckCircle, Clock, Filter } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
 import { api } from '../../utils/api';
+import Pagination from '../../components/common/Pagination';
+import { useState, useEffect } from 'react';
 
 const BookingHistory = () => {
   const [bookings, setBookings] = useState([]);
@@ -9,10 +10,17 @@ const BookingHistory = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [serviceFilter, setServiceFilter] = useState('all');
   const [timeFilter, setTimeFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   useEffect(() => {
     fetchBookings();
   }, []);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, serviceFilter, timeFilter]);
 
   const fetchBookings = async () => {
     try {
@@ -40,7 +48,7 @@ const BookingHistory = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-700';
-      case 'accepted': return 'bg-blue-100 text-blue-700';
+      case 'accepted': return 'bg-[#1B3C53]/10 text-[#1B3C53]';
       case 'in_progress': return 'bg-orange-100 text-orange-700';
       case 'completed': return 'bg-green-100 text-green-700';
       case 'paid': return 'bg-emerald-100 text-emerald-700';
@@ -89,6 +97,12 @@ const BookingHistory = () => {
 
     return matchStatus && matchService && matchTime;
   });
+
+  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+  const paginatedBookings = filteredBookings.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   if (loading) {
     return (
@@ -158,7 +172,7 @@ const BookingHistory = () => {
       </div>
 
       <div className="space-y-4">
-        {filteredBookings.map((booking) => (
+        {paginatedBookings.map((booking) => (
           <div key={booking.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start gap-6">
               <div className="flex-1">
@@ -168,6 +182,11 @@ const BookingHistory = () => {
                   <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(booking.status)}`}>
                     {booking.status.replace('_', ' ')}
                   </span>
+                  {booking.is_rework && (
+                    <span className="px-2 py-1 bg-red-600 text-white text-[10px] font-bold rounded uppercase">
+                      Rework
+                    </span>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-6 text-sm text-gray-600">
@@ -177,14 +196,14 @@ const BookingHistory = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin size={14} className="text-gray-400" />
-                    <span>{booking.customer_address || 'Location not provided'}</span>
+                    <span>{booking.address || `${booking.customer_address}, ${booking.customer_city}`}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar size={14} className="text-gray-400" />
                     <span>{booking.scheduled_date} at {booking.scheduled_time}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <DollarSign size={14} className="text-gray-400" />
+                    <Banknote size={14} className="text-gray-400" />
                     <span className="font-semibold">Rs. {parseFloat(booking.total_price).toLocaleString()}</span>
                   </div>
                 </div>
@@ -207,6 +226,12 @@ const BookingHistory = () => {
           </div>
         ))}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       {filteredBookings.length === 0 && bookings.length > 0 && (
         <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100">

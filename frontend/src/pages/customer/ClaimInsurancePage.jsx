@@ -43,6 +43,10 @@ const ClaimInsurancePage = () => {
             setError("Please provide a description of the issue.");
             return;
         }
+        if (!evidence) {
+            setError("Please upload evidence (photo/video) of the issue.");
+            return;
+        }
 
         setSubmitting(true);
         setError("");
@@ -118,7 +122,7 @@ const ClaimInsurancePage = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Evidence (Photo/Video)</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Evidence (Photo/Video) *</label>
                                 <div className="flex items-center justify-center w-full">
                                     <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
                                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -127,7 +131,7 @@ const ClaimInsurancePage = () => {
                                                 {evidence ? evidence.name : "Click to upload evidence"}
                                             </p>
                                         </div>
-                                        <input type="file" className="hidden" onChange={handleFileChange} accept="image/*,video/*" />
+                                        <input type="file" className="hidden" onChange={handleFileChange} accept="image/*,video/*" required />
                                     </label>
                                 </div>
                             </div>

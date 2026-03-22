@@ -4,6 +4,7 @@ import Skeleton from "../../components/Skeleton";
 import ServiceFilters from "../../components/customer/services/ServiceFilters";
 import DashboardHeader from "../../components/customer/DashboardHeader"; // Navbar/Header
 import Footer from "../../components/customer/Footer"; // Footer
+import Pagination from "../../components/common/Pagination";
 
 const ServicesPage = () => {
   const [services, setServices] = useState([]);
@@ -15,6 +16,8 @@ const ServicesPage = () => {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [ordering, setOrdering] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   // Fetch categories once
   useEffect(() => {
@@ -58,6 +61,7 @@ const ServicesPage = () => {
     };
 
     fetchServices();
+    setCurrentPage(1); // Reset to page 1 when filters change
   }, [selectedCategories, minPrice, maxPrice, ordering]);
 
   return (
@@ -78,25 +82,35 @@ const ServicesPage = () => {
         />
 
         {/* Services Grid */}
-        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {loading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl shadow-md overflow-hidden p-6 space-y-4">
-                <Skeleton className="w-full h-48 rounded-xl" />
-                <Skeleton className="w-24 h-6 rounded-full" />
-                <Skeleton className="w-3/4 h-8" />
-                <Skeleton className="w-1/2 h-5" />
-                <div className="pt-4 border-t border-gray-100 flex justify-between">
-                  <Skeleton className="w-20 h-6" />
-                  <Skeleton className="w-16 h-6" />
+        <div className="lg:col-span-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {loading ? (
+              Array.from({ length: 9 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl shadow-md overflow-hidden p-6 space-y-4">
+                  <Skeleton className="w-full h-48 rounded-xl" />
+                  <Skeleton className="w-24 h-6 rounded-full" />
+                  <Skeleton className="w-3/4 h-8" />
+                  <Skeleton className="w-1/2 h-5" />
+                  <div className="pt-4 border-t border-gray-100 flex justify-between">
+                    <Skeleton className="w-20 h-6" />
+                    <Skeleton className="w-16 h-6" />
+                  </div>
                 </div>
-              </div>
-            ))
-          ) : services.length === 0 ? (
-            <p>No services found.</p>
-          ) : (
-            services.map((service) => <ServiceCard key={service.id} service={service} />)
-          )}
+              ))
+            ) : services.length === 0 ? (
+              <p className="col-span-full text-center py-20 text-gray-500">No services found.</p>
+            ) : (
+                services
+                .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                .map((service) => <ServiceCard key={service.id} service={service} />)
+            )}
+          </div>
+          
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={Math.ceil(services.length / itemsPerPage)}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
       {/* Footer */}

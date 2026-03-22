@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Upload, CheckCircle, Clock, CreditCard } from "lucide-react";
+import { ArrowLeft, Upload, CheckCircle, Clock, CreditCard, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
@@ -41,10 +41,30 @@ const ServiceDetails = () => {
         if (token) {
           try {
             const bookings = await api.get(`/booking/bookings/`);
-            const activeBooking = bookings.find(b =>
-              !['cancelled', 'rejected', 'completed', 'paid'].includes(b.status) &&
-              b.service === Number(serviceId)
-            );
+            const activeBooking = bookings.find(b => {
+              // 1. Show if request is active (pending, accepted, in_progress)
+              if (!['cancelled', 'rejected', 'completed', 'paid', 'refunded'].includes(b.status)) {
+                return b.service === Number(serviceId);
+              }
+
+              // 2. Show if completed but NOT paid (waiting for payment)
+              if (b.status === 'completed' && !b.is_paid) {
+                return b.service === Number(serviceId);
+              }
+
+              // 3. Show if there's an ongoing insurance claim (regardless of 3-day window once claimed)
+              if (b.latest_claim_status && b.service === Number(serviceId)) {
+                // Show claim card if pending
+                if (b.latest_claim_status === 'pending') return true;
+                
+                // Show claim card if approved but not yet resolved (resolution 'none' means processing)
+                if (b.latest_claim_status === 'approved' && b.latest_claim_resolution === 'none') {
+                    return true;
+                }
+              }
+              
+              return false;
+            });
             if (activeBooking) {
               setExistingBooking(activeBooking);
               setBookingDetails(activeBooking);
@@ -119,22 +139,104 @@ const ServiceDetails = () => {
       await api.post(`/booking/bookings/${bookingDetails.id}/pay/`);
       toast.success("Payment successful! You can now book another service.");
       
-      // Delay for a better UX before resetting
-      setTimeout(() => {
-        setOrderingStatus("");
-        setBookingDetails(null);
-        setExistingBooking(null);
-        // Optional: clear form fields if they aren't already cleared
-        setDate("");
-        setTime("");
-        setIssueDescription("");
-        setIssueImage(null);
-      }, 2000);
+      // Reset form instead of showing the status card
+      resetView();
     } catch (err) {
       console.error("Payment Error", err);
       alert("Payment error.");
     }
   };
+
+  const handleResolution = async (resolution) => {
+    if (!bookingDetails) return;
+    
+    try {
+      await api.post(`/insurance/claims/${bookingDetails.latest_claim_id}/choose-resolution/`, { resolution });
+      
+      if (resolution === 'refund') {
+        toast.success("Your refund will be sent within 3 days.");
+        resetView();
+      } else {
+        // Rework logic - logic to be confirmed later
+        toast.success("Rework request initiated.");
+        // We'll just refresh the data for rework to show updated resolution
+        const bookings = await api.get(`/booking/bookings/`);
+        const updated = bookings.find(b => b.id === bookingDetails.id);
+        if (updated) {
+          setBookingDetails(updated);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to set resolution", err);
+      toast.error("Failed to set resolution.");
+    }
+  };
+
+  const resetView = () => {
+    setBookingDetails(null);
+    setExistingBooking(null);
+    setOrderingStatus("");
+    setAddress("");
+    setPhone("");
+    setDate("");
+    setTime("");
+    setIssueDescription("");
+    setIssueImage(null);
+  };
+
+  const statusMessages = {
+    pending: {
+      title: "Booking Request Sent!",
+      message: "Waiting for provider acceptance"
+    },
+    accepted: {
+      title: "Booking Accepted!",
+      message: "Provider will arrive at scheduled time"
+    },
+    in_progress: {
+      title: "Service In Progress",
+      message: "Provider is currently working on your request"
+    },
+    completed: {
+      title: "Service Completed!",
+      message: "Please review and complete payment"
+    },
+    paid: {
+      title: "Payment Received!",
+      message: "Thank you for using SewaSaathi"
+    },
+    rejected: {
+      title: "Booking Rejected",
+      message: "The provider was unavailable for this slot"
+    },
+    cancelled: {
+      title: "Booking Cancelled",
+      message: "This booking request has been cancelled"
+    },
+    // Insurance specific messages
+    claim_pending: {
+        title: "Insurance Claim Request Sent",
+        message: "Admin is reviewing your claim"
+    },
+    claim_approved: {
+        title: "Insurance Claim Approved",
+        message: "Processing Claim"
+    }
+  };
+
+  let currentStatusMsg = null;
+  if (bookingDetails) {
+      if (bookingDetails.latest_claim_status === 'pending') {
+          currentStatusMsg = statusMessages.claim_pending;
+      } else if (bookingDetails.latest_claim_status === 'approved' && bookingDetails.latest_claim_resolution === 'none') {
+          currentStatusMsg = statusMessages.claim_approved;
+      } else {
+          currentStatusMsg = statusMessages[bookingDetails.status] || {
+            title: "Booking Update",
+            message: `Status: ${bookingDetails.status}`
+          };
+      }
+  }
 
   const timeSlots = [
     "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"
@@ -242,7 +344,11 @@ const ServiceDetails = () => {
             <div className="sticky top-8 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
               <div className="p-4 bg-[#1B3C53] text-white text-center">
                 <h3 className="font-bold text-xl">
-                  {orderingStatus === "success" ? "Booking Status" : "Book This Service"}
+                  {bookingDetails?.latest_claim_status && bookingDetails.latest_claim_resolution === 'none' 
+                    ? "Insurance Status" 
+                    : orderingStatus === "success" 
+                      ? "Booking Status" 
+                      : "Book This Service"}
                 </h3>
               </div>
 
@@ -254,9 +360,9 @@ const ServiceDetails = () => {
                       <Clock size={32} />
                     </div>
                     <div>
-                      <h4 className="text-xl font-bold text-gray-800">Booking Request Sent!</h4>
+                      <h4 className="text-xl font-bold text-gray-800">{currentStatusMsg.title}</h4>
                       <p className="text-gray-500 text-sm mt-1">ID: #{bookingDetails.id}</p>
-                      <p className="text-gray-600 text-xs mt-2">Waiting for provider acceptance</p>
+                      <p className="text-gray-600 text-xs mt-2">{currentStatusMsg.message}</p>
                     </div>
 
                     <div className="bg-gray-50 p-4 rounded-xl text-left text-sm space-y-2">
@@ -272,9 +378,19 @@ const ServiceDetails = () => {
                         <span className="text-gray-500">Time:</span>
                         <span className="font-medium">{bookingDetails.scheduled_time}</span>
                       </div>
-                      <div className="flex justify-between border-t pt-2 mt-2">
-                        <span className="text-gray-500">Estimated Price:</span>
-                        <span className="font-bold text-[#1B3C53]">{formatPrice(bookingDetails.total_price)}</span>
+                      <div className="border-t pt-2 mt-2 space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-500">Service Price:</span>
+                          <span className="text-gray-700">{formatPrice(bookingDetails.service_price)}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-500">Insurance Fee (1%):</span>
+                          <span className="text-gray-700">{formatPrice(bookingDetails.insurance_fee)}</span>
+                        </div>
+                        <div className="flex justify-between pt-1 border-t">
+                          <span className="text-gray-700 font-bold">Total Bill:</span>
+                          <span className="font-bold text-[#1B3C53]">{formatPrice(bookingDetails.total_price)}</span>
+                        </div>
                       </div>
                       <div className="flex justify-between items-center bg-white p-2 rounded border">
                         <span className="text-gray-500">Status:</span>
@@ -294,6 +410,19 @@ const ServiceDetails = () => {
                           {bookingDetails.is_paid ? "PAID" : "UNPAID"}
                         </span>
                       </div>
+                      
+                      {bookingDetails.latest_claim_status && (
+                        <div className="flex justify-between items-center bg-white p-2 rounded border">
+                          <span className="text-gray-500">Claim:</span>
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
+                            bookingDetails.latest_claim_status === 'approved' ? 'bg-green-100 text-green-700' :
+                            bookingDetails.latest_claim_status === 'rejected' ? 'bg-red-100 text-red-700' :
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {bookingDetails.latest_claim_status}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {bookingDetails.status === 'completed' && !bookingDetails.is_paid && (
@@ -304,6 +433,36 @@ const ServiceDetails = () => {
                         <CreditCard size={20} />
                         Pay Now
                       </button>
+                    )}
+
+                    {bookingDetails.latest_claim_status === 'approved' && bookingDetails.latest_claim_resolution === 'none' && (
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => handleResolution('refund')}
+                          className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-md flex items-center justify-center gap-2"
+                        >
+                          <CheckCircle size={18} />
+                          80% Refund
+                        </button>
+                        <button
+                          onClick={() => {/* logic to be confirmed later */}}
+                          className="w-full py-3 bg-[#1B3C53] text-white rounded-xl font-bold hover:bg-[#152e40] transition shadow-md flex items-center justify-center gap-2"
+                        >
+                          Request Rework
+                        </button>
+                        <p className="text-[10px] text-gray-500 text-center italic">
+                          Choosing refund will process your money back within 3 days.
+                        </p>
+                      </div>
+                    )}
+
+                    {bookingDetails.status === 'completed' && !bookingDetails.is_paid && (
+                      <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                        <p className="font-semibold mb-1">Next Steps:</p>
+                        <p>1. Provider has completed the work</p>
+                        <p>2. Please make payment to finish</p>
+                        <p>3. Insurance claim available after payment</p>
+                      </div>
                     )}
 
                     {bookingDetails.status === 'pending' && (

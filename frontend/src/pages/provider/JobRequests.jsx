@@ -55,10 +55,14 @@ const JobRequests = () => {
   };
 
   const confirmAction = async () => {
+    if (!confirmModal.requestId) return;
+    
     setActionLoading(true);
     try {
       const status = confirmModal.action === 'Accepted' ? 'accepted' : 'rejected';
-      await api.post(`/booking/bookings/${confirmModal.requestId}/update-status/`, { status });
+      const response = await api.post(`/booking/bookings/${confirmModal.requestId}/update-status/`, { status });
+      
+      console.log(`Action ${status} successful for ID ${confirmModal.requestId}:`, response);
 
       // Remove from requests list
       setRequests(requests.filter(req => req.id !== confirmModal.requestId));
@@ -124,10 +128,10 @@ const JobRequests = () => {
           {requests.map((req) => (
             <div key={req.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
               {/* Header */}
-              <div className="bg-blue-50 p-4 border-b border-blue-100 flex justify-between items-start">
+              <div className="bg-white p-4 border-b border-gray-100 flex justify-between items-start">
                 <div>
                   <h3 className="font-bold text-[#1B3C53]">{req.service_name}</h3>
-                  <div className="flex items-center text-sm text-blue-600 mt-1">
+                  <div className="flex items-center text-sm text-[#1B3C53]/60 mt-1">
                     <Clock size={14} className="mr-1" />
                     <span>Created: {new Date(req.created_at).toLocaleDateString()}</span>
                   </div>
@@ -146,7 +150,7 @@ const JobRequests = () => {
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <MapPin size={16} className="mr-2 text-gray-400" />
-                  {req.customer_address ? `${req.customer_address}, ${req.customer_city}` : "Location not provided"}
+                  {req.address || (req.customer_address ? `${req.customer_address}, ${req.customer_city}` : "Location not provided")}
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <Calendar size={16} className="mr-2 text-gray-400" />

@@ -5,6 +5,7 @@ import Footer from '../../components/customer/Footer';
 import { Calendar, MapPin, CheckCircle, Clock, AlertCircle, Filter } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
 import { Link } from 'react-router-dom';
+import Pagination from '../../components/common/Pagination';
 
 const MyBookings = () => {
     const [bookings, setBookings] = useState([]);
@@ -14,10 +15,17 @@ const MyBookings = () => {
     const [statusFilter, setStatusFilter] = useState('all');
     const [serviceFilter, setServiceFilter] = useState('all');
     const [timeFilter, setTimeFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 12;
 
     useEffect(() => {
         fetchData();
     }, []);
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [statusFilter, serviceFilter, timeFilter]);
 
     const fetchData = async () => {
         try {
@@ -30,7 +38,7 @@ const MyBookings = () => {
             // Map claims by booking ID
             const claimsMap = {};
             claimsData.forEach(claim => {
-                claimsMap[claim.booking] = claim;
+                claimsMap[String(claim.booking)] = claim;
             });
             setClaims(claimsMap);
         } catch (err) {
@@ -41,11 +49,19 @@ const MyBookings = () => {
     };
 
     const handleResolution = async (bookingId, resolution) => {
-        const claim = claims[bookingId];
-        if (!claim) return;
+        const claim = claims[String(bookingId)];
+        if (!claim) {
+            console.error("No claim found for booking", bookingId);
+            return;
+        }
 
         try {
             await api.post(`/insurance/claims/${claim.id}/choose-resolution/`, { resolution });
+            if (resolution === 'refund') {
+                alert("Your refund will be sent within 3 days.");
+            } else if (resolution === 'rework') {
+                alert("Rework request submitted! The provider will be notified.");
+            }
             fetchData(); // Refresh
         } catch (err) {
             console.error("Failed to set resolution", err);
@@ -54,11 +70,27 @@ const MyBookings = () => {
     };
 
     const isEligibleForClaim = (booking) => {
-        if (booking.status !== 'completed' || !booking.completed_at) return false;
-        const completionTime = new Date(booking.completed_at).getTime();
-        const currentTime = new Date().getTime();
-        const fortyEightHours = 48 * 60 * 60 * 1000;
-        return (currentTime - completionTime) <= fortyEightHours;
+        // Must be paid status, and have a recorded payment timestamp
+        if (booking.status !== 'paid' || !booking.is_paid || !booking.paid_at) return false;
+        
+        try {
+            const paymentTime = new Date(booking.paid_at).getTime();
+            const currentTime = new Date().getTime();
+            
+            if (isNaN(paymentTime)) return false;
+
+            // Calculate difference in hours
+            const diffInMs = currentTime - paymentTime;
+            const diffInHours = diffInMs / (1000 * 60 * 60);
+            
+            // Helpful for debugging
+            // console.log(`Booking ${booking.id}: Status=${booking.status}, HoursSincePayment=${diffInHours.toFixed(2)}`);
+
+            // Must be within 72 hours (3 days) and must be a positive difference (not in future)
+            return diffInHours >= 0 && diffInHours <= 72;
+        } catch (e) {
+            return false;
+        }
     };
 
     const uniqueServices = ['all', ...new Set(bookings.map(b => b.service_name))];
@@ -101,6 +133,12 @@ const MyBookings = () => {
 
         return matchStatus && matchService && matchTime;
     });
+
+    const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+    const paginatedBookings = filteredBookings.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
     if (loading) {
         return (
@@ -185,7 +223,7 @@ const MyBookings = () => {
                 )}
 
                 <div className="space-y-6">
-                    {filteredBookings.map(booking => (
+                    {paginatedBookings.map(booking => (
                         <div key={booking.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
@@ -195,9 +233,13 @@ const MyBookings = () => {
                                                 booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                                                     booking.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
                                                         booking.status === 'in_progress' ? 'bg-orange-100 text-orange-700' :
-                                                            'bg-gray-100 text-gray-700'
+                                                            booking.status === 'refunded' ? 'bg-purple-100 text-purple-700' :
+                                                                'bg-gray-100 text-gray-700'
                                         }`}>
-                                        {booking.status.replace('_', ' ')}
+                                        {booking.status === 'refunded' ? 'Refunded After Claim' : 
+                                         booking.is_rework && booking.status === 'completed' ? 'Rework Completed' :
+                                         booking.is_rework && booking.status === 'in_progress' ? 'Rework In Progress' :
+                                         booking.status.replace('_', ' ')}
                                     </span>
                                     {claims[booking.id] && (
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${claims[booking.id].status === 'approved' ? 'bg-green-600 text-white' :
@@ -219,9 +261,16 @@ const MyBookings = () => {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <CheckCircle size={16} className={booking.is_paid ? "text-green-500" : "text-red-500"} />
-                                        <span>{booking.is_paid ? "Paid" : "Unpaid"} - Rs. {booking.total_price}</span>
+                                        <span>
+                                            {booking.is_paid ? "Paid" : "Unpaid"} - Rs. {booking.total_price}
+                                            {booking.is_paid && booking.paid_at && (
+                                                <span className="ml-2 text-xs font-normal text-gray-500">
+                                                    (Original payment at {new Date(booking.paid_at).toLocaleString()})
+                                                </span>
+                                            )}
+                                        </span>
                                     </div>
-                                    {claims[booking.id] && claims[booking.id].status === 'approved' && claims[booking.id].resolution === 'none' && (
+                                    {claims[String(booking.id)] && claims[String(booking.id)].status === 'approved' && claims[String(booking.id)].resolution === 'none' && (
                                         <div className="col-span-1 sm:col-span-2 mt-4 p-4 bg-green-50 rounded-xl border border-green-200">
                                             <p className="font-bold text-green-800 mb-2">Claim Approved! Choose your resolution:</p>
                                             <div className="flex gap-4">
@@ -240,9 +289,9 @@ const MyBookings = () => {
                                             </div>
                                         </div>
                                     )}
-                                    {claims[booking.id] && claims[booking.id].resolution !== 'none' && (
+                                    {claims[String(booking.id)] && claims[String(booking.id)].resolution !== 'none' && (
                                         <div className="col-span-1 sm:col-span-2 mt-4 p-3 bg-gray-100 rounded-xl border border-gray-200">
-                                            <p className="font-bold text-gray-800">Resolution: <span className="capitalize">{claims[booking.id].resolution}</span></p>
+                                            <p className="font-bold text-gray-800">Resolution: <span className="capitalize">{claims[String(booking.id)].resolution}</span></p>
                                         </div>
                                     )}
                                 </div>
@@ -285,6 +334,12 @@ const MyBookings = () => {
                             </div>
                         </div>
                     ))}
+
+                    <Pagination 
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                    />
 
                     {filteredBookings.length === 0 && bookings.length > 0 && (
                         <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300">

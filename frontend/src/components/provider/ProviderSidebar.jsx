@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import { api } from '../../utils/api';
 import {
   LayoutDashboard,
   ClipboardList,
@@ -23,6 +24,26 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
   const { logout } = useAuth();
   const { unreadCount } = useNotifications();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [counts, setCounts] = useState({ pending: 0, active: 0 });
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const stats = await api.get('/booking/bookings/stats/');
+        setCounts({ 
+          pending: stats.pending, 
+          active: stats.active 
+        });
+      } catch (err) {
+        console.error("Failed to fetch counts in sidebar", err);
+      }
+    };
+
+    fetchCounts();
+    // Refresh counts every 30 seconds for real-time feel
+    const interval = setInterval(fetchCounts, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const navItems = [
     { to: '/provider/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -61,7 +82,7 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[#2a4d69]">
+        <div className="flex items-center justify-between p-4 border-b border-white/10">
           <h2 className="text-xl font-bold">Provider Panel</h2>
           <button onClick={toggleSidebar} className="lg:hidden">
             <X size={24} />
@@ -77,7 +98,7 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
               onClick={() => window.innerWidth < 1024 && toggleSidebar()} // Close on mobile click
               className={({ isActive }) => `
                 flex items-center justify-between px-4 py-3 rounded-lg transition-colors w-full
-                ${isActive ? 'bg-[#2a4d69] text-white shadow-md' : 'text-gray-300 hover:bg-[#2a4d69] hover:text-white'}
+                ${isActive ? 'bg-white/10 text-white shadow-md' : 'text-gray-300 hover:bg-white/5 hover:text-white'}
               `}
             >
               <div className="flex items-center space-x-3">
@@ -85,14 +106,24 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
                 <span>{item.label}</span>
               </div>
               {item.label === 'Notifications' && unreadCount > 0 && (
-                <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                <span className="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                   {unreadCount}
+                </span>
+              )}
+              {item.label === 'Job Requests' && counts.pending > 0 && (
+                <span className="bg-green-400 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                  {counts.pending}
+                </span>
+              )}
+              {item.label === 'Active Jobs' && counts.active > 0 && (
+                <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                  {counts.active}
                 </span>
               )}
             </NavLink>
           ))}
 
-          <div className="pt-8 mt-4 border-t border-[#2a4d69]">
+          <div className="pt-8 mt-4 border-t border-white/10">
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}

@@ -3,7 +3,7 @@ import {
   ClipboardList,
   Briefcase,
   CheckCircle,
-  DollarSign,
+  Banknote,
   Star,
 } from "lucide-react";
 import { api } from "../../utils/api";
@@ -12,7 +12,7 @@ const StatCard = ({ title, value, icon: Icon, color }) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
     <div>
       <p className="text-sm text-gray-500 font-medium mb-1">{title}</p>
-      <h3 className="text-2xl font-bold text-gray-800">{value}</h3>
+      <h3 className="text-2xl font-bold text-[#1B3C53]">{value}</h3>
     </div>
     <div className={`p-3 rounded-full ${color}`}>
       <Icon size={24} className="text-white" />
@@ -29,6 +29,7 @@ const ProviderDashboard = () => {
     averageRating: 0
   });
   const [jobRequests, setJobRequests] = useState([]);
+  const [recentWork, setRecentWork] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,29 +38,23 @@ const ProviderDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [bookingsData] = await Promise.all([
-        api.get('/booking/bookings/')
+      const [bookingsData, statsData] = await Promise.all([
+        api.get('/booking/bookings/'),
+        api.get('/booking/bookings/stats/')
       ]);
 
-      // Calculate stats from real data
-      const pending = bookingsData.filter(b => b.status === 'pending').length;
-      const active = bookingsData.filter(b => b.status === 'in_progress').length;
-      const completed = bookingsData.filter(b => b.status === 'completed' || b.status === 'paid').length;
-      const earnings = bookingsData
-        .filter(b => b.is_paid && b.status === 'paid') // Only count paid bookings
-        .reduce((sum, b) => sum + parseFloat(b.total_price), 0);
-
       setStats({
-        pendingRequests: pending,
-        activeJobs: active,
-        completedJobs: completed,
-        totalEarnings: earnings,
+        pendingRequests: statsData.pending,
+        activeJobs: statsData.active,
+        completedJobs: statsData.completed,
+        totalEarnings: statsData.earnings,
         averageRating: 4.5 // TODO: Calculate from reviews API
       });
 
-      // Get recent pending requests
+      // Get recent requests (all statuses except completed/paid)
       const recentRequests = bookingsData
-        .filter(b => b.status === 'pending')
+        .filter(b => ['pending', 'accepted', 'in_progress', 'rejected', 'cancelled'].includes(b.status))
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
         .slice(0, 5)
         .map(b => ({
           id: b.id,
@@ -67,10 +62,29 @@ const ProviderDashboard = () => {
           customerName: b.customer_name,
           location: b.address || b.customer_address,
           dateTime: `${b.scheduled_date} at ${b.scheduled_time}`,
-          estimatedPrice: b.total_price
+          estimatedPrice: b.total_price,
+          status: b.status
         }));
 
       setJobRequests(recentRequests);
+
+      // Get recent work (completed/paid)
+      const recentWorkData = bookingsData
+        .filter(b => b.status === 'completed' || b.status === 'paid')
+        .sort((a, b) => new Date(b.completed_at || b.updated_at) - new Date(a.completed_at || a.updated_at))
+        .slice(0, 5)
+        .map(b => ({
+          id: b.id,
+          serviceName: b.service_name,
+          customerName: b.customer_name,
+          location: b.address || b.customer_address,
+          dateTime: `${b.scheduled_date} at ${b.scheduled_time}`,
+          price: b.total_price,
+          status: b.status,
+          is_paid: b.is_paid
+        }));
+
+      setRecentWork(recentWorkData);
     } catch (err) {
       console.error("Failed to fetch dashboard data", err);
     } finally {
@@ -104,7 +118,7 @@ const ProviderDashboard = () => {
         <StatCard
           title="Total Earnings"
           value={`Rs. ${stats.totalEarnings.toLocaleString()}`}
-          icon={DollarSign}
+          icon={Banknote}
           color="bg-indigo-500"
         />
         <StatCard
@@ -115,63 +129,107 @@ const ProviderDashboard = () => {
         />
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-bold text-[#1B3C53] mb-4">
-          Recent Job Requests
-        </h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Job Requests */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-lg font-bold text-[#1B3C53] mb-4">
+            Recent Job Requests
+          </h3>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                  Service
-                </th>
-                <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                  Customer
-                </th>
-                <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                  Location
-                </th>
-                <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                  Date & Time
-                </th>
-                <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                  Price
-                </th>
-                <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {jobRequests.map((job) => (
-                <tr key={job.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-medium text-[#1B3C53]">
-                    {job.serviceName}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {job.customerName}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {job.location}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {job.dateTime}
-                  </td>
-                  <td className="px-4 py-3 text-sm font-medium text-green-600">
-                    Rs. {job.estimatedPrice}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      New Request
-                    </span>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-sm font-semibold text-gray-600">
+                    Service
+                  </th>
+                  <th className="px-4 py-3 text-sm font-semibold text-gray-600">
+                    Customer
+                  </th>
+                  <th className="px-4 py-3 text-sm font-semibold text-gray-600 border-r border-gray-100">
+                    Status
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {jobRequests.map((job) => (
+                  <tr key={job.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-medium text-[#1B3C53]">
+                      {job.serviceName}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {job.customerName}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        job.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        job.status === 'accepted' ? 'bg-blue-100 text-blue-800' :
+                        job.status === 'in_progress' ? 'bg-orange-100 text-orange-800' :
+                        job.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {job.status.charAt(0).toUpperCase() + job.status.slice(1).replace('_', ' ')}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {jobRequests.length === 0 && (
+                  <tr>
+                    <td colSpan="3" className="px-4 py-8 text-center text-gray-400 italic">No recent requests</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Recent Work Activity */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-lg font-bold text-[#1B3C53] mb-4">
+            Recent Work Activity
+          </h3>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-sm font-semibold text-gray-600">
+                    Service
+                  </th>
+                  <th className="px-4 py-3 text-sm font-semibold text-gray-600">
+                    Customer
+                  </th>
+                  <th className="px-4 py-3 text-sm font-semibold text-gray-600">
+                    Payment
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {recentWork.map((work) => (
+                  <tr key={work.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-medium text-[#1B3C53]">
+                      {work.serviceName}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {work.customerName}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        work.is_paid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {work.is_paid ? 'Paid' : 'Unpaid'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {recentWork.length === 0 && (
+                  <tr>
+                    <td colSpan="3" className="px-4 py-8 text-center text-gray-400 italic">No recent work activity</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
