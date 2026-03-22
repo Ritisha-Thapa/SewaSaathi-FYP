@@ -15,6 +15,7 @@ class Booking(BaseModel):
         ("paid", "Paid"),
         ("cancelled", "Cancelled"),
         ("rejected", "Rejected"),
+        ("refunded", "Refunded"),
     )
 
     customer = models.ForeignKey(
@@ -45,6 +46,7 @@ class Booking(BaseModel):
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     completed_at = models.DateTimeField(null=True, blank=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
 
     # Prices
     service_price = models.DecimalField(max_digits=10, decimal_places=2, default=0) # Price of service at booking time
@@ -58,6 +60,7 @@ class Booking(BaseModel):
         default="cash"
     )
     is_paid = models.BooleanField(default=False)
+    is_rework = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -78,6 +81,13 @@ class Booking(BaseModel):
             if old_status != 'completed' and self.status == 'completed':
                 from django.utils import timezone
                 self.completed_at = timezone.now()
+                # Auto-pay if price is 0 (e.g. for reworks)
+                if self.total_price == 0:
+                    self.is_paid = True
+            
+            if self.is_paid and not self.paid_at:
+                from django.utils import timezone
+                self.paid_at = timezone.now()
                 
         super().save(*args, **kwargs)
 

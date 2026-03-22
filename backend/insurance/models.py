@@ -28,7 +28,7 @@ class InsuranceClaim(BaseModel):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="claims")
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="claims")
     description = models.TextField()
-    evidence = models.FileField(upload_to="claim_evidence/", blank=True, null=True)
+    evidence = models.FileField(upload_to="claim_evidence/")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     resolution = models.CharField(max_length=20, choices=RESOLUTION_CHOICES, default="none")
     timestamp = models.DateTimeField(auto_now_add=True)

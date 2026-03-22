@@ -10,6 +10,21 @@ class BookingSerializer(serializers.ModelSerializer):
     provider_name = serializers.CharField(source='provider.get_full_name', read_only=True)
     service_name = serializers.CharField(source='service.name', read_only=True)
     service_category_name = serializers.CharField(source='service.category.name', read_only=True)
+    latest_claim_status = serializers.SerializerMethodField()
+    latest_claim_resolution = serializers.SerializerMethodField()
+    latest_claim_id = serializers.SerializerMethodField()
+
+    def get_latest_claim_status(self, obj):
+        claim = obj.claims.last()
+        return claim.status if claim else None
+    
+    def get_latest_claim_resolution(self, obj):
+        claim = obj.claims.last()
+        return claim.resolution if claim else None
+
+    def get_latest_claim_id(self, obj):
+        claim = obj.claims.last()
+        return claim.id if claim else None
     
     class Meta:
         model = Booking
@@ -19,9 +34,10 @@ class BookingSerializer(serializers.ModelSerializer):
             'service', 'service_name', 'service_category_name', 'scheduled_date', 'scheduled_time', 
             'issue_description', 'issue_images', 'status', 'address', 'phone',
             'service_price', 'final_price', 'insurance_fee', 'total_price', 
-            'payment_method', 'is_paid', 'created_at', 'updated_at', 'completed_at'
+            'payment_method', 'is_paid', 'is_rework', 'created_at', 'updated_at', 'completed_at', 'paid_at',
+            'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id'
         ]
-        read_only_fields = ['id', 'customer', 'service_price', 'created_at', 'updated_at', 'total_price', 'insurance_fee', 'is_paid', 'completed_at']
+        read_only_fields = ['id', 'customer', 'service_price', 'created_at', 'updated_at', 'total_price', 'insurance_fee', 'is_paid', 'completed_at', 'paid_at', 'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id']
 
     def create(self, validated_data):
         # Override create to set service_price from ProviderService or Service

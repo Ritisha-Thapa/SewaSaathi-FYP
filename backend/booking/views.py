@@ -14,8 +14,10 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        base_qs = Booking.objects.select_related('customer', 'provider', 'service', 'service__category')
+        
         if user.role == 'customer':
-            return Booking.objects.filter(customer=user).order_by('-created_at')
+            return base_qs.filter(customer=user).order_by('-created_at')
         elif user.role == 'provider':
             # Provider sees pending requests based on skills + assigned bookings
             # Map provider skills to service categories
@@ -33,18 +35,43 @@ class BookingViewSet(viewsets.ModelViewSet):
             
             if provider_category:
                 # Show bookings from provider's skill category (service-based) + directly assigned bookings
-                queryset = Booking.objects.filter(
+                queryset = base_qs.filter(
                     Q(provider=user) |  # Directly assigned bookings
                     Q(provider__isnull=True, service__category__name=provider_category)  # Service-based bookings in their skill category
                 ).distinct().order_by('-created_at')
             else:
                 # If no skill, only show directly assigned bookings
-                queryset = Booking.objects.filter(provider=user).order_by('-created_at')
+                queryset = base_qs.filter(provider=user).order_by('-created_at')
             
             return queryset
         elif user.role == 'admin':
-            return Booking.objects.all().order_by('-created_at')
-        return Booking.objects.none()
+            return base_qs.all().order_by('-created_at')
+        return base_qs.none()
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        queryset = self.get_queryset()
+        
+        # Calculate counts
+        pending = queryset.filter(status='pending').count()
+        # Active jobs include those in progress/accepted (regardless of payment for reworks) 
+        # plus completed jobs that are not yet paid
+        active = queryset.filter(
+            Q(status__in=['accepted', 'in_progress']) | 
+            Q(status='completed', is_paid=False)
+        ).count()
+        completed = queryset.filter(status__in=['completed', 'paid']).count()
+        
+        # Calculate earnings
+        from django.db.models import Sum
+        earnings = queryset.filter(is_paid=True, status='paid').aggregate(total=Sum('total_price'))['total'] or 0
+        
+        return Response({
+            "pending": pending,
+            "active": active,
+            "completed": completed,
+            "earnings": float(earnings)
+        })
 
     def perform_create(self, serializer):
         booking = serializer.save(customer=self.request.user)
@@ -81,8 +108,36 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='update-status')
     def update_status(self, request, pk=None):
-        booking = self.get_object()
+        # We manually fetch the booking to avoid 404 if it's not in the 'default' filtered queryset
+        try:
+            booking = Booking.objects.get(pk=pk)
+        except Booking.DoesNotExist:
+            return Response({"error": "Booking not found"}, status=status.HTTP_404_NOT_FOUND)
+            
         new_status = request.data.get('status')
+        user = request.user
+
+        # Manual Authorization Check
+        if user.role == 'provider':
+            # Check if this provider is allowed to act on this booking
+            skill_map = {
+                'Cleaning': 'cleaner',
+                'Painting': 'painter',
+                'Electrical Repairing': 'electrician',
+                'Gardening': 'gardener',
+                'Carpentry': 'carpenter',
+                'Plumbing': 'plumber'
+            }
+            provider_category = skill_map.get(booking.service.category.name)
+            
+            is_assigned = booking.provider == user
+            is_eligible_for_pending = (booking.provider is None and 
+                                      booking.status == 'pending' and 
+                                      user.skills == provider_category)
+            
+            if not (is_assigned or is_eligible_for_pending or user.role == 'admin'):
+                return Response({"error": "You are not authorized to update this booking."}, 
+                                status=status.HTTP_403_FORBIDDEN)
         
         # Validate status
         if new_status not in dict(Booking.STATUS_CHOICES):
@@ -90,18 +145,20 @@ class BookingViewSet(viewsets.ModelViewSet):
         
         # Validate status transitions
         current_status = booking.status
-        if not self._is_valid_status_transition(current_status, new_status, request.user):
-            return Response({"error": "Invalid status transition"}, status=status.HTTP_400_BAD_REQUEST)
+        if not self._is_valid_status_transition(current_status, new_status, user):
+            return Response(
+                {"error": f"Invalid status transition from '{current_status}' to '{new_status}'."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         # Handle special logic for completion
         if new_status == 'completed':
-            # Allow provider to set final price
             final_price = request.data.get('final_price')
-            if final_price and request.user.role == 'provider':
+            if final_price and user.role == 'provider':
                 try:
                     booking.final_price = Decimal(str(final_price))
-                except (ValueError, TypeError):
-                    return Response({"error": "Invalid final price format"}, status=status.HTTP_400_BAD_REQUEST)
+                except (ValueError, TypeError, Exception) as e:
+                    return Response({"error": f"Invalid final price format: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
         
         # Handle payment
         if new_status == 'paid':
@@ -113,17 +170,15 @@ class BookingViewSet(viewsets.ModelViewSet):
         booking.status = new_status
         booking.save()
 
-        # Send Notifications based on status change
+        # Send Notifications
         if new_status == 'accepted':
-            # Ensure provider is assigned if it was a general request
             if not booking.provider:
-                booking.provider = request.user
+                booking.provider = user
                 booking.save()
-                
             Notification.objects.create(
                 recipient=booking.customer,
                 title="Booking Accepted",
-                message=f"Your provider {booking.provider.first_name} has accepted the booking for {booking.service.name} and is on the way.",
+                message=f"Your provider {booking.provider.first_name} has accepted the booking for {booking.service.name}.",
                 booking=booking
             )
         elif new_status == 'rejected':
@@ -147,18 +202,15 @@ class BookingViewSet(viewsets.ModelViewSet):
                 message=f"Your booking for {booking.service.name} has been marked as completed. Please review and pay.",
                 booking=booking
             )
-        elif new_status == 'cancelled':
-            # Notify the other party
-            recipient = booking.provider if request.user.role == 'customer' else booking.customer
-            title = "Booking Cancelled"
-            message = f"Booking for {booking.service.name} has been cancelled."
-            if recipient:
-                Notification.objects.create(recipient=recipient, title=title, message=message, booking=booking)
 
         return Response(BookingSerializer(booking).data)
     
     def _is_valid_status_transition(self, current_status, new_status, user):
         """Validate status transitions based on user role"""
+        # Allow same status update (idempotent)
+        if current_status == new_status:
+            return True
+
         # Customer can only cancel
         if user.role == 'customer':
             return new_status in ['cancelled']
@@ -167,9 +219,10 @@ class BookingViewSet(viewsets.ModelViewSet):
         if user.role == 'provider':
             valid_transitions = {
                 'pending': ['accepted', 'rejected'],
-                'accepted': ['in_progress', 'cancelled'],
+                'assigned': ['accepted', 'rejected', 'in_progress', 'completed', 'cancelled'],
+                'accepted': ['in_progress', 'completed', 'cancelled'],
                 'in_progress': ['completed', 'cancelled'],
-                'completed': ['paid'],  # Only customer can pay, but provider can mark as paid for cash
+                'completed': ['paid'],
                 'cancelled': [],
                 'rejected': [],
                 'paid': []

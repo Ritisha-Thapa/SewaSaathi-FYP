@@ -44,14 +44,42 @@ class InsuranceClaimViewSet(viewsets.ModelViewSet):
         claim.resolution = resolution
         claim.save()
 
-        # Handle Rework logic if needed (assign new worker)
-        if resolution == 'rework':
-            booking = claim.booking
-            booking.status = 'pending' # Reset to pending for re-assignment
-            booking.provider = None # Clear old provider
+        booking = claim.booking
+        if resolution == 'refund':
+            booking.status = 'refunded'
             booking.save()
-            # Logic for paying from InsurancePool would happen at provider payout time
-            # For now, we just mark it for rework by resetting booking status.
+            
+            # Create Notification
+            from notifications.models import Notification
+            Notification.objects.create(
+                recipient=claim.customer,
+                title="Refund Initiated",
+                message=f"Your refund for Booking #{booking.id} ({booking.service.name}) will be sent within 3 days.",
+                booking=booking
+            )
+
+        # Handle Rework logic - simplified as per user request (logic to be confirmed later)
+        if resolution == 'rework':
+            booking.status = 'accepted'
+            booking.is_rework = True
+            booking.save()
+            
+            # Create Notifications
+            from notifications.models import Notification
+            # Notify Customer
+            Notification.objects.create(
+                recipient=claim.customer,
+                title="Rework Started",
+                message=f"Your rework request for Booking #{booking.id} has been accepted. The original provider will contact you soon.",
+                booking=booking
+            )
+            # Notify Provider
+            Notification.objects.create(
+                recipient=booking.provider,
+                title="Rework Assigned",
+                message=f"A rework has been assigned to you for Booking #{booking.id}. Please check your active jobs.",
+                booking=booking
+            )
 
         return Response(InsuranceClaimSerializer(claim).data)
 
