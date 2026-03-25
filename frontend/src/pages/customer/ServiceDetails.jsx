@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
 import { api } from "../../utils/api";
+import ReviewModal from "../../components/customer/ReviewModal";
 
 const formatPrice = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -29,6 +30,10 @@ const ServiceDetails = () => {
   const [bookingDetails, setBookingDetails] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [existingBooking, setExistingBooking] = useState(null);
+
+  // Review State
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedBookingForReview, setSelectedBookingForReview] = useState(null);
 
   useEffect(() => {
     const fetchService = async () => {
@@ -136,14 +141,29 @@ const ServiceDetails = () => {
     if (!bookingDetails) return;
 
     try {
+      // Optimistic update
+      setBookingDetails(prev => ({ ...prev, is_paid: true, status: 'paid' }));
+
       await api.post(`/booking/bookings/${bookingDetails.id}/pay/`);
-      toast.success("Payment successful! You can now book another service.");
+      toast.success("Payment successful! Please leave us your feedback.");
       
-      // Reset form instead of showing the status card
-      resetView();
+      // Delay modal to show toast
+      setTimeout(() => {
+          setSelectedBookingForReview(bookingDetails);
+          setShowReviewModal(true);
+      }, 1500);
+
+      const bookings = await api.get(`/booking/bookings/`);
+      const updated = bookings.find(b => b.id === bookingDetails.id);
+      if (updated) setBookingDetails(updated);
+
     } catch (err) {
       console.error("Payment Error", err);
-      alert("Payment error.");
+      toast.error("Payment error.");
+      // Refresh to revert state?
+      const bookings = await api.get(`/booking/bookings/`);
+      const updated = bookings.find(b => b.id === bookingDetails.id);
+      if (updated) setBookingDetails(updated);
     }
   };
 
@@ -602,6 +622,19 @@ const ServiceDetails = () => {
           </div>
         </div>
       </div>
+      <ReviewModal 
+        isOpen={showReviewModal}
+        onClose={() => {
+          setShowReviewModal(false);
+          resetView();
+        }}
+        booking={selectedBookingForReview}
+        onReviewSubmit={() => {
+          setShowReviewModal(false);
+          toast.success("Thank you for your feedback!");
+          resetView();
+        }}
+      />
       <Footer />
     </div>
   );

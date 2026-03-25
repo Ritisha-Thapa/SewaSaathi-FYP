@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
+import toast from 'react-hot-toast';
 import DashboardHeader from '../../components/customer/DashboardHeader';
 import Footer from '../../components/customer/Footer';
-import { Calendar, MapPin, CheckCircle, Clock, AlertCircle, Filter } from 'lucide-react';
+import { Calendar, MapPin, CheckCircle, Clock, AlertCircle, Filter, MessageSquare } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
 import { Link } from 'react-router-dom';
 import Pagination from '../../components/common/Pagination';
+import ReviewModal from '../../components/customer/ReviewModal';
 
 const MyBookings = () => {
     const [bookings, setBookings] = useState([]);
@@ -17,6 +19,9 @@ const MyBookings = () => {
     const [timeFilter, setTimeFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
+
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [selectedBookingForReview, setSelectedBookingForReview] = useState(null);
 
     useEffect(() => {
         fetchData();
@@ -297,17 +302,30 @@ const MyBookings = () => {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-2 w-full md:w-auto">
+                            <div className="flex flex-col gap-2 w-full md:w-auto min-w-[160px]">
                                 {booking.status === 'completed' && !booking.is_paid && (
                                     <button
                                         onClick={async () => {
                                             try {
+                                                // Optimistic update
+                                                setBookings(prev => prev.map(b => 
+                                                    b.id === booking.id ? { ...b, is_paid: true, status: 'paid' } : b
+                                                ));
+
                                                 await api.post(`/booking/bookings/${booking.id}/pay/`);
-                                                fetchData(); // Refresh to show paid status
-                                                alert("Payment successful!");
+                                                toast.success("Payment successful! Please leave us your feedback.");
+                                                
+                                                // Delay modal to show toast
+                                                setTimeout(() => {
+                                                    setSelectedBookingForReview(booking);
+                                                    setShowReviewModal(true);
+                                                }, 1500);
+                                                
+                                                fetchData(); // Final refresh
                                             } catch (err) {
                                                 console.error("Payment failed", err);
-                                                alert("Payment failed. Please try again.");
+                                                toast.error("Payment failed. Please try again.");
+                                                fetchData(); // Revert on failure
                                             }
                                         }}
                                         className="px-6 py-2 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition text-center shadow-md flex items-center justify-center gap-2"
@@ -356,6 +374,17 @@ const MyBookings = () => {
                     )}
                 </div>
             </div>
+            
+            <ReviewModal 
+                isOpen={showReviewModal}
+                onClose={() => setShowReviewModal(false)}
+                booking={selectedBookingForReview}
+                onReviewSubmit={() => {
+                    fetchData();
+                    alert("Thank you for your feedback!");
+                }}
+            />
+
             <Footer />
         </div>
     );

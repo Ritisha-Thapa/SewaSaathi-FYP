@@ -63,14 +63,20 @@ class BookingViewSet(viewsets.ModelViewSet):
         completed = queryset.filter(status__in=['completed', 'paid']).count()
         
         # Calculate earnings
-        from django.db.models import Sum
+        from django.db.models import Sum, Avg
         earnings = queryset.filter(is_paid=True, status='paid').aggregate(total=Sum('total_price'))['total'] or 0
         
+        # Calculate average rating for provider
+        avg_rating = 0
+        if request.user.role == 'provider':
+            avg_rating = Review.objects.filter(provider=request.user).aggregate(Avg('rating'))['rating__avg'] or 0
+
         return Response({
             "pending": pending,
             "active": active,
             "completed": completed,
-            "earnings": float(earnings)
+            "earnings": float(earnings),
+            "average_rating": round(float(avg_rating), 1)
         })
 
     def perform_create(self, serializer):
@@ -275,14 +281,18 @@ class ReviewViewSet(viewsets.ModelViewSet):
         user = self.request.user
         qs = Review.objects.select_related('customer', 'provider', 'booking').all()
         
-        # If the user is a provider, maybe they want to see the reviews they RECEIVED?
-        # Actually any user might want to see reviews for a specific provider.
         provider_id = self.request.query_params.get('provider_id')
         if provider_id:
             qs = qs.filter(provider_id=provider_id)
+        elif user.role == 'provider':
+            # If logged in user is a provider and no specific provider_id was requested,
+            # only show reviews received by this provider.
+            qs = qs.filter(provider=user)
+        elif user.role == 'customer':
+            # If logged in user is a customer and no specific provider_id was requested,
+            # show reviews they HAVE GIVEN.
+            qs = qs.filter(customer=user)
             
-        # Admin can see all, customer sees what they gave, provider sees what they received?
-        # Let's just allow anyone to view reviews (for public profile), but filter by provider_id.
         return qs.order_by('-created_at')
 
     def perform_create(self, serializer):

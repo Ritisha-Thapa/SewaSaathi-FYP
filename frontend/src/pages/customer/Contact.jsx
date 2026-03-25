@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Mail, Phone, MapPin, ChevronDown } from 'lucide-react';
 import Header from '../../components/customer/DashboardHeader';
 import Footer from '../../components/customer/Footer';
 import contactBg from '../../assets/images/services/plumbing.png'; 
@@ -65,30 +66,17 @@ const Contact = () => {
 
   const contactInfo = [
     {
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-      ),
+      icon: <Mail className="w-6 h-6" />,
       title: 'Email',
       details: ['support@sewasaathi.com', 'info@sewasaathi.com']
     },
     {
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-        </svg>
-      ),
+      icon: <Phone className="w-6 h-6" />,
       title: 'Phone',
       details: ['+977-1-1234567', '+977-9800000000']
     },
     {
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      ),
+      icon: <MapPin className="w-6 h-6" />,
       title: 'Address',
       details: ['Kathmandu, Nepal', 'Office Hours: 9 AM - 6 PM']
     }
@@ -252,14 +240,9 @@ const Contact = () => {
                 >
                   <span className="font-semibold text-[#1B3C53]">{faq.question}</span>
 
-                  <svg
+                  <ChevronDown
                     className={`w-5 h-5 transform transition ${faqOpen === index ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  />
                 </button>
 
                 {faqOpen === index && (

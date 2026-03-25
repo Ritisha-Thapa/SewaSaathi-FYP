@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Wrench, Zap, Sparkles, Leaf } from 'lucide-react';
 
 const LandingHero = () => {
 
@@ -35,9 +36,7 @@ const LandingHero = () => {
               <div className="bg-[#F9F5F0] rounded-xl p-6 shadow-lg text-center transition hover:scale-105">
                 <div className="w-20 h-20 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
                   {/* Replace with actual image: <img src="/images/hero/plumber.jpg" alt="Plumber" className="w-full h-full object-cover" /> */}
-                  <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
+                  <Wrench className="w-10 h-10 text-blue-600" />
                 </div>
                 <h3 className="font-semibold text-gray-800">Plumber</h3>
               </div>
@@ -46,9 +45,7 @@ const LandingHero = () => {
               <div className="bg-[#F9F5F0] rounded-xl p-6 shadow-lg text-center transition hover:scale-105">
                 <div className="w-20 h-20 bg-yellow-100 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
                   {/* Replace with actual image: <img src="/images/hero/electrician.jpg" alt="Electrician" className="w-full h-full object-cover" /> */}
-                  <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
+                  <Zap className="w-10 h-10 text-yellow-600" />
                 </div>
                 <h3 className="font-semibold text-gray-800">Electrician</h3>
               </div>
@@ -57,9 +54,7 @@ const LandingHero = () => {
               <div className="bg-[#F9F5F0] rounded-xl p-6 shadow-lg text-center transition hover:scale-105">
                 <div className="w-20 h-20 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
                   {/* Replace with actual image: <img src="/images/hero/cleaner.jpg" alt="Cleaner" className="w-full h-full object-cover" /> */}
-                  <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  <Sparkles className="w-10 h-10 text-green-600" />
                 </div>
                 <h3 className="font-semibold text-gray-800">Cleaner</h3>
               </div>
@@ -68,9 +63,7 @@ const LandingHero = () => {
               <div className="bg-[#F9F5F0] rounded-xl p-6 shadow-lg text-center transition hover:scale-105">
                 <div className="w-20 h-20 bg-emerald-100 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
                   {/* Replace with actual image: <img src="/images/hero/gardener.jpg" alt="Gardener" className="w-full h-full object-cover" /> */}
-                  <svg className="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                  </svg>
+                  <Leaf className="w-10 h-10 text-emerald-600" />
                 </div>
                 <h3 className="font-semibold text-gray-800">Gardener</h3>
               </div>

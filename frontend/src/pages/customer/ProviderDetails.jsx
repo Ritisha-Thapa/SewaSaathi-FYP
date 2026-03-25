@@ -133,9 +133,12 @@ const ProviderDetails = () => {
     const handleMockPay = async () => {
         if (!bookingDetails) return;
         try {
+            // Optimistic update
+            setBookingDetails(prev => ({ ...prev, is_paid: true }));
+
             await api.post(`/booking/bookings/${bookingDetails.id}/pay/`);
 
-            toast.success("Payment successful! You can now book again.");
+            toast.success("Payment successful! Please leave us your feedback.");
 
             setTimeout(() => {
                 setOrderingStatus("");
@@ -151,7 +154,8 @@ const ProviderDetails = () => {
 
         } catch (err) {
             console.error(err);
-            alert("Payment failed.");
+            toast.error("Payment failed.");
+            // Revert on error? Or just let user try again.
         }
     };
 

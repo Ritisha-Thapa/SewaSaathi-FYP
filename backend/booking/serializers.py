@@ -13,6 +13,10 @@ class BookingSerializer(serializers.ModelSerializer):
     latest_claim_status = serializers.SerializerMethodField()
     latest_claim_resolution = serializers.SerializerMethodField()
     latest_claim_id = serializers.SerializerMethodField()
+    has_reviewed = serializers.SerializerMethodField()
+    
+    def get_has_reviewed(self, obj):
+        return hasattr(obj, 'review')
 
     def get_latest_claim_status(self, obj):
         claim = obj.claims.last()
@@ -35,7 +39,7 @@ class BookingSerializer(serializers.ModelSerializer):
             'issue_description', 'issue_images', 'status', 'address', 'phone',
             'service_price', 'final_price', 'insurance_fee', 'total_price', 
             'payment_method', 'is_paid', 'is_rework', 'created_at', 'updated_at', 'completed_at', 'paid_at',
-            'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id'
+            'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id', 'has_reviewed'
         ]
         read_only_fields = ['id', 'customer', 'service_price', 'created_at', 'updated_at', 'total_price', 'insurance_fee', 'is_paid', 'completed_at', 'paid_at', 'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id']
 

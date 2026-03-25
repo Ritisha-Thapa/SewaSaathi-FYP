@@ -89,6 +89,7 @@ function App() {
               <Route path="schedule" element={<Schedule />} />
               <Route path="reviews" element={<Reviews />} />
               <Route path="profile" element={<ProviderProfile />} />
+              <Route path="notifications" element={<NotificationsPage />} />
             </Route>
           </Route>
         </Routes>

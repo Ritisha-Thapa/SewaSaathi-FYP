@@ -48,7 +48,7 @@ const ProviderDashboard = () => {
         activeJobs: statsData.active,
         completedJobs: statsData.completed,
         totalEarnings: statsData.earnings,
-        averageRating: 4.5 // TODO: Calculate from reviews API
+        averageRating: statsData.average_rating || 0
       });
 
       // Get recent requests (all statuses except completed/paid)

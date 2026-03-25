@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
 import { useNotifications } from '../context/NotificationContext';
 import { Bell, Check, Trash2, Calendar, Clock, CheckCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const NotificationsPage = () => {
     const { notifications, markAsRead, markAllAsRead, fetchNotifications } = useNotifications();
+    const location = useLocation();
+    const isProvider = location.pathname.startsWith('/provider');
 
     useEffect(() => {
         fetchNotifications();
@@ -16,13 +18,15 @@ const NotificationsPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#F9F5F0] py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <div className="flex items-center space-x-3">
-                        <Link to="/" className="text-[#1B3C53] hover:underline text-sm mb-2 block">← Back to Dashboard</Link>
+        <div className={`${isProvider ? '' : 'min-h-screen bg-[#F9F5F0] py-12 px-4 sm:px-6 lg:px-8'}`}>
+            <div className={`${isProvider ? '' : 'max-w-4xl mx-auto'}`}>
+                {!isProvider && (
+                    <div className="flex justify-between items-center mb-8">
+                        <div className="flex items-center space-x-3">
+                            <Link to="/" className="text-[#1B3C53] hover:underline text-sm mb-2 block">← Back to Dashboard</Link>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                     <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#1B3C53] text-white">
@@ -80,7 +84,7 @@ const NotificationsPage = () => {
                                             )}
                                             {notification.booking && (
                                                 <Link 
-                                                    to={`/my-bookings`} 
+                                                    to={isProvider ? `/provider/requests` : `/my-bookings`} 
                                                     className="text-sm font-medium text-[#1B3C53] hover:underline flex items-center"
                                                 >
                                                     <Calendar size={16} className="mr-1" />

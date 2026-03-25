@@ -1,7 +1,7 @@
 import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell } from 'lucide-react';
+import { Bell, Mic, Menu, X, Loader2, User, LogOut, ChevronDown } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 
 const DashboardHeader = () => {
@@ -10,6 +10,7 @@ const DashboardHeader = () => {
   const { unreadCount } = useNotifications();
   const [profileImg, setProfileImg] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -34,6 +35,7 @@ const DashboardHeader = () => {
 
   const handleLogout = () => {
     setIsLoggingOut(true);
+    setIsProfileOpen(false);
     setTimeout(() => {
       logout();
       window.location.href = '/login';
@@ -58,48 +60,88 @@ const DashboardHeader = () => {
             <Link to="/contact" className="text-gray-700 hover:text-[#1B3C53] transition">Contact</Link>
           </nav>
 
-          <div className="hidden md:flex items-center space-x-4">
-
+          <div className="hidden md:flex items-center space-x-6">
             {/* Notification Icon */}
             <Link
               to="/notifications"
-              className="p-2 rounded-full hover:bg-gray-200 transition relative"
+              className="p-2 rounded-full hover:bg-gray-100 transition relative group"
               aria-label="Notifications"
             >
-              <Bell className="w-6 h-6 text-[#1B3C53]" />
+              <Bell className="w-6 h-6 text-[#1B3C53] group-hover:scale-110 transition-transform" />
               {unreadCount > 0 && (
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full border-2 border-white">
+                <span className="absolute top-1 right-1 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold leading-none text-white transform bg-red-600 rounded-full border-2 border-white">
                   {unreadCount}
                 </span>
               )}
             </Link>
 
-            <Link to="/profile" className="p-1 rounded-full hover:bg-gray-200 transition" aria-label="Profile">
-              <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-300">
-                <img src={profileImg || `https://ui-avatars.com/api/?name=${user?.first_name || "U"}&background=E5E7EB`} alt="Profile" className="w-full h-full object-cover" />
-              </div>
-            </Link>
-
             {/* Voice Support */}
-            <button className="p-2 rounded-full hover:bg-gray-200 transition" aria-label="Voice Support">
-              <svg className="w-6 h-6 text-[#1B3C53]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
+            <button 
+              className="p-2 rounded-full hover:bg-gray-100 transition group" 
+              aria-label="Voice Support"
+            >
+              <Mic className="w-6 h-6 text-[#1B3C53] group-hover:scale-110 transition-transform" />
             </button>
 
-            <button
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className={`inline-flex items-center justify-center px-6 py-2 rounded-full transition ${isLoggingOut ? 'bg-[#1B3C53]/70 text-white cursor-not-allowed' : 'bg-[#1B3C53] text-white hover:bg-[#1a3248]'}`}
-            >
-              {isLoggingOut ? (
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-              ) : null}
-              {isLoggingOut ? 'Logging Out...' : 'Log Out'}
-            </button>
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="flex items-center space-x-2 p-1 pr-3 rounded-full hover:bg-gray-100 transition border border-transparent hover:border-gray-200"
+                aria-label="Profile Menu"
+              >
+                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-[#1B3C53]/10 shadow-sm">
+                  <img 
+                    src={profileImg || `https://ui-avatars.com/api/?name=${user?.first_name || "U"}&background=E5E7EB&color=1B3C53&bold=true`} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover" 
+                  />
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isProfileOpen && (
+                <>
+                  {/* Backdrop to close dropdown */}
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setIsProfileOpen(false)}
+                  ></div>
+                  
+                  {/* Dropdown Menu */}
+                  <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in duration-200 origin-top-right">
+                    <div className="px-4 py-3 border-b border-gray-50 mb-1">
+                      <p className="text-sm font-semibold text-[#1B3C53] truncate">
+                        {user?.first_name} {user?.last_name}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                    </div>
+
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <User className="w-4 h-4 text-gray-400" />
+                      <span>View Profile</span>
+                    </Link>
+
+                    <button
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
+                      className="w-full flex items-center space-x-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      {isLoggingOut ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <LogOut className="w-4 h-4" />
+                      )}
+                      <span>{isLoggingOut ? 'Logging Out...' : 'Logout'}</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -108,13 +150,11 @@ const DashboardHeader = () => {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Menu"
           >
-            <svg className="w-6 h-6 text-[#1B3C53]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
+            {isMenuOpen ? (
+              <X className="w-6 h-6 text-[#1B3C53]" />
+            ) : (
+              <Menu className="w-6 h-6 text-[#1B3C53]" />
+            )}
           </button>
         </div>
 
@@ -140,9 +180,7 @@ const DashboardHeader = () => {
 
               {/* Voice Support */}
               <button className="flex items-center justify-center space-x-2 p-2 text-[#1B3C53]">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
+                <Mic className="w-5 h-5" />
                 <span>Voice Support</span>
               </button>
 
@@ -152,10 +190,7 @@ const DashboardHeader = () => {
                 className={`w-full px-6 py-2 rounded-full flex justify-center items-center transition ${isLoggingOut ? 'bg-[#1B3C53]/70 text-white cursor-not-allowed' : 'bg-[#1B3C53] text-white hover:bg-[#1a3248]'}`}
               >
                 {isLoggingOut ? (
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
+                  <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" />
                 ) : null}
                 {isLoggingOut ? 'Logging Out...' : 'Log Out'}
               </button>

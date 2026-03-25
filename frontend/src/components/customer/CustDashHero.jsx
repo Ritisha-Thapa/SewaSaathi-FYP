@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import painting from "../../assets/images/services/electricianman.png";
+import { Search } from "lucide-react";
 
 const CustDashHero = () => {
   const navigate = useNavigate();
@@ -77,19 +78,7 @@ const CustDashHero = () => {
                   type="submit"
                   className="bg-[#1B3C53] text-white h-full px-8 hover:bg-[#153043] transition duration-300 flex items-center justify-center"
                 >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
+                  <Search size={24} />
                 </button>
               </form>
 
