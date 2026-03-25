@@ -13,7 +13,8 @@ from .serializers import (
     ForgotPasswordSerializer, 
     VerifyOTPSerializer, 
     ResetPasswordSerializer,
-    UserProfileSerializer
+    UserProfileSerializer,
+    ChangePasswordSerializer
 )
 
 
@@ -115,4 +116,19 @@ class UserProfileView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            if not user.check_password(serializer.validated_data.get("old_password")):
+                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+            user.set_password(serializer.validated_data.get("new_password"))
+            user.save()
+            return Response({"message": "Password updated successfully"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

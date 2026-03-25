@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from .views import CustomerRegisterView, ProviderRegisterView, LoginView, ForgotPasswordView, VerifyOTPView, ResetPasswordView, UserProfileView
+from .views import CustomerRegisterView, ProviderRegisterView, LoginView, ForgotPasswordView, VerifyOTPView, ResetPasswordView, UserProfileView, ChangePasswordView
 urlpatterns = [
 
     path('customer-registration/', CustomerRegisterView.as_view(), name='customer_registration' ),
@@ -9,6 +9,7 @@ urlpatterns = [
     path('forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
     path('verify-otp/', VerifyOTPView.as_view(), name='verify_otp'),
     path('reset-password/', ResetPasswordView.as_view(), name='reset_password'),
-    path('profile/', UserProfileView.as_view(), name='user_profile')
+    path('profile/', UserProfileView.as_view(), name='user_profile'),
+    path('change-password/', ChangePasswordView.as_view(), name='change_password')
 
 ]

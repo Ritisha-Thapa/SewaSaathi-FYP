@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { User, Phone, MapPin, Mail, Camera, Save, X, Edit, CheckCircle, Loader2 } from "lucide-react";
+import { User, Phone, MapPin, Mail, Camera, Save, X, Edit, CheckCircle, Loader2, Lock } from "lucide-react";
 import DashboardHeader from "../../components/customer/DashboardHeader";
 import Footer from "../../components/customer/Footer";
 import Skeleton from "../../components/Skeleton";
+import ChangePasswordModal from "../../components/common/ChangePasswordModal";
 
 const CustomerProfile = () => {
     const [profile, setProfile] = useState(null);
@@ -11,6 +12,7 @@ const CustomerProfile = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [formData, setFormData] = useState({
         first_name: "",
         last_name: "",
@@ -147,9 +149,20 @@ const CustomerProfile = () => {
             <DashboardHeader />
 
             <main className="flex-grow container mx-auto px-4 py-8 max-w-4xl">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-[#1B3C53]">My Profile</h1>
-                    <p className="text-gray-600">Manage your personal information and profile settings.</p>
+                <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-[#1B3C53]">My Profile</h1>
+                        <p className="text-gray-600">Manage your personal information and profile settings.</p>
+                    </div>
+                    {!isLoading && (
+                        <button
+                            onClick={() => setShowPasswordModal(true)}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 text-[#1B3C53] rounded-xl hover:bg-gray-50 transition font-bold shadow-sm"
+                        >
+                            <Lock size={18} />
+                            Change Password
+                        </button>
+                    )}
                 </div>
 
                 {message && (
@@ -356,6 +369,10 @@ const CustomerProfile = () => {
                 </div>
             </main>
 
+            <ChangePasswordModal 
+                isOpen={showPasswordModal}
+                onClose={() => setShowPasswordModal(false)}
+            />
             <Footer />
         </div>
     );

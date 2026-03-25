@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, CheckCircle, Save, Loader2, X } from 'lucide-react';
+import { Camera, CheckCircle, Save, Loader2, X, Lock } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
 import NotificationPopup from '../../components/common/NotificationPopup';
+import ChangePasswordModal from '../../components/common/ChangePasswordModal';
 
 const ProviderProfile = () => {
    const [isEditing, setIsEditing] = useState(false);
@@ -10,6 +11,7 @@ const ProviderProfile = () => {
    const [previewImage, setPreviewImage] = useState(null);
    const [originalProfile, setOriginalProfile] = useState(null);
    const [notification, setNotification] = useState({ isOpen: false, type: 'success', title: '', message: '' });
+   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
    const [profile, setProfile] = useState({
       first_name: "",
@@ -150,7 +152,16 @@ const ProviderProfile = () => {
 
    return (
       <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
          <h2 className="text-2xl font-bold text-[#1B3C53]">My Profile</h2>
+         <button
+            onClick={() => setShowPasswordModal(true)}
+            className="flex items-center gap-2 px-6 py-2 bg-white border border-gray-200 text-[#1B3C53] rounded-xl hover:bg-gray-50 transition font-bold shadow-sm text-sm"
+         >
+            <Lock size={16} />
+            Change Password
+         </button>
+      </div>
 
          {/* Verification Status */}
          <div className="bg-green-50 border border-green-200 p-4 rounded-xl flex items-center gap-3">
@@ -300,6 +311,10 @@ const ProviderProfile = () => {
             type={notification.type}
             title={notification.title}
             message={notification.message}
+         />
+         <ChangePasswordModal 
+            isOpen={showPasswordModal}
+            onClose={() => setShowPasswordModal(false)}
          />
       </div>
    );
