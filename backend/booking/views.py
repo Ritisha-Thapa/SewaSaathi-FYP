@@ -367,6 +367,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
+    def top_reviews(self, request):
+        # Fetch high-rated reviews (4+ stars)
+        # Limit to 6 items and order by most recent
+        qs = Review.objects.select_related('customer', 'booking', 'booking__service').filter(rating__gte=4).order_by('-created_at')[:6]
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
     def get_queryset(self):
         user = self.request.user
         qs = Review.objects.select_related('customer', 'provider', 'booking').all()
@@ -374,6 +382,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
         provider_id = self.request.query_params.get('provider_id')
         if provider_id:
             qs = qs.filter(provider_id=provider_id)
+        elif not user.is_authenticated:
+            return qs
         elif user.role == 'provider':
             # If logged in user is a provider and no specific provider_id was requested,
             # only show reviews received by this provider.

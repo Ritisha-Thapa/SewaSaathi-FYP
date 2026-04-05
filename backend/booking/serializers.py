@@ -75,10 +75,19 @@ class ReviewSerializer(serializers.ModelSerializer):
     customer_name = serializers.CharField(source='customer.get_full_name', read_only=True)
     provider_name = serializers.CharField(source='provider.get_full_name', read_only=True)
     service_name = serializers.CharField(source='booking.service.name', read_only=True)
+    customer_profile_image = serializers.SerializerMethodField()
+
+    def get_customer_profile_image(self, obj):
+        if obj.customer.profile_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.customer.profile_image.url)
+            return obj.customer.profile_image.url
+        return None
 
     class Meta:
         model = Review
-        fields = ['id', 'booking', 'customer', 'customer_name', 'provider', 'provider_name', 'rating', 'comment', 'service_name', 'created_at']
+        fields = ['id', 'booking', 'customer', 'customer_name', 'customer_profile_image', 'provider', 'provider_name', 'rating', 'comment', 'service_name', 'created_at']
         read_only_fields = ['id', 'customer', 'created_at']
 
     def create(self, validated_data):
