@@ -11,6 +11,7 @@ const ServicesPage = () => {
   const [loading, setLoading] = useState(true);
 
   // Filters state
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -41,6 +42,7 @@ const ServicesPage = () => {
       try {
         // Build query params
         const params = new URLSearchParams();
+        if (searchQuery) params.append("search", searchQuery);
         if (selectedCategories.length) selectedCategories.forEach(id => params.append("category", id));
         if (minPrice) params.append("min_price", minPrice);
         if (maxPrice) params.append("max_price", maxPrice);
@@ -61,7 +63,7 @@ const ServicesPage = () => {
 
     fetchServices();
     setCurrentPage(1); // Reset to page 1 when filters change
-  }, [selectedCategories, minPrice, maxPrice, ordering]);
+  }, [searchQuery, selectedCategories, minPrice, maxPrice, ordering]);
 
   return (
     <div className="min-h-screen bg-[#F9F5F0]">
@@ -69,6 +71,8 @@ const ServicesPage = () => {
       <div className="container mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Filters */}
         <ServiceFilters
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
           categories={categories}
           selectedCategories={selectedCategories}
           setSelectedCategories={setSelectedCategories}
