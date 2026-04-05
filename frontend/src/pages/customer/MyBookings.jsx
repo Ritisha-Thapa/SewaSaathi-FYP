@@ -307,33 +307,33 @@ const MyBookings = () => {
                                     <button
                                         onClick={async () => {
                                             try {
-                                                // Optimistic update
-                                                setBookings(prev => prev.map(b => 
-                                                    b.id === booking.id ? { ...b, is_paid: true, status: 'paid' } : b
-                                                ));
+                                                const res = await toast.promise(
+                                                    api.post(`/booking/bookings/${booking.id}/initialize-payment/`, {
+                                                        return_url: `${window.location.origin}/payment-response`
+                                                    }),
+                                                    {
+                                                        loading: 'Preparing Khalti payment...',
+                                                        success: 'Redirecting to Khalti...',
+                                                        error: 'Failed to initialize payment.'
+                                                    }
+                                                );
 
-                                                await api.post(`/booking/bookings/${booking.id}/pay/`);
-                                                toast.success("Payment successful! Please leave us your feedback.");
-                                                
-                                                // Delay modal to show toast
-                                                setTimeout(() => {
-                                                    setSelectedBookingForReview(booking);
-                                                    setShowReviewModal(true);
-                                                }, 1500);
-                                                
-                                                fetchData(); // Final refresh
+                                                if (res.payment_url) {
+                                                    // Redirect to Khalti
+                                                    window.location.href = res.payment_url;
+                                                }
                                             } catch (err) {
-                                                console.error("Payment failed", err);
-                                                toast.error("Payment failed. Please try again.");
-                                                fetchData(); // Revert on failure
+                                                console.error("Payment initialization failed", err);
                                             }
                                         }}
-                                        className="px-6 py-2 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition text-center shadow-md flex items-center justify-center gap-2"
+                                        className="px-6 py-2 bg-[#5C2D91] text-white rounded-xl font-bold hover:bg-[#4a2475] transition text-center shadow-md flex items-center justify-center gap-2"
                                     >
-                                        <CheckCircle size={18} />
-                                        Pay Now
+                                        <img src="https://khalti.com/static/img/logo1.png" alt="Khalti" className="h-5" />
+                                        Pay with Khalti
                                     </button>
                                 )}
+
+
                                 {isEligibleForClaim(booking) && !claims[booking.id] && (
                                     <Link
                                         to={`/claim-insurance/${booking.id}`}

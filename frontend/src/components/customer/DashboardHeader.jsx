@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell, Mic, Menu, X, Loader2, User, LogOut, ChevronDown } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
+import logo from '../../assets/sewasathi_logo.png';
 
 const DashboardHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -47,8 +48,9 @@ const DashboardHeader = () => {
       <div className="container mx-auto px-4 py-4 max-w-7xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Link to="/customer-dashboard" className="text-2xl font-bold text-[#1B3C53] hover:opacity-80 transition">
-              SewaSaathi
+            <Link to="/customer-dashboard" className="flex items-center gap-2 hover:opacity-80 transition">
+              <img src={logo} alt="SewaSaathi Logo" className="h-10 w-auto" />
+              <span className="text-2xl font-bold text-[#1B3C53] tracking-tight">SewaSaathi</span>
             </Link>
           </div>
 

@@ -20,6 +20,7 @@ import ServiceDetails from './pages/customer/ServiceDetails';
 import MyBookings from './pages/customer/MyBookings';
 import ClaimInsurancePage from './pages/customer/ClaimInsurancePage';
 import CustomerProfile from './pages/customer/CustomerProfile';
+import PaymentResponse from './pages/customer/PaymentResponse';
 
 // Provider Pages
 import ProviderSignup from './pages/ProviderSignup';
@@ -75,6 +76,7 @@ function App() {
             <Route path="/my-bookings" element={<MyBookings />} />
             <Route path="/claim-insurance/:bookingId" element={<ClaimInsurancePage />} />
             <Route path="/profile" element={<CustomerProfile />} />
+            <Route path="/payment-response" element={<PaymentResponse />} />
           </Route>
 
           {/* Provider Protected Routes */}

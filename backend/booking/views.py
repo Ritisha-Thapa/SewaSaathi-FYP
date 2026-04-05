@@ -6,6 +6,9 @@ from decimal import Decimal
 from .models import Booking, Review
 from .serializers import BookingSerializer, BookingStatusUpdateSerializer, ReviewSerializer
 from notifications.models import Notification
+import requests
+from django.conf import settings
+from django.utils import timezone
 
 
 class BookingViewSet(viewsets.ModelViewSet):
@@ -238,40 +241,127 @@ class BookingViewSet(viewsets.ModelViewSet):
         # Admin can do anything
         return True
 
-    @action(detail=True, methods=['post'])
-    def pay(self, request, pk=None):
+    @action(detail=True, methods=['post'], url_path='initialize-payment')
+    def initialize_payment(self, request, pk=None):
         booking = self.get_object()
         
-        # Validate booking is completed
-        if booking.status != 'completed':
-            return Response({"error": "Can only pay for completed bookings"}, status=status.HTTP_400_BAD_REQUEST)
+        if booking.is_paid:
+            return Response({"error": "Booking is already paid"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        return_url = request.data.get('return_url', 'http://localhost:5173/payment-response')
         
-        # Only customer can pay for their own booking
-        if booking.customer != request.user:
-            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        # Ensure phone is exactly 10 digits for Khalti Sandbox (must start with 98 or 97)
+        phone = booking.customer.phone
+        if not phone or len(str(phone)) != 10 or not str(phone).startswith(('98', '97')):
+            phone = "9800000000"
+            
+        payload = {
+            "return_url": return_url,
+            "website_url": "http://localhost:5173/",
+            "amount": int(round(float(booking.total_price) * 100)),
+            "purchase_order_id": f"{booking.id}_{int(timezone.now().timestamp())}",
+            "purchase_order_name": f"Booking {booking.id}",
+        }
         
-        booking.is_paid = True
-        booking.status = 'paid'
-        booking.payment_method = 'online'
-        booking.save()
+        # Add customer info with validation
+        cust_info = {}
+        if booking.customer.first_name:
+            cust_info["name"] = f"{booking.customer.first_name} {booking.customer.last_name or ''}".strip()
+        if booking.customer.email:
+            cust_info["email"] = booking.customer.email
+        if len(str(phone)) == 10:
+            cust_info["phone"] = str(phone)
+            
+        if cust_info:
+            payload["customer_info"] = cust_info
+        
+        headers = {
+            "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        try:
+            print(f"--- KHALTI INITIATION ---")
+            print(f"Payload: {payload}")
+            response = requests.post(settings.KHALTI_INITIATE_URL, json=payload, headers=headers)
+            res_data = response.json()
+            print(f"Status Code: {response.status_code}")
+            print(f"Response: {res_data}")
+            
+            if response.status_code == 200 and res_data.get('payment_url'):
 
-        # Notify Provider of payment
-        if booking.provider:
-            Notification.objects.create(
-                recipient=booking.provider,
-                title="Payment Received",
-                message=f"Payment received successfully from {booking.customer.first_name} for {booking.service.name}.",
-                booking=booking
-            )
+
+                return Response({
+                    "payment_url": res_data['payment_url'],
+                    "pidx": res_data['pidx']
+                })
+            else:
+                return Response({
+                    "error": "Failed to initialize payment with Khalti",
+                    "details": res_data
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            return Response({"error": f"Internal error during initialization: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['post'], url_path='verify-payment')
+    def verify_payment(self, request, pk=None):
+        booking = self.get_object()
         
-        # Notify Customer of payment success
-        Notification.objects.create(
-            recipient=booking.customer,
-            title="Payment Successful",
-            message=f"Payment of Rs. {booking.total_price} for {booking.service.name} was successful.",
-            booking=booking
-        )
-        return Response(BookingSerializer(booking).data)
+        if booking.is_paid:
+            return Response({"message": "Booking already paid"}, status=status.HTTP_200_OK)
+            
+        pidx = request.data.get('pidx')
+        if not pidx:
+            return Response({"error": "pidx is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        headers = {
+            "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {"pidx": pidx}
+        
+        try:
+            response = requests.post(settings.KHALTI_LOOKUP_URL, json=payload, headers=headers)
+            res_data = response.json()
+            
+            # Logic for KPG 2.0 lookup response
+            if response.status_code == 200 and res_data.get('status') == 'Completed':
+                booking.is_paid = True
+                booking.status = 'paid'
+                booking.payment_method = 'khalti_v2'
+                booking.paid_at = timezone.now()
+                booking.save()
+
+                # Notify Provider
+                if booking.provider:
+                    Notification.objects.create(
+                        recipient=booking.provider,
+                        title="Payment Received",
+                        message=f"Payment of Rs. {booking.total_price} received via Khalti for {booking.service.name}.",
+                        booking=booking
+                    )
+                
+                # Notify Customer
+                Notification.objects.create(
+                    recipient=booking.customer,
+                    title="Payment Successful",
+                    message=f"Your Khalti payment for {booking.service.name} was successful.",
+                    booking=booking
+                )
+                
+                return Response({
+                    "message": "Payment verified successfully",
+                    "booking": BookingSerializer(booking).data
+                })
+            else:
+                return Response({
+                    "error": "Payment verification failed or incomplete",
+                    "details": res_data
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            return Response({"error": f"Internal error during verification: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer

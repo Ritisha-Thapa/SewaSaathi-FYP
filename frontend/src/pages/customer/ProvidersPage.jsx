@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ProviderCard from "../../components/customer/providers/ProviderCard";
 import Skeleton from "../../components/Skeleton";
-import DashboardHeader from "../../components/customer/DashboardHeader";
+import LandingHeader from "../../components/customer/LandingHeader";
 import Footer from "../../components/customer/Footer";
 
 const ProvidersPage = () => {
@@ -40,7 +40,7 @@ const ProvidersPage = () => {
 
     return (
         <div className="min-h-screen bg-[#F9F5F0]">
-            <DashboardHeader />
+            <LandingHeader />
             <div className="container mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Filters Sidebar */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm h-fit sticky top-24">

@@ -6,6 +6,7 @@ import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
 import { api } from "../../utils/api";
 import ReviewModal from "../../components/customer/ReviewModal";
+import DashboardHeader from '../../components/customer/DashboardHeader';
 
 const formatPrice = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -61,13 +62,13 @@ const ServiceDetails = () => {
               if (b.latest_claim_status && b.service === Number(serviceId)) {
                 // Show claim card if pending
                 if (b.latest_claim_status === 'pending') return true;
-                
+
                 // Show claim card if approved but not yet resolved (resolution 'none' means processing)
                 if (b.latest_claim_status === 'approved' && b.latest_claim_resolution === 'none') {
-                    return true;
+                  return true;
                 }
               }
-              
+
               return false;
             });
             if (activeBooking) {
@@ -146,11 +147,11 @@ const ServiceDetails = () => {
 
       await api.post(`/booking/bookings/${bookingDetails.id}/pay/`);
       toast.success("Payment successful! Please leave us your feedback.");
-      
+
       // Delay modal to show toast
       setTimeout(() => {
-          setSelectedBookingForReview(bookingDetails);
-          setShowReviewModal(true);
+        setSelectedBookingForReview(bookingDetails);
+        setShowReviewModal(true);
       }, 1500);
 
       const bookings = await api.get(`/booking/bookings/`);
@@ -169,10 +170,10 @@ const ServiceDetails = () => {
 
   const handleResolution = async (resolution) => {
     if (!bookingDetails) return;
-    
+
     try {
       await api.post(`/insurance/claims/${bookingDetails.latest_claim_id}/choose-resolution/`, { resolution });
-      
+
       if (resolution === 'refund') {
         toast.success("Your refund will be sent within 3 days.");
         resetView();
@@ -235,27 +236,27 @@ const ServiceDetails = () => {
     },
     // Insurance specific messages
     claim_pending: {
-        title: "Insurance Claim Request Sent",
-        message: "Admin is reviewing your claim"
+      title: "Insurance Claim Request Sent",
+      message: "Admin is reviewing your claim"
     },
     claim_approved: {
-        title: "Insurance Claim Approved",
-        message: "Processing Claim"
+      title: "Insurance Claim Approved",
+      message: "Processing Claim"
     }
   };
 
   let currentStatusMsg = null;
   if (bookingDetails) {
-      if (bookingDetails.latest_claim_status === 'pending') {
-          currentStatusMsg = statusMessages.claim_pending;
-      } else if (bookingDetails.latest_claim_status === 'approved' && bookingDetails.latest_claim_resolution === 'none') {
-          currentStatusMsg = statusMessages.claim_approved;
-      } else {
-          currentStatusMsg = statusMessages[bookingDetails.status] || {
-            title: "Booking Update",
-            message: `Status: ${bookingDetails.status}`
-          };
-      }
+    if (bookingDetails.latest_claim_status === 'pending') {
+      currentStatusMsg = statusMessages.claim_pending;
+    } else if (bookingDetails.latest_claim_status === 'approved' && bookingDetails.latest_claim_resolution === 'none') {
+      currentStatusMsg = statusMessages.claim_approved;
+    } else {
+      currentStatusMsg = statusMessages[bookingDetails.status] || {
+        title: "Booking Update",
+        message: `Status: ${bookingDetails.status}`
+      };
+    }
   }
 
   const timeSlots = [
@@ -265,6 +266,7 @@ const ServiceDetails = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F9F5F0]">
+        <DashboardHeader />
         <div className="container mx-auto px-4 max-w-7xl py-10">
           <div className="flex flex-col mb-8 gap-2">
             <Skeleton className="w-32 h-4" />
@@ -300,20 +302,24 @@ const ServiceDetails = () => {
 
   if (!item) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg text-gray-700">Service not found.</p>
-        <Link
-          to={`/services/${category}`}
-          className="text-[#1B3C53] mt-4 inline-block"
-        >
-          Back to {category}
-        </Link>
+      <div className="min-h-screen bg-[#F9F5F0]">
+        <DashboardHeader />
+        <div className="flex flex-col items-center justify-center py-20">
+          <p className="text-lg text-gray-700">Service not found.</p>
+          <Link
+            to={`/services/${category}`}
+            className="text-[#1B3C53] mt-4 inline-block underline"
+          >
+            Back to {category}
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#F9F5F0]">
+      <DashboardHeader />
       <div className="container mx-auto px-4 max-w-7xl py-10">
         {/* Breadcrumb / Header */}
         <div className="flex items-center justify-between mb-8">
@@ -364,10 +370,10 @@ const ServiceDetails = () => {
             <div className="sticky top-8 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
               <div className="p-4 bg-[#1B3C53] text-white text-center">
                 <h3 className="font-bold text-xl">
-                  {bookingDetails?.latest_claim_status && bookingDetails.latest_claim_resolution === 'none' 
-                    ? "Insurance Status" 
-                    : orderingStatus === "success" 
-                      ? "Booking Status" 
+                  {bookingDetails?.latest_claim_status && bookingDetails.latest_claim_resolution === 'none'
+                    ? "Insurance Status"
+                    : orderingStatus === "success"
+                      ? "Booking Status"
                       : "Book This Service"}
                 </h3>
               </div>
@@ -430,15 +436,14 @@ const ServiceDetails = () => {
                           {bookingDetails.is_paid ? "PAID" : "UNPAID"}
                         </span>
                       </div>
-                      
+
                       {bookingDetails.latest_claim_status && (
                         <div className="flex justify-between items-center bg-white p-2 rounded border">
                           <span className="text-gray-500">Claim:</span>
-                          <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
-                            bookingDetails.latest_claim_status === 'approved' ? 'bg-green-100 text-green-700' :
-                            bookingDetails.latest_claim_status === 'rejected' ? 'bg-red-100 text-red-700' :
-                            'bg-yellow-100 text-yellow-700'
-                          }`}>
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${bookingDetails.latest_claim_status === 'approved' ? 'bg-green-100 text-green-700' :
+                              bookingDetails.latest_claim_status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                'bg-yellow-100 text-yellow-700'
+                            }`}>
                             {bookingDetails.latest_claim_status}
                           </span>
                         </div>
@@ -465,7 +470,7 @@ const ServiceDetails = () => {
                           80% Refund
                         </button>
                         <button
-                          onClick={() => {/* logic to be confirmed later */}}
+                          onClick={() => {/* logic to be confirmed later */ }}
                           className="w-full py-3 bg-[#1B3C53] text-white rounded-xl font-bold hover:bg-[#152e40] transition shadow-md flex items-center justify-center gap-2"
                         >
                           Request Rework
@@ -622,7 +627,7 @@ const ServiceDetails = () => {
           </div>
         </div>
       </div>
-      <ReviewModal 
+      <ReviewModal
         isOpen={showReviewModal}
         onClose={() => {
           setShowReviewModal(false);

@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Skeleton from "../../components/Skeleton";
-import DashboardHeader from "../../components/customer/DashboardHeader";
 import Footer from "../../components/customer/Footer";
 import servicesBg from "../../assets/images/services/electrical.png";
-
+import DashboardHeader from '../../components/customer/DashboardHeader';
 const ServicesCategory = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);

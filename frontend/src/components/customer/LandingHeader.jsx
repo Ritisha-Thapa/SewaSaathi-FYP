@@ -2,7 +2,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mic, Menu, X } from 'lucide-react';
-
+import logo from '../../assets/sewasathi_logo.png';
 
 const LandingHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,8 +15,9 @@ const LandingHeader = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to={isAuthenticated ? dashboardPath : "/"} className="text-2xl font-bold text-[#1B3C53] hover:opacity-80 transition">
-              SewaSaathi
+            <Link to={isAuthenticated ? dashboardPath : "/"} className="flex items-center gap-2 hover:opacity-80 transition">
+              <img src={logo} alt="SewaSaathi Logo" className="h-10 w-auto" />
+              <span className="text-2xl font-bold text-[#1B3C53] tracking-tight">SewaSaathi</span>
             </Link>
           </div>
 

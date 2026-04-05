@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import SubCatHeader from "../../components/customer/SubCatHeader";
 import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
 import ServiceCard from "../../components/customer/services/ServiceCard"; // Import ServiceCard
+import DashboardHeader from '../../components/customer/DashboardHeader';
 
 const formatPrice = (n) => `Rs. ${n.toLocaleString()}`;
 
@@ -52,7 +52,7 @@ const SubServices = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F9F5F0]">
-        <SubCatHeader />
+        <DashboardHeader />
         <Skeleton className="w-full h-56 rounded-none" />
         <div className="container mx-auto px-4 max-w-7xl py-12">
           <div className="flex items-center justify-between mb-6">
@@ -78,7 +78,7 @@ const SubServices = () => {
 
   return (
     <div className="min-h-screen bg-linear-to-b from-[#F9F5F0] to-[#ece7df]">
-      <SubCatHeader />
+      <DashboardHeader />
 
       {/* Hero Section */}
       {categoryData && (

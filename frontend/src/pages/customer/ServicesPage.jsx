@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import ServiceCard from "../../components/customer/services/ServiceCard";
 import Skeleton from "../../components/Skeleton";
 import ServiceFilters from "../../components/customer/services/ServiceFilters";
-import DashboardHeader from "../../components/customer/DashboardHeader"; // Navbar/Header
 import Footer from "../../components/customer/Footer"; // Footer
 import Pagination from "../../components/common/Pagination";
-
+import DashboardHeader from '../../components/customer/DashboardHeader';
 const ServicesPage = () => {
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -100,13 +99,13 @@ const ServicesPage = () => {
             ) : services.length === 0 ? (
               <p className="col-span-full text-center py-20 text-gray-500">No services found.</p>
             ) : (
-                services
+              services
                 .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                 .map((service) => <ServiceCard key={service.id} service={service} />)
             )}
           </div>
-          
-          <Pagination 
+
+          <Pagination
             currentPage={currentPage}
             totalPages={Math.ceil(services.length / itemsPerPage)}
             onPageChange={setCurrentPage}

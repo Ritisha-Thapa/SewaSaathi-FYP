@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, ChevronDown } from 'lucide-react';
-import Header from '../../components/customer/DashboardHeader';
+import LandingHeader from '../../components/customer/LandingHeader';
 import Footer from '../../components/customer/Footer';
 import contactBg from '../../assets/images/services/plumbing.png'; 
 
@@ -84,7 +84,7 @@ const Contact = () => {
 
   return (
     <div className="font-sans text-gray-900 min-h-screen bg-white">
-      <Header />
+      <LandingHeader />
 
       {/* ---------------- HERO SECTION WITH BACKGROUND IMAGE ---------------- */}
       <section

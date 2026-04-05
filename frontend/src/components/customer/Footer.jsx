@@ -1,6 +1,7 @@
 import React from "react";
 import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import fullLogo from "../../assets/sewasathi_full_logo.png";
 
 const Footer = () => {
   return (
@@ -9,8 +10,13 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand Column */}
           <div>
-            <Link to="/customer-dashboard" className="text-3xl font-bold text-white mb-6 block">
-              SewaSaathi
+            <Link to="/customer-dashboard" className="mb-2 block">
+              <img
+                src={fullLogo}
+                alt="SewaSaathi"
+                className="h-60 w-auto"
+                style={{ filter: "brightness(0) invert(1)" }}
+              />
             </Link>
             <p className="text-gray-300 text-sm leading-relaxed mb-6">
               Your trusted partner for all home services.
@@ -39,25 +45,25 @@ const Footer = () => {
             <ul className="space-y-4">
               <li>
                 <Link to="/customer-dashboard" className="text-gray-300 hover:text-white transition flex items-center">
-                  
+
                   Home
                 </Link>
               </li>
               <li>
                 <Link to="/about-us" className="text-gray-300 hover:text-white transition flex items-center">
-                  
+
                   About Us
                 </Link>
               </li>
               <li>
                 <Link to="/services-category" className="text-gray-300 hover:text-white transition flex items-center">
-                  
+
                   Services
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-gray-300 hover:text-white transition flex items-center">
-                
+
                   Contact
                 </Link>
               </li>

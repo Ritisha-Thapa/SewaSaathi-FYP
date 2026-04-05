@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../context/AuthContext";
+import Logo from "../assets/sewasathi_logo.png";
 
 const Login = () => {
   const { login } = useAuth();
@@ -105,23 +106,22 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-[#F9F5F0] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        {/* Back Button */}
-        <div className="flex justify-start">
-          <Link
-            to="/"
-            className="inline-flex items-center text-sm text-[#1B3C53] hover:text-[#1a3248] transition"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back
-          </Link>
-        </div>
 
-        {/* Title */}
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold text-[#1B3C53]">
+        {/* Logo and Title */}
+        <div className="flex flex-col items-center">
+          {/* <Link to="/">
+            <img src={Logo} alt="SewaSaathi" className="h-20 w-auto mb-1" />
+          </Link> */}
+
+          <div className="flex items-center gap-4 cursor-pointer">
+            <img src={Logo} alt="logo" className="h-14 w-auto" />
+            <span className="text-3xl font-semibold text-[#1B3C53] tracking-wide">
+              SewaSaathi
+            </span>
+          </div>
+          <h2 className="text-center text-3xl font-bold text-[#1B3C53] mt-12">
             Login to Your Account
           </h2>
-
         </div>
 
         {/* Form */}
