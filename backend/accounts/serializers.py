@@ -1,6 +1,5 @@
-
 from rest_framework.serializers import ModelSerializer, Serializer, CharField, ValidationError, EmailField, ChoiceField, SerializerMethodField
-from .models import User, PasswordResetOTP
+from .models import User, PasswordResetOTP, ContactMessage
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import AuthenticationFailed
@@ -316,3 +315,8 @@ class ChangePasswordSerializer(Serializer):
         if data['new_password'] != data['confirm_password']:
             raise ValidationError({"confirm_password": "New passwords do not match."})
         return data
+
+class ContactMessageSerializer(ModelSerializer):
+    class Meta:
+        model = ContactMessage
+        fields = '__all__'

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, ChevronDown } from 'lucide-react';
-import LandingHeader from '../../components/customer/LandingHeader';
+import DashboardHeader from '../../components/customer/DashboardHeader';
 import Footer from '../../components/customer/Footer';
 import contactBg from '../../assets/images/services/plumbing.png'; 
+import { api } from '../../utils/api';
+import toast from 'react-hot-toast';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +16,7 @@ const Contact = () => {
   });
 
   const [faqOpen, setFaqOpen] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -23,18 +26,27 @@ const Contact = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    alert('Thank you for your message! We will get back to you soon.');
-
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      subject: '',
-      message: ''
-    });
+    setLoading(true);
+    
+    try {
+      await api.post('/accounts/contact/', formData);
+      toast.success('Thank you for your message! We will get back to you soon.');
+      
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: ''
+      });
+    } catch (err) {
+      console.error('Contact submission error:', err);
+      toast.error('Failed to send message. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const faqs = [
@@ -84,7 +96,7 @@ const Contact = () => {
 
   return (
     <div className="font-sans text-gray-900 min-h-screen bg-white">
-      <LandingHeader />
+      <DashboardHeader />
 
       {/* ---------------- HERO SECTION WITH BACKGROUND IMAGE ---------------- */}
       <section
@@ -179,8 +191,11 @@ const Contact = () => {
                   ></textarea>
                 </div>
 
-                <button className="w-full py-3 bg-[#1B3C53] text-white rounded-lg font-semibold hover:bg-[#162f41] transition">
-                  Send Message
+                <button 
+                  disabled={loading}
+                  className={`w-full py-3 bg-[#1B3C53] text-white rounded-lg font-semibold transition ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#162f41]'}`}
+                >
+                  {loading ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             </div>

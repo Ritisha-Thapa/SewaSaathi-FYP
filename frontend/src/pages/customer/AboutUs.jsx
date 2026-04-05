@@ -1,5 +1,4 @@
-import React from 'react';
-import LandingHeader from '../../components/customer/LandingHeader';
+import DashboardHeader from '../../components/customer/DashboardHeader';
 import Footer from '../../components/customer/Footer';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Clock, CheckCircle, Banknote } from 'lucide-react';
@@ -42,7 +41,7 @@ const AboutUs = () => {
 
   return (
     <div className="font-sans text-gray-900 min-h-screen bg-[#F9F5F0]">
-      <LandingHeader />
+      <DashboardHeader />
 
       {/* HERO SECTION */}
       <section className="bg-[#F9F5F0] py-16 md:py-24">
