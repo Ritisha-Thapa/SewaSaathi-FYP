@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, MapPin, User, Calendar } from 'lucide-react';
+import { Clock, MapPin, User, Calendar, Image as ImageIcon, Phone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Skeleton from '../../components/Skeleton';
 import { api } from '../../utils/api';
 import ConfirmActionModal from '../../components/provider/ConfirmActionModal';
 import NotificationPopup from '../../components/common/NotificationPopup';
+import ImageModal from '../../components/common/ImageModal';
 
 const JobRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -22,6 +24,9 @@ const JobRequests = () => {
     title: '',
     message: ''
   });
+  const navigate = useNavigate();
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   useEffect(() => {
     fetchRequests();
@@ -77,6 +82,12 @@ const JobRequests = () => {
         title: `Booking ${confirmModal.action}`,
         message: `Booking request has been ${confirmModal.action.toLowerCase()} successfully.`
       });
+
+      if (confirmModal.action === 'Accepted') {
+         setTimeout(() => {
+            navigate('/provider/active');
+         }, 1500);
+      }
     } catch (err) {
       console.error("Action failed", err);
       alert("Failed to update status");
@@ -149,6 +160,10 @@ const JobRequests = () => {
                   {req.customer_name || "Customer"}
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
+                  <Phone size={16} className="mr-2 text-gray-400" />
+                  {req.phone || req.customer_phone || "Not provided"}
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
                   <MapPin size={16} className="mr-2 text-gray-400" />
                   {req.address || (req.customer_address ? `${req.customer_address}, ${req.customer_city}` : "Location not provided")}
                 </div>
@@ -159,6 +174,20 @@ const JobRequests = () => {
                 {req.issue_description && (
                   <div className="text-xs text-gray-500 mt-2 bg-gray-50 p-2 rounded">
                     "{req.issue_description}"
+                  </div>
+                )}
+                {req.issue_images && (
+                  <div className="pt-2">
+                    <button
+                      onClick={() => {
+                        setSelectedImage(req.issue_images);
+                        setIsImageModalOpen(true);
+                      }}
+                      className="flex w-full items-center justify-center gap-2 px-3 py-2 bg-gray-50 text-[#1B3C53] rounded border border-gray-200 hover:bg-gray-100 transition text-sm font-semibold"
+                    >
+                      <ImageIcon size={16} />
+                      View Attached Image
+                    </button>
                   </div>
                 )}
               </div>
@@ -200,6 +229,12 @@ const JobRequests = () => {
         type={notification.type}
         title={notification.title}
         message={notification.message}
+      />
+      
+      <ImageModal 
+        isOpen={isImageModalOpen} 
+        onClose={() => setIsImageModalOpen(false)} 
+        imageUrl={selectedImage} 
       />
     </div>
   );

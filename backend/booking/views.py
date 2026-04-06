@@ -168,6 +168,9 @@ class BookingViewSet(viewsets.ModelViewSet):
                     booking.final_price = Decimal(str(final_price))
                 except (ValueError, TypeError, Exception) as e:
                     return Response({"error": f"Invalid final price format: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+            price_note = request.data.get('price_note')
+            if price_note and user.role == 'provider':
+                booking.price_note = price_note
         
         # Handle payment
         if new_status == 'paid':

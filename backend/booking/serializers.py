@@ -10,6 +10,8 @@ class BookingSerializer(serializers.ModelSerializer):
     provider_name = serializers.CharField(source='provider.get_full_name', read_only=True)
     service_name = serializers.CharField(source='service.name', read_only=True)
     service_category_name = serializers.CharField(source='service.category.name', read_only=True)
+    provider_phone = serializers.CharField(source='provider.phone', read_only=True)
+    customer_phone = serializers.CharField(source='customer.phone', read_only=True)
     latest_claim_status = serializers.SerializerMethodField()
     latest_claim_resolution = serializers.SerializerMethodField()
     latest_claim_id = serializers.SerializerMethodField()
@@ -34,10 +36,10 @@ class BookingSerializer(serializers.ModelSerializer):
         model = Booking
         fields = [
             'id', 'customer', 'customer_name', 'customer_address', 'customer_city', 
-            'provider', 'provider_name', 
+            'provider', 'provider_name', 'provider_phone', 
             'service', 'service_name', 'service_category_name', 'scheduled_date', 'scheduled_time', 
-            'issue_description', 'issue_images', 'status', 'address', 'phone',
-            'service_price', 'final_price', 'insurance_fee', 'total_price', 
+            'issue_description', 'issue_images', 'status', 'address', 'phone', 'customer_phone',
+            'service_price', 'final_price', 'price_note', 'insurance_fee', 'total_price',  
             'payment_method', 'is_paid', 'is_rework', 'created_at', 'updated_at', 'completed_at', 'paid_at',
             'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id', 'has_reviewed'
         ]

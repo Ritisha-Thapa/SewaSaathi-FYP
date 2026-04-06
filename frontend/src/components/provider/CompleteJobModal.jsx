@@ -3,6 +3,7 @@ import { X, Banknote, CheckCircle, Loader2 } from 'lucide-react';
 
 const CompleteJobModal = ({ isOpen, onClose, job, onComplete }) => {
   const [finalPrice, setFinalPrice] = useState(job?.total_price || '');
+  const [priceNote, setPriceNote] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -14,7 +15,9 @@ const CompleteJobModal = ({ isOpen, onClose, job, onComplete }) => {
 
     setLoading(true);
     try {
-      await onComplete(job.id, 'completed', { final_price: finalPrice });
+      const payload = { final_price: finalPrice };
+      if (priceNote.trim()) payload.price_note = priceNote.trim();
+      await onComplete(job.id, 'completed', payload);
       onClose();
     } catch (err) {
       console.error('Failed to complete job:', err);
@@ -68,6 +71,22 @@ const CompleteJobModal = ({ isOpen, onClose, job, onComplete }) => {
             </div>
             <p className="text-xs text-gray-500 mt-1">
               Set the final price based on actual work completed
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Price Note <span className="text-gray-400 font-normal">(Optional)</span>
+            </label>
+            <textarea
+              value={priceNote}
+              onChange={(e) => setPriceNote(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent resize-none text-sm"
+              placeholder="e.g. Extra parts were needed, additional labour for 2hrs..."
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              This note will be shown to the customer on their payment screen.
             </p>
           </div>
 

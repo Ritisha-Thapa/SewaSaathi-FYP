@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Upload, CheckCircle, Clock, CreditCard, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Upload, CheckCircle, Clock, CreditCard, AlertTriangle, Image as ImageIcon, User, Phone, Banknote } from "lucide-react";
 import toast from "react-hot-toast";
 import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
 import { api } from "../../utils/api";
 import ReviewModal from "../../components/customer/ReviewModal";
 import DashboardHeader from '../../components/customer/DashboardHeader';
-import khaltiLogo from "../../assets/khalti_logo.png";
+import ImageModal from '../../components/common/ImageModal';
+import PaymentModal from '../../components/customer/PaymentModal';
 
 const formatPrice = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -33,9 +34,11 @@ const ServiceDetails = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [existingBooking, setExistingBooking] = useState(null);
 
-  // Review State
+  // Review & Image State
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedBookingForReview, setSelectedBookingForReview] = useState(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
     const fetchService = async () => {
@@ -397,6 +400,20 @@ const ServiceDetails = () => {
                         <span className="text-gray-500">Time:</span>
                         <span className="font-medium">{bookingDetails.scheduled_time}</span>
                       </div>
+                      
+                      {bookingDetails.provider && (
+                         <div className="border border-blue-100 bg-blue-50/50 rounded-lg p-2 mt-2">
+                           <div className="flex justify-between text-xs mb-1">
+                             <span className="text-gray-500 flex items-center gap-1"><User size={12}/> Provider:</span>
+                             <span className="font-medium text-blue-900">{bookingDetails.provider_name}</span>
+                           </div>
+                           <div className="flex justify-between text-xs">
+                             <span className="text-gray-500 flex items-center gap-1"><Phone size={12}/> Contact:</span>
+                             <span className="font-medium text-blue-900">{bookingDetails.provider_phone || "Not provided"}</span>
+                           </div>
+                         </div>
+                      )}
+                      
                       <div className="border-t pt-2 mt-2 space-y-1">
                         <div className="flex justify-between text-xs">
                           <span className="text-gray-500">Service Price:</span>
@@ -429,6 +446,18 @@ const ServiceDetails = () => {
                           {bookingDetails.is_paid ? "PAID" : "UNPAID"}
                         </span>
                       </div>
+                      
+                      {bookingDetails.issue_images && (
+                        <div className="flex justify-center mt-2">
+                          <button
+                            onClick={() => setIsImageModalOpen(true)}
+                            className="flex w-full items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-[#1B3C53] rounded-lg text-sm font-semibold hover:bg-gray-200 transition border border-gray-200"
+                          >
+                            <ImageIcon size={16} />
+                            View Attached Image
+                          </button>
+                        </div>
+                      )}
 
                       {bookingDetails.latest_claim_status && (
                         <div className="flex justify-between items-center bg-white p-2 rounded border">
@@ -445,11 +474,11 @@ const ServiceDetails = () => {
 
                     {bookingDetails.status === 'completed' && !bookingDetails.is_paid && (
                       <button
-                        onClick={handlePayNow}
-                        className="w-full py-3 bg-[#5C2D91] text-white rounded-xl font-bold hover:bg-[#4a2475] transition shadow-lg flex items-center justify-center gap-2"
+                        onClick={() => setShowPaymentModal(true)}
+                        className="w-full py-3 bg-[#1B3C53] text-white rounded-xl font-bold hover:bg-[#1a3248] transition shadow-lg flex items-center justify-center gap-2"
                       >
-                        <img src={khaltiLogo} alt="Khalti" className="h-5" />
-                        Pay with Khalti
+                        <Banknote size={20} />
+                        Pay Now
                       </button>
                     )}
 
@@ -632,6 +661,16 @@ const ServiceDetails = () => {
           toast.success("Thank you for your feedback!");
           resetView();
         }}
+      />
+      <ImageModal 
+        isOpen={isImageModalOpen} 
+        onClose={() => setIsImageModalOpen(false)} 
+        imageUrl={bookingDetails?.issue_images} 
+      />
+      <PaymentModal 
+        isOpen={showPaymentModal} 
+        onClose={() => setShowPaymentModal(false)}
+        booking={bookingDetails}
       />
       <Footer />
     </div>

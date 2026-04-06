@@ -3,11 +3,13 @@ import { api } from '../../utils/api';
 import toast from 'react-hot-toast';
 import DashboardHeader from '../../components/customer/DashboardHeader';
 import Footer from '../../components/customer/Footer';
-import { Calendar, MapPin, CheckCircle, Clock, AlertCircle, Filter, MessageSquare } from 'lucide-react';
+import { Calendar, MapPin, CheckCircle, Clock, AlertCircle, Filter, MessageSquare, Image as ImageIcon, User, Phone, Banknote } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
 import { Link } from 'react-router-dom';
 import Pagination from '../../components/common/Pagination';
 import ReviewModal from '../../components/customer/ReviewModal';
+import ImageModal from '../../components/common/ImageModal';
+import PaymentModal from '../../components/customer/PaymentModal';
 
 const MyBookings = () => {
     const [bookings, setBookings] = useState([]);
@@ -22,6 +24,12 @@ const MyBookings = () => {
 
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [selectedBookingForReview, setSelectedBookingForReview] = useState(null);
+
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [selectedBookingForPayment, setSelectedBookingForPayment] = useState(null);
+
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -77,17 +85,17 @@ const MyBookings = () => {
     const isEligibleForClaim = (booking) => {
         // Must be paid status, and have a recorded payment timestamp
         if (booking.status !== 'paid' || !booking.is_paid || !booking.paid_at) return false;
-        
+
         try {
             const paymentTime = new Date(booking.paid_at).getTime();
             const currentTime = new Date().getTime();
-            
+
             if (isNaN(paymentTime)) return false;
 
             // Calculate difference in hours
             const diffInMs = currentTime - paymentTime;
             const diffInHours = diffInMs / (1000 * 60 * 60);
-            
+
             // Helpful for debugging
             // console.log(`Booking ${booking.id}: Status=${booking.status}, HoursSincePayment=${diffInHours.toFixed(2)}`);
 
@@ -234,17 +242,17 @@ const MyBookings = () => {
                                 <div className="flex items-center gap-3 mb-2">
                                     <h3 className="text-xl font-bold text-[#1B3C53]">{booking.service_name}</h3>
                                     <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${booking.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                            booking.status === 'paid' ? 'bg-emerald-100 text-emerald-700' :
-                                                booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                    booking.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
-                                                        booking.status === 'in_progress' ? 'bg-orange-100 text-orange-700' :
-                                                            booking.status === 'refunded' ? 'bg-purple-100 text-purple-700' :
-                                                                'bg-gray-100 text-gray-700'
+                                        booking.status === 'paid' ? 'bg-emerald-100 text-emerald-700' :
+                                            booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                booking.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
+                                                    booking.status === 'in_progress' ? 'bg-orange-100 text-orange-700' :
+                                                        booking.status === 'refunded' ? 'bg-purple-100 text-purple-700' :
+                                                            'bg-gray-100 text-gray-700'
                                         }`}>
-                                        {booking.status === 'refunded' ? 'Refunded After Claim' : 
-                                         booking.is_rework && booking.status === 'completed' ? 'Rework Completed' :
-                                         booking.is_rework && booking.status === 'in_progress' ? 'Rework In Progress' :
-                                         booking.status.replace('_', ' ')}
+                                        {booking.status === 'refunded' ? 'Refunded After Claim' :
+                                            booking.is_rework && booking.status === 'completed' ? 'Rework Completed' :
+                                                booking.is_rework && booking.status === 'in_progress' ? 'Rework In Progress' :
+                                                    booking.status.replace('_', ' ')}
                                     </span>
                                     {claims[booking.id] && (
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${claims[booking.id].status === 'approved' ? 'bg-green-600 text-white' :
@@ -275,6 +283,36 @@ const MyBookings = () => {
                                             )}
                                         </span>
                                     </div>
+
+                                    {booking.provider && (
+                                        <div className="flex items-center gap-2 col-span-1 sm:col-span-2 text-gray-700 bg-blue-50 p-3 rounded-lg mt-2">
+                                            <div className="flex items-center gap-4 w-full">
+                                                <div className="flex items-center gap-1.5 font-medium">
+                                                    <User size={16} className="text-blue-600" />
+                                                    <span>{booking.provider_name}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 border-l border-blue-200 pl-4 font-medium">
+                                                    <Phone size={16} className="text-blue-600" />
+                                                    <span>{booking.provider_phone || "No phone given"}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {booking.issue_images && (
+                                        <div className="col-span-1 sm:col-span-2 mt-2">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedImage(booking.issue_images);
+                                                    setIsImageModalOpen(true);
+                                                }}
+                                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-[#1B3C53] rounded-lg text-sm font-semibold hover:bg-gray-200 transition border border-gray-200"
+                                            >
+                                                <ImageIcon size={16} />
+                                                View Attached Image
+                                            </button>
+                                        </div>
+                                    )}
                                     {claims[String(booking.id)] && claims[String(booking.id)].status === 'approved' && claims[String(booking.id)].resolution === 'none' && (
                                         <div className="col-span-1 sm:col-span-2 mt-4 p-4 bg-green-50 rounded-xl border border-green-200">
                                             <p className="font-bold text-green-800 mb-2">Claim Approved! Choose your resolution:</p>
@@ -305,29 +343,14 @@ const MyBookings = () => {
                             <div className="flex flex-col gap-2 w-full md:w-auto min-w-[160px]">
                                 {booking.status === 'completed' && !booking.is_paid && (
                                     <button
-                                        onClick={async () => {
-                                            try {
-                                                toast.loading('Preparing Khalti payment...', { id: 'khalti' });
-                                                const res = await api.post(`/booking/bookings/${booking.id}/initialize-payment/`, {
-                                                    return_url: `${window.location.origin}/payment-response`
-                                                });
-
-                                                if (res.payment_url) {
-                                                    toast.success('Redirecting to Khalti...', { id: 'khalti' });
-                                                    window.location.href = res.payment_url;
-                                                } else {
-                                                    toast.error(res.error || 'Payment URL not received.', { id: 'khalti' });
-                                                }
-                                            } catch (err) {
-                                                const msg = err?.response?.data?.error || err?.response?.data?.details || 'Payment initialization failed. Please try again.';
-                                                toast.error(msg, { id: 'khalti' });
-                                                console.error('Payment initialization failed', err?.response?.data);
-                                            }
+                                        onClick={() => {
+                                            setSelectedBookingForPayment(booking);
+                                            setShowPaymentModal(true);
                                         }}
-                                        className="px-6 py-2 bg-[#5C2D91] text-white rounded-xl font-bold hover:bg-[#4a2475] transition text-center shadow-md flex items-center justify-center gap-2"
+                                        className="px-6 py-2 bg-[#1B3C53] text-white rounded-xl font-bold hover:bg-[#1a3248] transition text-center shadow-md flex items-center justify-center gap-2"
                                     >
-                                        <img src="https://khalti.com/static/img/logo1.png" alt="Khalti" className="h-5" />
-                                        Pay with Khalti
+                                        <Banknote size={20} />
+                                        Pay Now
                                     </button>
                                 )}
 
@@ -351,7 +374,7 @@ const MyBookings = () => {
                         </div>
                     ))}
 
-                    <Pagination 
+                    <Pagination
                         currentPage={currentPage}
                         totalPages={totalPages}
                         onPageChange={setCurrentPage}
@@ -372,8 +395,8 @@ const MyBookings = () => {
                     )}
                 </div>
             </div>
-            
-            <ReviewModal 
+
+            <ReviewModal
                 isOpen={showReviewModal}
                 onClose={() => setShowReviewModal(false)}
                 booking={selectedBookingForReview}
@@ -381,6 +404,18 @@ const MyBookings = () => {
                     fetchData();
                     alert("Thank you for your feedback!");
                 }}
+            />
+
+            <ImageModal
+                isOpen={isImageModalOpen}
+                onClose={() => setIsImageModalOpen(false)}
+                imageUrl={selectedImage}
+            />
+
+            <PaymentModal 
+                isOpen={showPaymentModal}
+                onClose={() => setShowPaymentModal(false)}
+                booking={selectedBookingForPayment}
             />
 
             <Footer />

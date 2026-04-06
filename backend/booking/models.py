@@ -51,6 +51,7 @@ class Booking(BaseModel):
     # Prices
     service_price = models.DecimalField(max_digits=10, decimal_places=2, default=0) # Price of service at booking time
     final_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) # Final price set by provider after completion
+    price_note = models.TextField(blank=True, null=True) # Optional provider note explaining any price change
     insurance_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0) # 1% of service_price
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0) # service_price + insurance_fee or final_price + insurance_fee
 

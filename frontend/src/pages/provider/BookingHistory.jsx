@@ -1,8 +1,9 @@
-import { MapPin, Calendar, User, Banknote, CheckCircle, Clock, Filter } from 'lucide-react';
+import { MapPin, Calendar, User, Banknote, CheckCircle, Clock, Filter, Image as ImageIcon, Phone } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
 import { api } from '../../utils/api';
 import Pagination from '../../components/common/Pagination';
 import { useState, useEffect } from 'react';
+import ImageModal from '../../components/common/ImageModal';
 
 const BookingHistory = () => {
   const [bookings, setBookings] = useState([]);
@@ -12,6 +13,9 @@ const BookingHistory = () => {
   const [timeFilter, setTimeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   useEffect(() => {
     fetchBookings();
@@ -195,6 +199,10 @@ const BookingHistory = () => {
                     <span>{booking.customer_name}</span>
                   </div>
                   <div className="flex items-center gap-2">
+                    <Phone size={14} className="text-gray-400" />
+                    <span>{booking.phone || booking.customer_phone || "Not provided"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <MapPin size={14} className="text-gray-400" />
                     <span>{booking.address || `${booking.customer_address}, ${booking.customer_city}`}</span>
                   </div>
@@ -213,6 +221,21 @@ const BookingHistory = () => {
                     <p className="text-sm text-gray-600">
                       <span className="font-semibold">Note:</span> {booking.issue_description}
                     </p>
+                  </div>
+                )}
+
+                {booking.issue_images && (
+                  <div className="mt-2">
+                    <button
+                      onClick={() => {
+                        setSelectedImage(booking.issue_images);
+                        setIsImageModalOpen(true);
+                      }}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 text-[#1B3C53] rounded border border-gray-200 hover:bg-gray-100 transition text-sm font-semibold inline-flex"
+                    >
+                      <ImageIcon size={14} />
+                      View Attached Image
+                    </button>
                   </div>
                 )}
               </div>
@@ -245,6 +268,12 @@ const BookingHistory = () => {
           <p className="text-gray-500">No bookings found.</p>
         </div>
       )}
+
+      <ImageModal 
+        isOpen={isImageModalOpen} 
+        onClose={() => setIsImageModalOpen(false)} 
+        imageUrl={selectedImage} 
+      />
     </div>
   );
 };

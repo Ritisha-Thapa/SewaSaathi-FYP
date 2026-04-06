@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Calendar, ArrowRight, User, Loader2 } from 'lucide-react';
+import { MapPin, Calendar, ArrowRight, User, Loader2, Image as ImageIcon, Phone } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
 import { api } from '../../utils/api';
 import CompleteJobModal from '../../components/provider/CompleteJobModal';
+import ImageModal from '../../components/common/ImageModal';
 
-const JobCard = ({ job, type, onUpdateStatus, onCompleteJob, isUpdating }) => (
+const JobCard = ({ job, type, onUpdateStatus, onCompleteJob, isUpdating }) => {
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  
+  return (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div className="flex-1">
       <div className="flex items-center gap-2 mb-2">
@@ -28,7 +32,10 @@ const JobCard = ({ job, type, onUpdateStatus, onCompleteJob, isUpdating }) => (
           <User size={14} className="mr-2" /> {job.customer_name}
         </div>
         <div className="flex items-center">
-          <MapPin size={14} className="mr-2" /> {job.customer_address ? `${job.customer_address}, ${job.customer_city}` : "Location not provided"}
+          <Phone size={14} className="mr-2" /> {job.phone || job.customer_phone || "Not provided"}
+        </div>
+        <div className="flex items-center">
+          <MapPin size={14} className="mr-2" /> {job.address || (job.customer_address ? `${job.customer_address}, ${job.customer_city}` : "Location not provided")}
         </div>
         <div className="flex items-center">
           <Calendar size={14} className="mr-2" /> {job.scheduled_date} at {job.scheduled_time}
@@ -39,6 +46,17 @@ const JobCard = ({ job, type, onUpdateStatus, onCompleteJob, isUpdating }) => (
         <p className="text-sm text-gray-500 mt-3 bg-gray-50 p-2 rounded">
           <span className="font-semibold">Note:</span> {job.issue_description}
         </p>
+      )}
+      {job.issue_images && (
+        <div className="mt-2">
+          <button
+            onClick={() => setIsImageModalOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 text-[#1B3C53] rounded border border-gray-200 hover:bg-gray-100 transition text-xs font-semibold"
+          >
+            <ImageIcon size={14} />
+            View Attached Image
+          </button>
+        </div>
       )}
     </div>
 
@@ -59,10 +77,23 @@ const JobCard = ({ job, type, onUpdateStatus, onCompleteJob, isUpdating }) => (
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center justify-center gap-2">
           <ArrowRight size={16} /> Complete Job
         </button>
+      ) : (job.status === 'completed' && !job.is_paid) ? (
+        <button
+          onClick={() => onUpdateStatus(job.id, 'paid', { payment_method: 'cash' })}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center justify-center gap-2">
+          Confirm Cash Received
+        </button>
       ) : null}
     </div>
+    
+    <ImageModal 
+      isOpen={isImageModalOpen} 
+      onClose={() => setIsImageModalOpen(false)} 
+      imageUrl={job.issue_images} 
+    />
   </div>
-);
+  );
+};
 
 const AssignedJobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -84,10 +115,10 @@ const AssignedJobs = () => {
     }
   };
 
-  const handleUpdateStatus = async (id, newStatus) => {
+  const handleUpdateStatus = async (id, newStatus, additionalData = {}) => {
     setUpdatingId(id);
     try {
-      await api.post(`/booking/bookings/${id}/update-status/`, { status: newStatus });
+      await api.post(`/booking/bookings/${id}/update-status/`, { status: newStatus, ...additionalData });
       // Optimistic update
       setJobs(prev => prev.map(j => j.id === id ? { ...j, status: newStatus } : j));
       await fetchJobs();
@@ -163,10 +194,10 @@ export const ActiveJobs = () => {
     }
   };
 
-  const handleUpdateStatus = async (id, newStatus) => {
+  const handleUpdateStatus = async (id, newStatus, additionalData = {}) => {
     setUpdatingId(id);
     try {
-      await api.post(`/booking/bookings/${id}/update-status/`, { status: newStatus });
+      await api.post(`/booking/bookings/${id}/update-status/`, { status: newStatus, ...additionalData });
       setJobs(prev => prev.map(j => j.id === id ? { ...j, status: newStatus } : j));
       await fetchJobs();
     } catch (err) {
