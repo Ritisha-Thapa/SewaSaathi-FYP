@@ -18,7 +18,7 @@ from datetime import timedelta
 from urllib.parse import urlparse, parse_qsl
 
 
-load_dotenv()
+load_dotenv(override=True)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 

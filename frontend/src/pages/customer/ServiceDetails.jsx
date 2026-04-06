@@ -7,6 +7,7 @@ import Footer from "../../components/customer/Footer";
 import { api } from "../../utils/api";
 import ReviewModal from "../../components/customer/ReviewModal";
 import DashboardHeader from '../../components/customer/DashboardHeader';
+import khaltiLogo from "../../assets/khalti_logo.png";
 
 const formatPrice = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -142,29 +143,21 @@ const ServiceDetails = () => {
     if (!bookingDetails) return;
 
     try {
-      // Optimistic update
-      setBookingDetails(prev => ({ ...prev, is_paid: true, status: 'paid' }));
+      toast.loading('Preparing Khalti payment...', { id: 'khalti-service' });
+      const res = await api.post(`/booking/bookings/${bookingDetails.id}/initialize-payment/`, {
+        return_url: `${window.location.origin}/payment-response`
+      });
 
-      await api.post(`/booking/bookings/${bookingDetails.id}/pay/`);
-      toast.success("Payment successful! Please leave us your feedback.");
-
-      // Delay modal to show toast
-      setTimeout(() => {
-        setSelectedBookingForReview(bookingDetails);
-        setShowReviewModal(true);
-      }, 1500);
-
-      const bookings = await api.get(`/booking/bookings/`);
-      const updated = bookings.find(b => b.id === bookingDetails.id);
-      if (updated) setBookingDetails(updated);
-
+      if (res.payment_url) {
+        toast.success('Redirecting to Khalti...', { id: 'khalti-service' });
+        window.location.href = res.payment_url;
+      } else {
+        toast.error(res.error || 'Payment URL not received.', { id: 'khalti-service' });
+      }
     } catch (err) {
-      console.error("Payment Error", err);
-      toast.error("Payment error.");
-      // Refresh to revert state?
-      const bookings = await api.get(`/booking/bookings/`);
-      const updated = bookings.find(b => b.id === bookingDetails.id);
-      if (updated) setBookingDetails(updated);
+      const msg = err?.response?.data?.error || err?.response?.data?.details || 'Payment initialization failed. Please try again.';
+      toast.error(msg, { id: 'khalti-service' });
+      console.error('Payment initialization failed', err?.response?.data);
     }
   };
 
@@ -441,8 +434,8 @@ const ServiceDetails = () => {
                         <div className="flex justify-between items-center bg-white p-2 rounded border">
                           <span className="text-gray-500">Claim:</span>
                           <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${bookingDetails.latest_claim_status === 'approved' ? 'bg-green-100 text-green-700' :
-                              bookingDetails.latest_claim_status === 'rejected' ? 'bg-red-100 text-red-700' :
-                                'bg-yellow-100 text-yellow-700'
+                            bookingDetails.latest_claim_status === 'rejected' ? 'bg-red-100 text-red-700' :
+                              'bg-yellow-100 text-yellow-700'
                             }`}>
                             {bookingDetails.latest_claim_status}
                           </span>
@@ -453,10 +446,10 @@ const ServiceDetails = () => {
                     {bookingDetails.status === 'completed' && !bookingDetails.is_paid && (
                       <button
                         onClick={handlePayNow}
-                        className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg flex items-center justify-center gap-2"
+                        className="w-full py-3 bg-[#5C2D91] text-white rounded-xl font-bold hover:bg-[#4a2475] transition shadow-lg flex items-center justify-center gap-2"
                       >
-                        <CreditCard size={20} />
-                        Pay Now
+                        <img src={khaltiLogo} alt="Khalti" className="h-5" />
+                        Pay with Khalti
                       </button>
                     )}
 

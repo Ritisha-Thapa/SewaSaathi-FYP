@@ -259,9 +259,16 @@ class BookingViewSet(viewsets.ModelViewSet):
             "return_url": return_url,
             "website_url": "http://localhost:5173/",
             "amount": int(round(float(booking.total_price) * 100)),
-            "purchase_order_id": f"{booking.id}_{int(timezone.now().timestamp())}",
-            "purchase_order_name": f"Booking {booking.id}",
+            "purchase_order_id": f"booking-{booking.id}",
+            "purchase_order_name": f"SewaSaathi Booking #{booking.id}",
         }
+
+        # Khalti minimum is NPR 10 = 1000 paisa
+        if payload["amount"] < 1000:
+            return Response(
+                {"error": f"Minimum payment amount is NPR 10. This booking total is NPR {booking.total_price:.2f}."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         # Add customer info with validation
         cust_info = {}
@@ -276,17 +283,23 @@ class BookingViewSet(viewsets.ModelViewSet):
             payload["customer_info"] = cust_info
         
         headers = {
-            "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+            "Authorization": f"key {settings.KHALTI_SECRET_KEY}",
             "Content-Type": "application/json"
         }
         
+        # Mask key for debugging purposes
+        secret_key = settings.KHALTI_SECRET_KEY or ""
+        masked_key = f"{secret_key[:10]}...{secret_key[-4:]}" if len(secret_key) > 15 else "INVALID_OR_MISSING_KEY"
+        
         try:
-            print(f"--- KHALTI INITIATION ---")
-            print(f"Payload: {payload}")
+            # print(f"--- KHALTI INITIATION ---")
+            # print(f"Using Khalti Key: {masked_key}")
+            # print(f"Endpoint: {settings.KHALTI_INITIATE_URL}")
+            # print(f"Payload: {payload}")
             response = requests.post(settings.KHALTI_INITIATE_URL, json=payload, headers=headers)
             res_data = response.json()
-            print(f"Status Code: {response.status_code}")
-            print(f"Response: {res_data}")
+            # print(f"Status Code: {response.status_code}")
+            # print(f"Response: {res_data}")
             
             if response.status_code == 200 and res_data.get('payment_url'):
 

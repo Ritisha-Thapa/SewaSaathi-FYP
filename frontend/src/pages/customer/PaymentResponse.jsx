@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
 import toast from 'react-hot-toast';
@@ -11,14 +11,20 @@ const PaymentResponse = () => {
     const navigate = useNavigate();
     const [status, setStatus] = useState('loading'); // loading, success, error
     const [message, setMessage] = useState('Verifying your payment...');
+    const verificationAttempted = useRef(false);
 
     useEffect(() => {
         const pidx = searchParams.get('pidx');
         const purchase_order_id = searchParams.get('purchase_order_id');
         const status_param = searchParams.get('status');
 
-        if (status_param === 'Completed' && pidx) {
-            verifyPayment(pidx, purchase_order_id);
+        if (status_param === 'Completed' && pidx && purchase_order_id) {
+            if (!verificationAttempted.current) {
+                verificationAttempted.current = true;
+                // Khalti returns purchase_order_id as "booking-31", we need just "31" for the backend
+                const actualBookingId = purchase_order_id.replace('booking-', '');
+                verifyPayment(pidx, actualBookingId);
+            }
         } else if (status_param === 'User canceled') {
             setStatus('error');
             setMessage('Payment was cancelled by the user.');

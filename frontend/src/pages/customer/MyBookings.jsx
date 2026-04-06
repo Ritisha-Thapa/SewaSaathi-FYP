@@ -307,23 +307,21 @@ const MyBookings = () => {
                                     <button
                                         onClick={async () => {
                                             try {
-                                                const res = await toast.promise(
-                                                    api.post(`/booking/bookings/${booking.id}/initialize-payment/`, {
-                                                        return_url: `${window.location.origin}/payment-response`
-                                                    }),
-                                                    {
-                                                        loading: 'Preparing Khalti payment...',
-                                                        success: 'Redirecting to Khalti...',
-                                                        error: 'Failed to initialize payment.'
-                                                    }
-                                                );
+                                                toast.loading('Preparing Khalti payment...', { id: 'khalti' });
+                                                const res = await api.post(`/booking/bookings/${booking.id}/initialize-payment/`, {
+                                                    return_url: `${window.location.origin}/payment-response`
+                                                });
 
                                                 if (res.payment_url) {
-                                                    // Redirect to Khalti
+                                                    toast.success('Redirecting to Khalti...', { id: 'khalti' });
                                                     window.location.href = res.payment_url;
+                                                } else {
+                                                    toast.error(res.error || 'Payment URL not received.', { id: 'khalti' });
                                                 }
                                             } catch (err) {
-                                                console.error("Payment initialization failed", err);
+                                                const msg = err?.response?.data?.error || err?.response?.data?.details || 'Payment initialization failed. Please try again.';
+                                                toast.error(msg, { id: 'khalti' });
+                                                console.error('Payment initialization failed', err?.response?.data);
                                             }
                                         }}
                                         className="px-6 py-2 bg-[#5C2D91] text-white rounded-xl font-bold hover:bg-[#4a2475] transition text-center shadow-md flex items-center justify-center gap-2"
