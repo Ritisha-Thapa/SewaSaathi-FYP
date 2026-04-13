@@ -109,16 +109,14 @@ const Login = () => {
 
         {/* Logo and Title */}
         <div className="flex flex-col items-center">
-          {/* <Link to="/">
-            <img src={Logo} alt="SewaSaathi" className="h-20 w-auto mb-1" />
-          </Link> */}
+          
 
-          <div className="flex items-center gap-4 cursor-pointer">
+          <Link to="/" className="flex items-center gap-4 cursor-pointer">
             <img src={Logo} alt="logo" className="h-14 w-auto" />
             <span className="text-3xl font-semibold text-[#1B3C53] tracking-wide">
               SewaSaathi
             </span>
-          </div>
+          </Link>
           <h2 className="text-center text-3xl font-bold text-[#1B3C53] mt-12">
             Login to Your Account
           </h2>

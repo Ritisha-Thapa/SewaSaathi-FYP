@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, ServiceProvider, Customer
+from .models import User, ServiceProvider, Customer, ContactMessage
 from django.utils.html import format_html
 from django.urls import path
 from django.shortcuts import redirect, get_object_or_404
@@ -12,6 +12,7 @@ from .utils import generate_password
 # -----------------------------
 # SERVICE PROVIDER ADMIN
 # -----------------------------
+
 @admin.register(ServiceProvider)
 class ServiceProviderAdmin(admin.ModelAdmin):
     list_display = (
@@ -62,14 +63,14 @@ class ServiceProviderAdmin(admin.ModelAdmin):
 
         # Send credentials email
         send_mail(
-            subject="SewaX Provider Account Approved",
+            subject="SewaSaathi Provider Account Approved",
             message=(
                 f"Your provider account has been approved.\n\n"
                 f"Login Phone: {user.phone}\n"
                 f"Password: {password}\n\n"
                 f"Please change your password after login."
             ),
-            from_email="no-reply@sewax.com",
+            from_email="no-reply@sewasaathi.com",
             recipient_list=[user.email],
             fail_silently=False,
         )
@@ -87,16 +88,16 @@ class ServiceProviderAdmin(admin.ModelAdmin):
 
         # Send rejection email
         send_mail(
-            subject="SewaX Provider Application Update",
+            subject="SewaSaathi Provider Application Update",
             message=(
                 f"Dear {user.first_name},\n\n"
-                f"Thank you for applying as a service provider on SewaX.\n\n"
+                f"Thank you for applying as a service provider on SewaSaathi.\n\n"
                 f"After reviewing your application, we regret to inform you that "
                 f"your provider request has not been approved at this time.\n\n"
                 f"You may re-apply in the future with updated information.\n\n"
-                f"— SewaX Team"
+                f"— SewaSaathi Team"
             ),
-            from_email="no-reply@sewax.com",
+            from_email="no-reply@sewasaathi.com",
             recipient_list=[user.email],
             fail_silently=False,
         )
@@ -125,3 +126,5 @@ try:
     admin.site.unregister(User)
 except admin.sites.NotRegistered:
     pass
+
+admin.site.register(ContactMessage)

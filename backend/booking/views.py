@@ -176,8 +176,25 @@ class BookingViewSet(viewsets.ModelViewSet):
         if new_status == 'paid':
             if booking.status != 'completed':
                 return Response({"error": "Can only pay for completed bookings"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Set payment method if provided
+            payment_method = request.data.get('payment_method')
+            
+            # Backend Validation: Prevent confirming payment if paymentMethod is not 'cash'
+            # (especially when initiated by a provider)
+            if user.role == 'provider':
+                # If the booking is already set to online, or the incoming method is not cash
+                if booking.payment_method != 'cash' and payment_method != 'cash':
+                    return Response({
+                        "error": "Online payments must be verified through the payment gateway. You cannot manually confirm them."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+            if payment_method:
+                booking.payment_method = payment_method
+            
             booking.is_paid = True
-            booking.payment_method = request.data.get('payment_method', 'online')
+            if not booking.paid_at:
+                booking.paid_at = timezone.now()
         
         booking.status = new_status
         booking.save()
@@ -214,6 +231,15 @@ class BookingViewSet(viewsets.ModelViewSet):
                 message=f"Your booking for {booking.service.name} has been marked as completed. Please review and pay.",
                 booking=booking
             )
+        elif new_status == 'paid':
+            payment_method = request.data.get('payment_method', 'online')
+            if payment_method == 'cash':
+                Notification.objects.create(
+                    recipient=booking.customer,
+                    title="Payment Successful",
+                    message=f"Your cash payment for {booking.service.name} has been received.",
+                    booking=booking
+                )
 
         return Response(BookingSerializer(booking).data)
     
@@ -386,8 +412,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
     def top_reviews(self, request):
         # Fetch high-rated reviews (4+ stars)
-        # Limit to 6 items and order by most recent
-        qs = Review.objects.select_related('customer', 'booking', 'booking__service').filter(rating__gte=4).order_by('-created_at')[:6]
+        # Limit to 3 items and order by most recent
+        qs = Review.objects.select_related('customer', 'booking', 'booking__service').filter(rating__gte=4).order_by('-created_at')[:3]
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 

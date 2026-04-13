@@ -3,7 +3,9 @@ import { MapPin, Calendar, ArrowRight, User, Loader2, Image as ImageIcon, Phone 
 import Skeleton from '../../components/Skeleton';
 import { api } from '../../utils/api';
 import CompleteJobModal from '../../components/provider/CompleteJobModal';
+import NotificationPopup from '../../components/common/NotificationPopup';
 import ImageModal from '../../components/common/ImageModal';
+import toast from 'react-hot-toast';
 
 const JobCard = ({ job, type, onUpdateStatus, onCompleteJob, isUpdating }) => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -66,22 +68,36 @@ const JobCard = ({ job, type, onUpdateStatus, onCompleteJob, isUpdating }) => {
           onClick={() => onUpdateStatus(job.id, 'in_progress')}
           disabled={isUpdating}
           className="px-4 py-2 bg-[#1B3C53] text-white rounded-lg hover:bg-[#1a3248] text-sm flex items-center justify-center gap-2 disabled:opacity-70">
-          {isUpdating ? (
-            <Loader2 className="animate-spin h-4 w-4 text-white" />
-          ) : null}
+          {isUpdating ? <Loader2 className="animate-spin h-4 w-4" /> : null}
           {isUpdating ? 'Starting...' : 'Start Job'}
         </button>
-      ) : (job.status === 'in_progress' || job.status === 'accepted') ? (
+      ) : job.status === 'in_progress' ? (
         <button
           onClick={() => onCompleteJob(job)}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center justify-center gap-2">
-          <ArrowRight size={16} /> Complete Job
+          disabled={isUpdating}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center justify-center gap-2 disabled:opacity-70">
+          {isUpdating ? <Loader2 className="animate-spin h-4 w-4" /> : <ArrowRight size={16} />}
+          {isUpdating ? 'Completing...' : 'Complete Job'}
         </button>
       ) : (job.status === 'completed' && !job.is_paid) ? (
         <button
-          onClick={() => onUpdateStatus(job.id, 'paid', { payment_method: 'cash' })}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center justify-center gap-2">
-          Confirm Cash Received
+          onClick={() => {
+            if (job.payment_method === 'cash') {
+              onUpdateStatus(job.id, 'paid', { payment_method: 'cash' });
+            } else {
+              toast.error('Payment already completed via Khalti');
+            }
+          }}
+          disabled={isUpdating || job.payment_method !== 'cash'}
+          className={`px-4 py-2 text-white rounded-lg text-sm flex items-center justify-center gap-2 transition-all ${
+            job.payment_method === 'cash' 
+              ? 'bg-green-600 hover:bg-green-700 shadow-md active:scale-95' 
+              : 'bg-gray-400 cursor-not-allowed grayscale'
+          } ${isUpdating ? 'opacity-70' : ''}`}>
+          {isUpdating ? <Loader2 className="animate-spin h-4 w-4" /> : null}
+          {isUpdating 
+            ? 'Updating...' 
+            : job.payment_method === 'cash' ? 'Confirm Cash Received' : 'Paid Online'}
         </button>
       ) : null}
     </div>
@@ -178,6 +194,12 @@ export const ActiveJobs = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [updatingId, setUpdatingId] = useState(null);
+  const [notification, setNotification] = useState({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: ''
+  });
 
   useEffect(() => {
     fetchJobs();
@@ -197,12 +219,36 @@ export const ActiveJobs = () => {
   const handleUpdateStatus = async (id, newStatus, additionalData = {}) => {
     setUpdatingId(id);
     try {
-      await api.post(`/booking/bookings/${id}/update-status/`, { status: newStatus, ...additionalData });
+      const payload = { status: newStatus, ...additionalData };
+      console.log('Sending payload:', payload);
+      console.log('Booking ID:', id);
+      const response = await api.post(`/booking/bookings/${id}/update-status/`, payload);
+      console.log('Response:', response);
       setJobs(prev => prev.map(j => j.id === id ? { ...j, status: newStatus } : j));
       await fetchJobs();
+      
+      // Show success notification
+      if (newStatus === 'paid') {
+        setNotification({
+          isOpen: true,
+          type: 'success',
+          title: 'Cash Payment Confirmed',
+          message: 'Payment has been successfully confirmed.'
+        });
+        
+        // Trigger review modal for customer by updating the booking
+        // This will be handled by the customer's MyBookings page when they refresh
+        toast.success('Payment confirmed! Customer can now leave a review.');
+      }
     } catch (err) {
       console.error("Failed to update status", err);
-      alert("Failed to update status");
+      console.error('Error response:', err.response?.data);
+      setNotification({
+        isOpen: true,
+        type: 'error',
+        title: 'Update Failed',
+        message: 'Failed to update status. Please try again.'
+      });
     } finally {
       setUpdatingId(null);
     }
@@ -213,7 +259,17 @@ export const ActiveJobs = () => {
     try {
       const payload = { status, ...additionalData };
       await api.post(`/booking/bookings/${jobId}/update-status/`, payload);
-      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status, ...additionalData } : j));
+      setJobs(prev => prev.map(j => {
+        if (j.id === jobId) {
+          const updatedJob = { ...j, status, ...additionalData };
+          // If it's a rework being completed with 0 price, it's auto-paid by backend
+          if (j.is_rework && status === 'completed') {
+            updatedJob.is_paid = true;
+          }
+          return updatedJob;
+        }
+        return j;
+      }));
       await fetchJobs();
     } catch (err) {
       console.error("Failed to complete job", err);
@@ -293,6 +349,14 @@ export const ActiveJobs = () => {
         onClose={closeCompleteModal}
         job={selectedJob}
         onComplete={handleCompleteJob}
+      />
+      
+      <NotificationPopup
+        isOpen={notification.isOpen}
+        onClose={() => setNotification({ isOpen: false, type: 'success', title: '', message: '' })}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
       />
     </div>
   )

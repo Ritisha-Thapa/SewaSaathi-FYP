@@ -75,8 +75,8 @@ class ProviderRegisterSerializer(ModelSerializer):
     def validate(self, data):
         if not data.get('skills'):
             raise ValidationError({"skills": "Skill is required."})
-
-
+        
+        
         return data
 
     # Phone unique validation

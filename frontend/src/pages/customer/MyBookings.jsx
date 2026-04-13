@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../../utils/api';
 import toast from 'react-hot-toast';
 import DashboardHeader from '../../components/customer/DashboardHeader';
@@ -12,6 +13,9 @@ import ImageModal from '../../components/common/ImageModal';
 import PaymentModal from '../../components/customer/PaymentModal';
 
 const MyBookings = () => {
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const location = useLocation();
     const [bookings, setBookings] = useState([]);
     const [claims, setClaims] = useState({});
     const [loading, setLoading] = useState(true);
@@ -40,6 +44,7 @@ const MyBookings = () => {
         setCurrentPage(1);
     }, [statusFilter, serviceFilter, timeFilter]);
 
+
     const fetchData = async () => {
         try {
             const [bookingsData, claimsData] = await Promise.all([
@@ -54,6 +59,8 @@ const MyBookings = () => {
                 claimsMap[String(claim.booking)] = claim;
             });
             setClaims(claimsMap);
+            
+            // Claims logic remains, but delayed review logic removed from here
         } catch (err) {
             console.error("Failed to fetch data", err);
         } finally {
@@ -254,6 +261,13 @@ const MyBookings = () => {
                                                 booking.is_rework && booking.status === 'in_progress' ? 'Rework In Progress' :
                                                     booking.status.replace('_', ' ')}
                                     </span>
+                                    {booking.status === 'paid' && (
+                                        <>
+                                            <span className="ml-2 px-2 py-1 rounded-full text-xs font-semibold uppercase bg-blue-600 text-white">
+                                                {booking.payment_method === 'cash' ? 'Cash' : 'Online'}
+                                            </span>
+                                        </>
+                                    )}
                                     {claims[booking.id] && (
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${claims[booking.id].status === 'approved' ? 'bg-green-600 text-white' :
                                             claims[booking.id].status === 'rejected' ? 'bg-red-600 text-white' : 'bg-orange-400 text-white'
@@ -416,6 +430,11 @@ const MyBookings = () => {
                 isOpen={showPaymentModal}
                 onClose={() => setShowPaymentModal(false)}
                 booking={selectedBookingForPayment}
+                onPaymentSuccess={(booking) => {
+                    setSelectedBookingForReview(booking);
+                    setShowReviewModal(true);
+                    fetchData(); // Refetch bookings after payment success
+                }}
             />
 
             <Footer />

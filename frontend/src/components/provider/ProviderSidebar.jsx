@@ -53,7 +53,6 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
     { to: '/provider/history', icon: Clock, label: 'Booking History' },
     { to: '/provider/services', icon: Wrench, label: 'My Services' },
     { to: '/provider/earnings', icon: Wallet, label: 'Earnings' },
-    { to: '/provider/schedule', icon: Calendar, label: 'Schedule' },
     { to: '/provider/reviews', icon: Star, label: 'Reviews' },
     { to: '/provider/profile', icon: UserCircle, label: 'Profile' },
     { to: '/provider/notifications', icon: Bell, label: 'Notifications' },

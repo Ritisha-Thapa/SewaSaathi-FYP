@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { api } from '../../utils/api';
 import khaltiLogo from '../../assets/khalti_logo.png';
 
-const PaymentModal = ({ isOpen, onClose, booking }) => {
+const PaymentModal = ({ isOpen, onClose, booking, onPaymentSuccess }) => {
   if (!isOpen || !booking) return null;
 
   const formatPrice = (n) => `Rs. ${Number(n).toLocaleString()}`;
@@ -31,12 +31,25 @@ const PaymentModal = ({ isOpen, onClose, booking }) => {
     }
   };
 
-  const handleCashPayment = () => {
-    toast.success(
-      `Please hand ${formatPrice(booking.total_price)} in cash to your provider. The provider will confirm receipt to complete this transaction.`,
-      { duration: 8000 }
-    );
-    onClose();
+  const handleCashPayment = async () => {
+    try {
+      // Set payment method to cash
+      await api.patch(`/booking/bookings/${booking.id}/`, { payment_method: 'cash' });
+      
+      toast.success(
+        `Please hand ${formatPrice(booking.total_price)} in cash to your provider. The provider will confirm receipt to complete this transaction.`,
+        { duration: 8000 }
+      );
+      
+      // Notify parent that "payment" (choice) is done
+      if (onPaymentSuccess) {
+        onPaymentSuccess(booking);
+      }
+      onClose();
+    } catch (err) {
+      console.error('Failed to set payment method', err);
+      toast.error('Failed to process cash payment request.');
+    }
   };
 
   return (

@@ -191,6 +191,11 @@ const BookingHistory = () => {
                       Rework
                     </span>
                   )}
+                  {booking.status === 'paid' && (
+                    <span className="ml-2 px-2 py-1 rounded-full text-xs font-semibold uppercase bg-blue-600 text-white">
+                      {booking.payment_method === 'cash' ? 'Cash' : 'Online'}
+                    </span>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-6 text-sm text-gray-600">

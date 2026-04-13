@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Upload, CheckCircle, Clock, CreditCard, AlertTriangle, Image as ImageIcon, User, Phone, Banknote } from "lucide-react";
 import toast from "react-hot-toast";
 import Skeleton from "../../components/Skeleton";
@@ -15,6 +15,7 @@ const formatPrice = (n) => `Rs. ${Number(n).toLocaleString()}`;
 const ServiceDetails = () => {
   const { category, serviceId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
@@ -40,57 +41,53 @@ const ServiceDetails = () => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  useEffect(() => {
-    const fetchService = async () => {
-      try {
-        const data = await api.get(`/services/service/${serviceId}/`);
-        setItem(data);
 
-        // Check if user already has a booking for this service
-        const token = localStorage.getItem("access");
-        if (token) {
-          try {
-            const bookings = await api.get(`/booking/bookings/`);
-            const activeBooking = bookings.find(b => {
-              // 1. Show if request is active (pending, accepted, in_progress)
-              if (!['cancelled', 'rejected', 'completed', 'paid', 'refunded'].includes(b.status)) {
-                return b.service === Number(serviceId);
-              }
+  const fetchService = async () => {
+    try {
+      const data = await api.get(`/services/service/${serviceId}/`);
+      setItem(data);
 
-              // 2. Show if completed but NOT paid (waiting for payment)
-              if (b.status === 'completed' && !b.is_paid) {
-                return b.service === Number(serviceId);
-              }
-
-              // 3. Show if there's an ongoing insurance claim (regardless of 3-day window once claimed)
-              if (b.latest_claim_status && b.service === Number(serviceId)) {
-                // Show claim card if pending
-                if (b.latest_claim_status === 'pending') return true;
-
-                // Show claim card if approved but not yet resolved (resolution 'none' means processing)
-                if (b.latest_claim_status === 'approved' && b.latest_claim_resolution === 'none') {
-                  return true;
-                }
-              }
-
-              return false;
-            });
-            if (activeBooking) {
-              setExistingBooking(activeBooking);
-              setBookingDetails(activeBooking);
-              setOrderingStatus('success');
+      const token = localStorage.getItem("access");
+      if (token) {
+        try {
+          const bookings = await api.get(`/booking/bookings/`);
+          const activeBooking = bookings.find(b => {
+            if (!['cancelled', 'rejected', 'completed', 'paid', 'refunded'].includes(b.status)) {
+              return b.service === Number(serviceId);
             }
-          } catch (err) {
-            console.error('Failed to check existing booking:', err);
+            if (b.status === 'completed' && !b.is_paid) {
+              return b.service === Number(serviceId);
+            }
+            if (b.latest_claim_status && b.service === Number(serviceId)) {
+              if (b.latest_claim_status === 'pending') return true;
+              if (b.latest_claim_status === 'approved' && b.latest_claim_resolution === 'none') {
+                return true;
+              }
+            }
+            return false;
+          });
+          if (activeBooking) {
+            setExistingBooking(activeBooking);
+            setBookingDetails(activeBooking);
+            setOrderingStatus('success');
+          } else {
+            // Reset states if no active booking found anymore (e.g. after payment)
+            setExistingBooking(null);
+            setBookingDetails(null);
+            setOrderingStatus('');
           }
+        } catch (err) {
+          console.error('Failed to check existing booking:', err);
         }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchService();
   }, [category, serviceId]);
 
@@ -671,6 +668,11 @@ const ServiceDetails = () => {
         isOpen={showPaymentModal} 
         onClose={() => setShowPaymentModal(false)}
         booking={bookingDetails}
+        onPaymentSuccess={(booking) => {
+          setSelectedBookingForReview(booking);
+          setShowReviewModal(true);
+          fetchService(); // Refetch service/booking status after payment
+        }}
       />
       <Footer />
     </div>

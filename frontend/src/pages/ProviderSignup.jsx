@@ -40,10 +40,19 @@ const ProviderSignup = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    // Phone number validation - only allow digits
+    if (name === 'phone') {
+      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: numericValue,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
 
     setErrors((prev) => ({
       ...prev,
@@ -98,7 +107,9 @@ const ProviderSignup = () => {
     if (!formData.first_name.trim()) newErrors.first_name = "Required";
     if (!formData.last_name.trim()) newErrors.last_name = "Required";
     if (!formData.phone.trim()) newErrors.phone = "Required";
+    else if (!/^\d{10}$/.test(formData.phone)) newErrors.phone = "Phone must be exactly 10 digits";
     if (!formData.email.trim()) newErrors.email = "Required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
     if (!formData.address.trim()) newErrors.address = "Required";
     if (!formData.city.trim()) newErrors.city = "Required";
 
@@ -121,7 +132,14 @@ const ProviderSignup = () => {
     form.append("address", formData.address);
     form.append("city", formData.city);
 
-    formData.skills.forEach((skill) => form.append("skills", skill));
+    // Append skills as separate entries
+    if (Array.isArray(formData.skills)) {
+      formData.skills.forEach(skill => form.append("skills", skill));
+    } else if (formData.skills) {
+      // Handle case where skills might be a string
+      form.append("skills", formData.skills);
+    }
+    
     form.append("experience_years", formData.experience_years);
 
     form.append("citizenship_image_front", formData.citizenship_image);
@@ -141,8 +159,22 @@ const ProviderSignup = () => {
         },
       );
 
-      const data = await response.json();
+      // Safe response handling
+      let data = {};
+      let text = "";
 
+      try {
+        text = await response.text();
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        console.log("Response is not valid JSON");
+      }
+
+      console.log("STATUS:", response.status);
+      console.log("RAW TEXT:", text);
+      console.log("PARSED DATA:", data);
+
+      // ✅ SUCCESS
       if (response.ok) {
         toast.success(data.message || "Provider registration successful!");
         setFormData({
@@ -162,10 +194,27 @@ const ProviderSignup = () => {
         setErrors({});
         setIsLoading(false);
         return; // exit
-      } else {
-        toast.error(data.message || data.error || "Registration failed");
-        setIsLoading(false);
       }
+
+      // ❌ ERROR HANDLING (clean & direct)
+      let fieldErrors = {};
+      let errorMessage = "Registration failed";
+
+      // Django returns: { email: ["..."], phone: ["..."] }
+      Object.keys(data).forEach((key) => {
+        if (Array.isArray(data[key])) {
+          fieldErrors[key] = data[key][0];
+        }
+      });
+
+      // If field errors exist → show under inputs
+      if (Object.keys(fieldErrors).length > 0) {
+        setErrors(fieldErrors);
+      } else {
+        toast.error(errorMessage);
+      }
+
+      setIsLoading(false);
     } catch (error) {
       console.error("Error:", error);
       toast.error("Something went wrong");
@@ -181,12 +230,12 @@ const ProviderSignup = () => {
 
 
         <div className="flex flex-col items-center">
-          <div className="flex items-center gap-4 cursor-pointer">
+          <Link to="/" className="flex items-center gap-4 cursor-pointer">
             <img src={Logo} alt="logo" className="h-14 w-auto" />
             <span className="text-3xl font-semibold text-[#1B3C53] tracking-wide">
               SewaSaathi
             </span>
-          </div>
+          </Link>
           <h2 className="text-center text-3xl font-bold text-[#1B3C53] mt-12">
             Become a Service Provider
           </h2>

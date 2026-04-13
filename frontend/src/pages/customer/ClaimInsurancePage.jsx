@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 import { api } from "../../utils/api";
 import DashboardHeader from "../../components/customer/DashboardHeader";
 import Footer from "../../components/customer/Footer";
+import Skeleton from "../../components/Skeleton";
 import { ArrowLeft, Upload, CheckCircle, AlertTriangle } from "lucide-react";
 
 const ClaimInsurancePage = () => {
@@ -17,18 +19,43 @@ const ClaimInsurancePage = () => {
     const [success, setSuccess] = useState(false);
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchBooking = async () => {
+            setLoading(true); // ensure loading starts
+
+            const startTime = Date.now();
+
             try {
-                const data = await api.get(`/booking/bookings/${bookingId}/`);
-                setBooking(data);
+                const response = await api.get(`/booking/bookings/${bookingId}/`);
+
+                const elapsed = Date.now() - startTime;
+                const minDelay = 600; 
+                const remainingTime = Math.max(minDelay - elapsed, 0);
+
+                setTimeout(() => {
+                    if (isMounted) {
+                        console.log("BOOKING DATA:", response);
+                        setBooking(response);
+                        setLoading(false);
+                    }
+                }, remainingTime);
+
             } catch (err) {
                 console.error("Failed to fetch booking", err);
-                setError("Could not load booking details.");
-            } finally {
-                setLoading(false);
+
+                if (isMounted) {
+                    setError("Could not load booking details.");
+                    setLoading(false);
+                }
             }
         };
+
         fetchBooking();
+
+        return () => {
+            isMounted = false;
+        };
     }, [bookingId]);
 
     const handleFileChange = (e) => {
@@ -62,6 +89,9 @@ const ClaimInsurancePage = () => {
                     "Content-Type": "multipart/form-data",
                 },
             });
+            toast.success("Your insurance claim has been submitted successfully. Please wait while our team reviews your request.", {
+                duration: 4000,
+            });
             setSuccess(true);
             setTimeout(() => navigate("/my-bookings"), 3000);
         } catch (err) {
@@ -72,28 +102,75 @@ const ClaimInsurancePage = () => {
         }
     };
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    console.log("LOADING STATE:", loading);
+    console.log("BOOKING DATA:", booking);
 
-    if (success) {
+    if (loading) {
         return (
             <div className="min-h-screen bg-[#F9F5F0]">
                 <DashboardHeader />
-                <div className="container mx-auto px-4 py-20 max-w-2xl text-center">
-                    <div className="bg-white p-10 rounded-3xl shadow-xl border border-gray-100 flex flex-col items-center">
-                        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
-                            <CheckCircle size={48} />
+                <div className="container mx-auto px-4 py-10 max-w-4xl">
+                    
+                    
+                    {/* Title skeleton */}
+                    <div className="h-10 w-48 bg-gray-200 animate-pulse rounded-md mb-2"></div>
+                    
+                    
+                    {/* Main content grid - mimics form + sidebar layout */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Form section skeleton */}
+                        <div className="lg:col-span-2">
+                            <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100 space-y-6">
+                            
+                                
+                                {/* Description textarea skeleton */}
+                                <div className="space-y-2">
+                                    <div className="h-4 w-40 bg-gray-200 animate-pulse rounded-md"></div>
+                                    <div className="h-40 w-full bg-gray-200 animate-pulse rounded-xl"></div>
+                                </div>
+                                
+                            </div>
                         </div>
-                        <h1 className="text-3xl font-bold text-[#1B3C53] mb-4">Claim Submitted!</h1>
-                        <p className="text-gray-600 mb-8">Your insurance claim has been successfully submitted and is under review.</p>
-                        <Link to="/my-bookings" className="px-8 py-3 bg-[#1B3C53] text-white rounded-xl font-bold hover:bg-[#1a3248] transition">
-                            Back to Bookings
-                        </Link>
+                        
+                        {/* Sidebar skeleton */}
+                        <div className="lg:col-span-1">
+                            <div className="bg-[#1B3C53] text-white rounded-2xl p-6 shadow-lg sticky top-8">
+                                {/* Sidebar title skeleton */}
+                                <div className="h-6 w-32 bg-white/20 animate-pulse rounded-md mb-4 border-b border-white/20 pb-3"></div>
+                                
+                                {/* Booking details skeleton */}
+                                <div className="space-y-4">
+                                    
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <Footer />
             </div>
         );
     }
+
+    // if (success) {
+    //     return (
+    //         <div className="min-h-screen bg-[#F9F5F0]">
+    //             <DashboardHeader />
+    //             <div className="container mx-auto px-4 py-20 max-w-2xl text-center">
+    //                 <div className="bg-white p-10 rounded-3xl shadow-xl border border-gray-100 flex flex-col items-center">
+    //                     <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
+    //                         <CheckCircle size={48} />
+    //                     </div>
+    //                     <h1 className="text-3xl font-bold text-[#1B3C53] mb-4">Claim Submitted!</h1>
+    //                     <p className="text-gray-600 mb-8">Your insurance claim has been successfully submitted and is under review.</p>
+    //                     <Link to="/my-bookings" className="px-8 py-3 bg-[#1B3C53] text-white rounded-xl font-bold hover:bg-[#1a3248] transition">
+    //                         Back to Bookings
+    //                     </Link>
+    //                 </div>
+    //             </div>
+    //             <Footer />
+    //         </div>
+    //     );
+    // }
 
     return (
         <div className="min-h-screen bg-[#F9F5F0]">

@@ -10,7 +10,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand Column */}
           <div>
-            <Link to="/customer-dashboard" className="mb-2 block">
+            <Link to="/" className="mb-2 block">
               <img
                 src={fullLogo}
                 alt="SewaSaathi"
@@ -44,7 +44,7 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-6">Quick Links</h3>
             <ul className="space-y-4">
               <li>
-                <Link to="/customer-dashboard" className="text-gray-300 hover:text-white transition flex items-center">
+                <Link to="/" className="text-gray-300 hover:text-white transition flex items-center">
 
                   Home
                 </Link>

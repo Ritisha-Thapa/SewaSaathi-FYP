@@ -31,7 +31,6 @@ import AssignedJobs, { ActiveJobs } from './pages/provider/AssignedJobs';
 import BookingHistory from './pages/provider/BookingHistory';
 import MyServices from './pages/provider/MyServices';
 import Earnings from './pages/provider/Earnings';
-import Schedule from './pages/provider/Schedule';
 import Reviews from './pages/provider/Reviews';
 import ProviderProfile from './pages/provider/ProviderProfile';
 import ServicesPage from './pages/customer/ServicesPage';
@@ -88,7 +87,6 @@ function App() {
               <Route path="history" element={<BookingHistory />} />
               <Route path="services" element={<MyServices />} />
               <Route path="earnings" element={<Earnings />} />
-              <Route path="schedule" element={<Schedule />} />
               <Route path="reviews" element={<Reviews />} />
               <Route path="profile" element={<ProviderProfile />} />
               <Route path="notifications" element={<NotificationsPage />} />

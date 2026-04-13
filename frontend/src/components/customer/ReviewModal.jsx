@@ -19,16 +19,21 @@ const ReviewModal = ({ isOpen, onClose, booking, onReviewSubmit }) => {
 
     setIsSubmitting(true);
     try {
-      await api.post('/booking/reviews/', {
+      const payload = {
         booking: booking.id,
         provider: booking.provider,
         rating: rating,
         comment: comment
-      });
+      };
+      console.log('Submitting review payload:', payload);
+      console.log('Booking details:', booking);
+      const response = await api.post('/booking/reviews/', payload);
+      console.log('Review response:', response);
       onReviewSubmit();
       onClose();
     } catch (err) {
       console.error("Failed to submit review", err);
+      console.error('Error response:', err.response?.data);
       alert("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);

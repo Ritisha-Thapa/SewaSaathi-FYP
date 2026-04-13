@@ -25,10 +25,20 @@ const CustomerSignup = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // Phone number validation - only allow digits
+    if (name === 'phone') {
+      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+      setFormData(prev => ({
+        ...prev,
+        [name]: numericValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
 
     if (errors[name]) {
       setErrors(prev => ({
@@ -46,6 +56,7 @@ const CustomerSignup = () => {
     if (!formData.first_name.trim()) newErrors.first_name = 'First name is required';
     if (!formData.last_name.trim()) newErrors.last_name = 'Last name is required';
     if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
+    else if (!/^\d{10}$/.test(formData.phone)) newErrors.phone = 'Phone must be exactly 10 digits';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
     if (!formData.address.trim()) newErrors.address = 'Address is required';
@@ -82,22 +93,55 @@ const CustomerSignup = () => {
         }
       );
 
-      const data = await response.json();
-      console.log("Signup response:", data);
+// const data = await response.json();
+// console.log("Signup response:", data);
 
-      if (response.ok) {
-        toast.success(data.message || "Customer registration successful!");
-        setErrors({});
+let data;
 
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);
+try {
+  data = await response.json();
+} catch (err) {
+  console.log("❌ JSON parse failed");
+  data = {};
+}
 
-        return;
-      } else {
-        toast.error(data.message || data.error || "Registration failed");
-        setIsLoading(false);
-      }
+console.log("STATUS:", response.status);
+console.log("DATA:", data);
+
+// ✅ SUCCESS
+if (response.ok) {
+  toast.success(data.message || "Customer registration successful!");
+  setErrors({});
+
+  setTimeout(() => {
+    navigate("/login");
+  }, 2000);
+
+  return;
+}
+
+// ❌ ERROR HANDLING (clean & direct)
+let fieldErrors = {};
+let errorMessage = "Registration failed";
+
+// Django sends: { email: ["..."], phone: ["..."] }
+Object.keys(data).forEach((key) => {
+  if (Array.isArray(data[key])) {
+    fieldErrors[key] = data[key][0];
+  }
+});
+
+// If field errors exist → show under inputs
+if (Object.keys(fieldErrors).length > 0) {
+  setErrors(fieldErrors);
+} else {
+  toast.error(errorMessage);
+}
+
+setIsLoading(false);
+  return;
+
+      
 
     } catch (error) {
       console.error("Signup Error:", error);
@@ -114,12 +158,12 @@ const CustomerSignup = () => {
 
 
         <div className="flex flex-col items-center">
-          <div className="flex items-center gap-4 cursor-pointer">
+          <Link to="/" className="flex items-center gap-4 cursor-pointer">
             <img src={Logo} alt="logo" className="h-14 w-auto" />
             <span className="text-3xl font-semibold text-[#1B3C53] tracking-wide">
               SewaSaathi
             </span>
-          </div>
+          </Link>
           <h2 className="text-center text-3xl font-bold text-[#1B3C53] mt-12">
             Create Customer Account
           </h2>
