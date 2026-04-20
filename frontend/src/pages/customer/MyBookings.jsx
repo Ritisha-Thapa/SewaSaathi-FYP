@@ -11,8 +11,10 @@ import Pagination from '../../components/common/Pagination';
 import ReviewModal from '../../components/customer/ReviewModal';
 import ImageModal from '../../components/common/ImageModal';
 import PaymentModal from '../../components/customer/PaymentModal';
+import { useTranslation } from 'react-i18next';
 
 const MyBookings = () => {
+    const { t } = useTranslation();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const location = useLocation();
@@ -197,13 +199,13 @@ const MyBookings = () => {
         <div className="min-h-screen bg-[#F9F5F0]">
             <DashboardHeader />
             <div className="container mx-auto px-4 py-10 max-w-7xl">
-                <h1 className="text-3xl font-bold text-[#1B3C53] mb-8">My Bookings</h1>
+                <h1 className="text-3xl font-bold text-[#1B3C53] mb-8">{t('bookings.title')}</h1>
 
                 {bookings.length > 0 && (
                     <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                         <div className="flex items-center gap-2 text-[#1B3C53] font-bold w-full md:w-auto text-lg mb-2 md:mb-0 border-b md:border-b-0 pb-2 md:pb-0">
                             <Filter size={24} />
-                            <span>Filter By </span>
+                            <span>{t('bookings.filter_by')} </span>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                             <select
@@ -211,12 +213,12 @@ const MyBookings = () => {
                                 onChange={(e) => setStatusFilter(e.target.value)}
                                 className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1B3C53] bg-gray-50 text-gray-700"
                             >
-                                <option value="all">All Statuses</option>
-                                <option value="pending">Pending</option>
+                                <option value="all">{t('bookings.all_statuses')}</option>
+                                <option value="pending">{t('status.pending')}</option>
                                 <option value="accepted">Accepted</option>
-                                <option value="in_progress">In Progress</option>
-                                <option value="completed">Completed</option>
-                                <option value="paid">Paid</option>
+                                <option value="in_progress">{t('status.in_progress')}</option>
+                                <option value="completed">{t('status.completed')}</option>
+                                <option value="paid">{t('bookings.paid')}</option>
                                 <option value="cancelled">Cancelled</option>
                             </select>
                             <select
@@ -225,7 +227,7 @@ const MyBookings = () => {
                                 className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1B3C53] bg-gray-50 text-gray-700"
                             >
                                 {uniqueServices.map(service => (
-                                    <option key={service} value={service}>{service === 'all' ? 'All Services' : service}</option>
+                                    <option key={service} value={service}>{service === 'all' ? t('bookings.all_services') : service}</option>
                                 ))}
                             </select>
                             <select
@@ -233,10 +235,10 @@ const MyBookings = () => {
                                 onChange={(e) => setTimeFilter(e.target.value)}
                                 className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1B3C53] bg-gray-50 text-gray-700"
                             >
-                                <option value="all">Any Time</option>
-                                <option value="today">Today</option>
-                                <option value="this_week">This Week</option>
-                                <option value="this_month">This Month</option>
+                                <option value="all">{t('bookings.any_time')}</option>
+                                <option value="today">{t('bookings.today')}</option>
+                                <option value="this_week">{t('bookings.this_week')}</option>
+                                <option value="this_month">{t('bookings.this_month')}</option>
                             </select>
                         </div>
                     </div>
@@ -256,10 +258,10 @@ const MyBookings = () => {
                                                         booking.status === 'refunded' ? 'bg-purple-100 text-purple-700' :
                                                             'bg-gray-100 text-gray-700'
                                         }`}>
-                                        {booking.status === 'refunded' ? 'Refunded After Claim' :
-                                            booking.is_rework && booking.status === 'completed' ? 'Rework Completed' :
-                                                booking.is_rework && booking.status === 'in_progress' ? 'Rework In Progress' :
-                                                    booking.status.replace('_', ' ')}
+                                        {booking.status === 'refunded' ? t('bookings.refunded') :
+                                            booking.is_rework && booking.status === 'completed' ? t('bookings.rework_completed') :
+                                                booking.is_rework && booking.status === 'in_progress' ? t('bookings.rework_in_progress') :
+                                                    t(`status.${booking.status}`, { defaultValue: booking.status.replace('_', ' ') })}
                                     </span>
                                     {booking.status === 'paid' && (
                                         <>
@@ -289,7 +291,7 @@ const MyBookings = () => {
                                     <div className="flex items-center gap-2">
                                         <CheckCircle size={16} className={booking.is_paid ? "text-green-500" : "text-red-500"} />
                                         <span>
-                                            {booking.is_paid ? "Paid" : "Unpaid"} - Rs. {booking.total_price}
+                                            {booking.is_paid ? t('bookings.paid') : t('bookings.unpaid')} - Rs. {booking.total_price}
                                             {booking.is_paid && booking.paid_at && (
                                                 <span className="ml-2 text-xs font-normal text-gray-500">
                                                     (Original payment at {new Date(booking.paid_at).toLocaleString()})
@@ -323,32 +325,32 @@ const MyBookings = () => {
                                                 className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-[#1B3C53] rounded-lg text-sm font-semibold hover:bg-gray-200 transition border border-gray-200"
                                             >
                                                 <ImageIcon size={16} />
-                                                View Attached Image
+                                                {t('bookings.view_attached_image')}
                                             </button>
                                         </div>
                                     )}
                                     {claims[String(booking.id)] && claims[String(booking.id)].status === 'approved' && claims[String(booking.id)].resolution === 'none' && (
                                         <div className="col-span-1 sm:col-span-2 mt-4 p-4 bg-green-50 rounded-xl border border-green-200">
-                                            <p className="font-bold text-green-800 mb-2">Claim Approved! Choose your resolution:</p>
+                                            <p className="font-bold text-green-800 mb-2">{t('bookings.claim_approved')}</p>
                                             <div className="flex gap-4">
                                                 <button
                                                     onClick={() => handleResolution(booking.id, 'refund')}
                                                     className="px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition"
                                                 >
-                                                    80% Refund
+                                                    {t('bookings.refund_80')}
                                                 </button>
                                                 <button
                                                     onClick={() => handleResolution(booking.id, 'rework')}
                                                     className="px-4 py-2 bg-[#1B3C53] text-white rounded-lg text-xs font-bold hover:bg-[#1a3248] transition"
                                                 >
-                                                    Request Rework
+                                                    {t('bookings.request_rework')}
                                                 </button>
                                             </div>
                                         </div>
                                     )}
                                     {claims[String(booking.id)] && claims[String(booking.id)].resolution !== 'none' && (
                                         <div className="col-span-1 sm:col-span-2 mt-4 p-3 bg-gray-100 rounded-xl border border-gray-200">
-                                            <p className="font-bold text-gray-800">Resolution: <span className="capitalize">{claims[String(booking.id)].resolution}</span></p>
+                                            <p className="font-bold text-gray-800">{t('bookings.resolution')}: <span className="capitalize">{claims[String(booking.id)].resolution}</span></p>
                                         </div>
                                     )}
                                 </div>
@@ -364,7 +366,7 @@ const MyBookings = () => {
                                         className="px-6 py-2 bg-[#1B3C53] text-white rounded-xl font-bold hover:bg-[#1a3248] transition text-center shadow-md flex items-center justify-center gap-2"
                                     >
                                         <Banknote size={20} />
-                                        Pay Now
+                                        {t('bookings.pay_now')}
                                     </button>
                                 )}
 
@@ -375,14 +377,14 @@ const MyBookings = () => {
                                         className="px-6 py-2 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition text-center shadow-md flex items-center justify-center gap-2"
                                     >
                                         <AlertCircle size={18} />
-                                        Claim Insurance
+                                        {t('bookings.claim_insurance')}
                                     </Link>
                                 )}
                                 <Link
-                                    to={`/services/${booking.service_category_name}/${booking.service}`}
+                                    to={`/services/${booking.service_category_slug || booking.service_category_name}/${booking.service}`}
                                     className="px-6 py-2 border border-[#1B3C53] text-[#1B3C53] rounded-xl font-bold hover:bg-gray-50 transition text-center"
                                 >
-                                    View Service
+                                    {t('bookings.view_service')}
                                 </Link>
                             </div>
                         </div>
@@ -396,15 +398,15 @@ const MyBookings = () => {
 
                     {filteredBookings.length === 0 && bookings.length > 0 && (
                         <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300">
-                            <p className="text-gray-500 text-lg">No bookings match the selected filters.</p>
-                            <button onClick={() => { setStatusFilter('all'); setServiceFilter('all'); setTimeFilter('all'); }} className="text-[#1B3C53] font-bold mt-4 inline-block underline">Clear Filters</button>
+                            <p className="text-gray-500 text-lg">{t('bookings.no_bookings_match')}</p>
+                            <button onClick={() => { setStatusFilter('all'); setServiceFilter('all'); setTimeFilter('all'); }} className="text-[#1B3C53] font-bold mt-4 inline-block underline">{t('bookings.clear_filters')}</button>
                         </div>
                     )}
 
                     {bookings.length === 0 && (
                         <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300">
-                            <p className="text-gray-500 text-lg">No bookings found.</p>
-                            <Link to="/services-category" className="text-[#1B3C53] font-bold mt-4 inline-block underline">Browse Services</Link>
+                            <p className="text-gray-500 text-lg">{t('bookings.no_bookings_found')}</p>
+                            <Link to="/services-category" className="text-[#1B3C53] font-bold mt-4 inline-block underline">{t('bookings.browse_services')}</Link>
                         </div>
                     )}
                 </div>

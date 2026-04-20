@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import Skeleton from "../Skeleton";
+import { buildLocalizedHeaders } from "../../utils/i18nRequest";
 
 /**
  * Lists featured providers in a horizontal carousel.
@@ -15,7 +16,9 @@ const FeaturedProviders = () => {
     useEffect(() => {
         const fetchProviders = async () => {
             try {
-                const res = await fetch("http://127.0.0.1:8000/services/provider-services/");
+                const res = await fetch("http://127.0.0.1:8000/services/provider-services/", {
+                    headers: buildLocalizedHeaders(),
+                });
                 const data = await res.json();
                 // Assuming pagination or list, take first 10
                 const list = Array.isArray(data) ? data : data.results || [];

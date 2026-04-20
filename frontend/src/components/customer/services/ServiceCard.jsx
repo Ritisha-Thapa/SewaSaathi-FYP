@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 const ServiceCard = ({ service }) => {
   return (
     <Link
-      to={`/services/${service.category.name}/${service.id}`}
+      to={`/services/${service.category.slug}/${service.id}`}
       className="bg-[#F9F5F0] rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden block"
     >
       {service.image && (

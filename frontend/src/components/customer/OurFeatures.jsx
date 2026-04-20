@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Lock, Mic } from 'lucide-react';
+import { ShieldCheck, Lock, MessageCircle } from 'lucide-react';
 
 const OurFeatures = () => {
   const features = [
@@ -19,9 +19,9 @@ const OurFeatures = () => {
       icon: <ShieldCheck className="w-8 h-8 text-[#1B3C53]" />
     },
     {
-      title: 'Voice Guidance',
-      description: 'Get help in Nepali with our voice guidance feature',
-      icon: <Mic className="w-8 h-8 text-[#1B3C53]" />
+      title: 'WhatsApp Support',
+      description: 'Connect directly with our support team via WhatsApp for any help',
+      icon: <MessageCircle className="w-8 h-8 text-[#1B3C53]" />
     }
   ];
 

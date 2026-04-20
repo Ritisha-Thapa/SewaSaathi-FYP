@@ -19,11 +19,13 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
+import { useTranslation } from 'react-i18next';
 
 
 const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
   const { logout } = useAuth();
   const { unreadCount } = useNotifications();
+  const { t } = useTranslation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [counts, setCounts] = useState({ pending: 0, active: 0 });
 
@@ -47,15 +49,15 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
   }, []);
 
   const navItems = [
-    { to: '/provider/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/provider/requests', icon: ClipboardList, label: 'Job Requests' },
-    { to: '/provider/active', icon: PlayCircle, label: 'Active Jobs' },
-    { to: '/provider/history', icon: Clock, label: 'Booking History' },
-    { to: '/provider/services', icon: Wrench, label: 'My Services' },
-    { to: '/provider/earnings', icon: Wallet, label: 'Earnings' },
-    { to: '/provider/reviews', icon: Star, label: 'Reviews' },
-    { to: '/provider/profile', icon: UserCircle, label: 'Profile' },
-    { to: '/provider/notifications', icon: Bell, label: 'Notifications' },
+    { to: '/provider/dashboard', icon: LayoutDashboard, label: t('provider.dashboard'), key: 'Dashboard' },
+    { to: '/provider/requests', icon: ClipboardList, label: t('provider.job_requests'), key: 'Job Requests' },
+    { to: '/provider/active', icon: PlayCircle, label: t('provider.active_jobs'), key: 'Active Jobs' },
+    { to: '/provider/history', icon: Clock, label: t('provider.booking_history'), key: 'Booking History' },
+    { to: '/provider/services', icon: Wrench, label: t('provider.my_services'), key: 'My Services' },
+    { to: '/provider/earnings', icon: Wallet, label: t('provider.earnings'), key: 'Earnings' },
+    { to: '/provider/reviews', icon: Star, label: t('provider.reviews'), key: 'Reviews' },
+    { to: '/provider/profile', icon: UserCircle, label: t('provider.profile'), key: 'Profile' },
+    { to: '/provider/notifications', icon: Bell, label: t('provider.notifications'), key: 'Notifications' },
   ];
 
   const handleLogout = () => {
@@ -83,7 +85,7 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
       `}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-white/10">
-          <h2 className="text-xl font-bold">Provider Panel</h2>
+          <h2 className="text-xl font-bold">{t('provider.panel')}</h2>
           <button onClick={toggleSidebar} className="lg:hidden">
             <X size={24} />
           </button>
@@ -105,17 +107,17 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
                 <item.icon size={20} />
                 <span>{item.label}</span>
               </div>
-              {item.label === 'Notifications' && unreadCount > 0 && (
+              {item.key === 'Notifications' && unreadCount > 0 && (
                 <span className="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                   {unreadCount}
                 </span>
               )}
-              {item.label === 'Job Requests' && counts.pending > 0 && (
+              {item.key === 'Job Requests' && counts.pending > 0 && (
                 <span className="bg-green-400 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                   {counts.pending}
                 </span>
               )}
-              {item.label === 'Active Jobs' && counts.active > 0 && (
+              {item.key === 'Active Jobs' && counts.active > 0 && (
                 <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                   {counts.active}
                 </span>
@@ -134,7 +136,7 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
               ) : (
                 <LogOut size={20} />
               )}
-              <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+              <span>{isLoggingOut ? t('common.logging_out') : t('common.logout')}</span>
             </button>
           </div>
         </nav>

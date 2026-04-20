@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Skeleton from "../Skeleton";
+import { useTranslation } from "react-i18next";
+import { buildLocalizedHeaders } from "../../utils/i18nRequest";
 
 const FeaturedCategories = () => {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/services/service-categories/")
+    fetch("http://127.0.0.1:8000/services/service-categories/", {
+      headers: buildLocalizedHeaders(),
+    })
       .then((res) => res.json())
       .then((data) => {
         setCategories(data);
@@ -45,7 +50,7 @@ const FeaturedCategories = () => {
     <section className="bg-white py-12">
       <div className="container mx-auto px-4 max-w-7xl">
         <h2 className="text-3xl md:text-4xl font-bold text-[#1B3C53] text-center mb-12">
-          Service Categories
+          {t('services.featured_categories')}
         </h2>
 
         {/* Categories Row - Dynamic Grid */}
@@ -53,7 +58,7 @@ const FeaturedCategories = () => {
           {categories.map((category) => (
             <Link
               key={category.id}
-              to={`/services/${category.name}`}
+              to={`/services/${category.slug}`}
               className="flex flex-col items-center group w-full"
             >
               <div className="w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-2 border-transparent group-hover:border-[#1B3C53] transition-all duration-300 shadow-sm mb-3">

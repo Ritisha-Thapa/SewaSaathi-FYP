@@ -2,8 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import painting from "../../assets/images/services/electricianman.png";
 import { Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { buildLocalizedHeaders } from "../../utils/i18nRequest";
 
 const CustDashHero = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
   const [categories, setCategories] = useState([]);
@@ -11,7 +14,9 @@ const CustDashHero = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/services/service-categories/");
+        const res = await fetch("http://127.0.0.1:8000/services/service-categories/", {
+          headers: buildLocalizedHeaders(),
+        });
         if (res.ok) {
           const data = await res.json();
           setCategories(data);
@@ -36,7 +41,7 @@ const CustDashHero = () => {
     const match = categories.find(c => c.name.toLowerCase() === query);
 
     if (match) {
-      navigate(`/services/${match.name}`);
+      navigate(`/services/${match.slug}`);
     } else {
       // Fallback to services page if no category matches
       navigate("/services");
@@ -50,14 +55,12 @@ const CustDashHero = () => {
           {/* Left Column: Content & Search */}
           <div className="w-full lg:w-1/2 z-10">
             <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-black mb-6 leading-[1.1]">
-              Discover reliable{" "}
-              <span className="text-[#1B3C53]">home service</span> pros in your
-              area.
+              {t('cust_dash.hero_title_part1')}{" "}
+              <span className="text-[#1B3C53]">{t('cust_dash.hero_title_part2')}</span> {t('cust_dash.hero_title_part3')}
             </h1>
 
             <p className="text-lg text-gray-600 mb-10 max-w-lg leading-relaxed">
-              From quick repairs to full renovations — find trusted, vetted
-              professionals ready to handle any home project
+              {t('cust_dash.hero_subtitle')}
             </p>
 
             {/* Search Box Container */}
@@ -69,7 +72,7 @@ const CustDashHero = () => {
               >
                 <input
                   type="text"
-                  placeholder="Search for plumbing, cleaning, painting"
+                  placeholder={t('cust_dash.search_placeholder')}
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                   className="flex-1 px-6 py-3 text-gray-700 placeholder-gray-400 focus:outline-none text-lg h-full"

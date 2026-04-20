@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getCurrentLanguage } from './i18nRequest';
 
 const api = axios.create({
   baseURL: 'http://127.0.0.1:8000',
@@ -11,6 +12,7 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    config.headers['Accept-Language'] = getCurrentLanguage();
     return config;
   },
   (error) => Promise.reject(error)

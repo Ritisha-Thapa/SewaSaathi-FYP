@@ -41,7 +41,7 @@ class ServiceViewSet(ModelViewSet):
 
 class ProviderServiceViewSet(ModelViewSet):
     serializer_class = ProviderServiceSerializer
-    queryset = ProviderService.objects.select_related("provider", "service") #fetch related provider and service in one query
+    queryset = ProviderService.objects.select_related("provider", "service", "service__category") #fetch related provider and service in one query
 
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     filterset_class = ProviderServiceFilter  

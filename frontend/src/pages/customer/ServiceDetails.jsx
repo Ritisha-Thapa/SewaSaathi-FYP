@@ -9,10 +9,12 @@ import ReviewModal from "../../components/customer/ReviewModal";
 import DashboardHeader from '../../components/customer/DashboardHeader';
 import ImageModal from '../../components/common/ImageModal';
 import PaymentModal from '../../components/customer/PaymentModal';
+import { useTranslation } from 'react-i18next';
 
 const formatPrice = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
 const ServiceDetails = () => {
+  const { t } = useTranslation();
   const { category, serviceId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -322,7 +324,7 @@ const ServiceDetails = () => {
               className="text-gray-500 hover:text-[#1B3C53] text-sm mb-2 inline-flex items-center gap-2"
             >
               <ArrowLeft size={16} />
-              Back to {category}
+              {t('booking_form.back_to')} {category}
             </Link>
             <h2 className="text-4xl font-bold text-[#1B3C53]">{item.name}</h2>
           </div>
@@ -346,13 +348,13 @@ const ServiceDetails = () => {
 
               <div className="mt-8 pt-8 border-t border-gray-100">
                 <div className="flex items-center gap-4">
-                  <span className="text-gray-600 text-lg">Base Price:</span>
+                  <span className="text-gray-600 text-lg">{t('booking_form.base_price')}:</span>
                   <span className="text-3xl font-bold text-[#1B3C53]">
                     {formatPrice(item.base_price)}
                   </span>
                 </div>
                 <p className="text-gray-500 mt-2 text-sm bg-blue-50 inline-block px-3 py-1 rounded-full border border-blue-100">
-                  Note: A 1% insurance fee will be added to the total.
+                  {t('booking_form.insurance_note')}
                 </p>
               </div>
             </div>
@@ -364,10 +366,10 @@ const ServiceDetails = () => {
               <div className="p-4 bg-[#1B3C53] text-white text-center">
                 <h3 className="font-bold text-xl">
                   {bookingDetails?.latest_claim_status && bookingDetails.latest_claim_resolution === 'none'
-                    ? "Insurance Status"
+                    ? t('booking_form.insurance_status')
                     : orderingStatus === "success"
-                      ? "Booking Status"
-                      : "Book This Service"}
+                      ? t('booking_form.booking_status')
+                      : t('booking_form.book_this_service')}
                 </h3>
               </div>
 
@@ -528,11 +530,11 @@ const ServiceDetails = () => {
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Address *
+                          {t('booking_form.address_label')}
                         </label>
                         <input
                           type="text"
-                          placeholder="Service Address"
+                          placeholder={t('booking_form.address_placeholder')}
                           value={address}
                           onChange={(e) => setAddress(e.target.value)}
                           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent outline-none transition"
@@ -540,11 +542,11 @@ const ServiceDetails = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Phone Number *
+                          {t('booking_form.phone_label')}
                         </label>
                         <input
                           type="tel"
-                          placeholder="Contact Number"
+                          placeholder={t('booking_form.phone_placeholder')}
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent outline-none transition"
@@ -552,10 +554,9 @@ const ServiceDetails = () => {
                       </div>
                     </div>
 
-                    {/* Date */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Select Date
+                        {t('booking_form.select_date')}
                       </label>
                       <input
                         type="date"
@@ -569,7 +570,7 @@ const ServiceDetails = () => {
                     {/* Time Slots */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Select Time
+                        {t('booking_form.select_time')}
                       </label>
                       <div className="grid grid-cols-4 gap-2">
                         {timeSlots.map((slot) => (
@@ -590,12 +591,12 @@ const ServiceDetails = () => {
                     {/* Issue Description */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Problem Description (Optional)
+                        {t('booking_form.problem_desc')}
                       </label>
                       <textarea
                         value={issueDescription}
                         onChange={(e) => setIssueDescription(e.target.value)}
-                        placeholder="Describe the issue..."
+                        placeholder={t('booking_form.problem_placeholder')}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent outline-none transition h-24 resize-none"
                       ></textarea>
                     </div>
@@ -603,14 +604,14 @@ const ServiceDetails = () => {
                     {/* Image Upload */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Upload Image (Optional)
+                        {t('booking_form.upload_image')}
                       </label>
                       <div className="flex items-center justify-center w-full">
                         <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100">
                           <div className="flex flex-col items-center justify-center pt-5 pb-6">
                             <Upload className="w-6 h-6 text-gray-400 mb-1" />
                             <p className="text-xs text-gray-500 pt-1">
-                              {issueImage ? issueImage.name : "Click to upload"}
+                              {issueImage ? issueImage.name : t('booking_form.click_to_upload')}
                             </p>
                           </div>
                           <input type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
@@ -637,7 +638,7 @@ const ServiceDetails = () => {
                       disabled={orderingStatus === "submitting"}
                       className="w-full py-4 bg-[#1B3C53] text-white rounded-xl font-medium text-lg shadow-lg hover:bg-[#152e40] transition transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      {orderingStatus === "submitting" ? "Processing..." : "Confirm Booking"}
+                      {orderingStatus === "submitting" ? t('booking_form.processing') : t('booking_form.confirm_booking')}
                     </button>
                   </>
                 )}

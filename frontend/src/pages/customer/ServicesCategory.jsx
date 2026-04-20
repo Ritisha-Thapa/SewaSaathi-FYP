@@ -4,6 +4,7 @@ import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
 import servicesBg from "../../assets/images/services/electrical.png";
 import DashboardHeader from '../../components/customer/DashboardHeader';
+import { buildLocalizedHeaders } from "../../utils/i18nRequest";
 const ServicesCategory = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +13,8 @@ const ServicesCategory = () => {
     const fetchCategories = async () => {
       try {
         const res = await fetch(
-          "http://127.0.0.1:8000/services/service-categories/"
+          "http://127.0.0.1:8000/services/service-categories/",
+          { headers: buildLocalizedHeaders() }
         );
         const data = await res.json();
         setCategories(data);
@@ -82,9 +84,7 @@ const ServicesCategory = () => {
             {categories.map((category) => (
               <Link
                 key={category.id}
-                to={`/services/${category.name
-                  .toLowerCase()
-                  .replace(/\s+/g, "-")}`}
+                to={`/services/${category.slug}`}
                 className="bg-white rounded-xl p-6 hover:shadow-xl transition shadow-lg block text-center"
               >
                 {category.image && (

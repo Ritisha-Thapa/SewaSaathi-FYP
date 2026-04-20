@@ -5,6 +5,7 @@ import ServiceFilters from "../../components/customer/services/ServiceFilters";
 import Footer from "../../components/customer/Footer"; // Footer
 import Pagination from "../../components/common/Pagination";
 import DashboardHeader from '../../components/customer/DashboardHeader';
+import { buildLocalizedHeaders } from "../../utils/i18nRequest";
 const ServicesPage = () => {
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -23,7 +24,9 @@ const ServicesPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/services/service-categories/");
+        const res = await fetch("http://127.0.0.1:8000/services/service-categories/", {
+          headers: buildLocalizedHeaders(),
+        });
         if (!res.ok) throw new Error("Failed to fetch categories");
         const data = await res.json();
         setCategories(data);
@@ -49,7 +52,7 @@ const ServicesPage = () => {
         if (ordering) params.append("ordering", ordering);
 
         const url = `http://127.0.0.1:8000/services/service/?${params.toString()}`;
-        const res = await fetch(url);
+        const res = await fetch(url, { headers: buildLocalizedHeaders() });
         if (!res.ok) throw new Error("Failed to fetch services");
         const data = await res.json();
         setServices(data);

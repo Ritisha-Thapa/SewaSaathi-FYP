@@ -1,14 +1,17 @@
 import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Mic, Menu, X, Loader2, User, LogOut, ChevronDown } from 'lucide-react';
+import { Bell, MessageCircle, Menu, X, Loader2, User, LogOut, ChevronDown, Globe } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import logo from '../../assets/sewasathi_logo.png';
+import { useTranslation } from 'react-i18next';
+import LanguageToggle from '../common/LanguageToggle';
 
 const DashboardHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { logout, user } = useAuth();
   const { unreadCount } = useNotifications();
+  const { t, i18n } = useTranslation();
   const [profileImg, setProfileImg] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -34,6 +37,17 @@ const DashboardHeader = () => {
     fetchProfile();
   }, []);
 
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'ne' : 'en';
+    i18n.changeLanguage(newLang);
+  };
+
+  const handleHelpClick = () => {
+    const adminWhatsApp = "9779865271261";
+    const message = encodeURIComponent("Hello SewaSaathi Support, I need help with...");
+    window.open(`https://wa.me/${adminWhatsApp}?text=${message}`, '_blank');
+  };
+
   const handleLogout = () => {
     setIsLoggingOut(true);
     setIsProfileOpen(false);
@@ -55,11 +69,11 @@ const DashboardHeader = () => {
           </div>
 
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/customer-dashboard" className="text-gray-700 hover:text-[#1B3C53] transition">Home</Link>
-            <Link to="/services-category" className="text-gray-700 hover:text-[#1B3C53] transition">Services</Link>
-            <Link to="/my-bookings" className="text-gray-700 hover:text-[#1B3C53] transition">My Bookings</Link>
-            <Link to="/about-us" className="text-gray-700 hover:text-[#1B3C53] transition">About Us</Link>
-            <Link to="/contact" className="text-gray-700 hover:text-[#1B3C53] transition">Contact</Link>
+            <Link to="/customer-dashboard" className="text-gray-700 hover:text-[#1B3C53] transition">{t('nav.home')}</Link>
+            <Link to="/services-category" className="text-gray-700 hover:text-[#1B3C53] transition">{t('nav.services')}</Link>
+            <Link to="/my-bookings" className="text-gray-700 hover:text-[#1B3C53] transition">{t('nav.my_bookings')}</Link>
+            <Link to="/about-us" className="text-gray-700 hover:text-[#1B3C53] transition">{t('nav.about_us')}</Link>
+            <Link to="/contact" className="text-gray-700 hover:text-[#1B3C53] transition">{t('nav.contact')}</Link>
           </nav>
 
           <div className="hidden md:flex items-center space-x-6">
@@ -77,12 +91,17 @@ const DashboardHeader = () => {
               )}
             </Link>
 
-            {/* Voice Support */}
+            {/* Language Toggle */}
+            <LanguageToggle />
+
+            {/* Help Button */}
             <button 
-              className="p-2 rounded-full hover:bg-gray-100 transition group" 
-              aria-label="Voice Support"
+              onClick={handleHelpClick}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition group" 
+              aria-label="Help"
             >
-              <Mic className="w-6 h-6 text-[#1B3C53] group-hover:scale-110 transition-transform" />
+              <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              <span className="font-medium text-sm">{t('common.help')}</span>
             </button>
 
             {/* Profile Dropdown */}
@@ -125,7 +144,7 @@ const DashboardHeader = () => {
                       className="flex items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       <User className="w-4 h-4 text-gray-400" />
-                      <span>View Profile</span>
+                      <span>{t('common.view_profile')}</span>
                     </Link>
 
                     <button
@@ -138,7 +157,7 @@ const DashboardHeader = () => {
                       ) : (
                         <LogOut className="w-4 h-4" />
                       )}
-                      <span>{isLoggingOut ? 'Logging Out...' : 'Logout'}</span>
+                      <span>{isLoggingOut ? t('common.logging_out') : t('common.logout')}</span>
                     </button>
                   </div>
                 </>
@@ -162,12 +181,12 @@ const DashboardHeader = () => {
 
         {isMenuOpen && (
           <div className="md:hidden mt-4 pb-4 space-y-4">
-            <Link to="/" className="block text-gray-700 hover:text-[#1B3C53]">Home</Link>
-            <Link to="/services" className="block text-gray-700 hover:text-[#1B3C53]">Services</Link>
-            <Link to="/about" className="block text-gray-700 hover:text-[#1B3C53]">About Us</Link>
-            <Link to="/contact" className="block text-gray-700 hover:text-[#1B3C53]">Contact</Link>
+            <Link to="/" className="block text-gray-700 hover:text-[#1B3C53]">{t('nav.home')}</Link>
+            <Link to="/services" className="block text-gray-700 hover:text-[#1B3C53]">{t('nav.services')}</Link>
+            <Link to="/about" className="block text-gray-700 hover:text-[#1B3C53]">{t('nav.about_us')}</Link>
+            <Link to="/contact" className="block text-gray-700 hover:text-[#1B3C53]">{t('nav.contact')}</Link>
             <Link to="/notifications" className="flex items-center justify-between text-gray-700 hover:text-[#1B3C53]">
-              <span>Notifications</span>
+              <span>{t('nav.notifications')}</span>
               {unreadCount > 0 && (
                 <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
                   {unreadCount}
@@ -177,14 +196,22 @@ const DashboardHeader = () => {
 
             <div className="flex flex-col space-y-2 pt-2">
               <Link to="/profile" className="w-full px-6 py-2 border border-gray-300 rounded-full text-center text-[#1B3C53]">
-                Profile
+                {t('common.view_profile')}
               </Link>
 
-              {/* Voice Support */}
-              <button className="flex items-center justify-center space-x-2 p-2 text-[#1B3C53]">
-                <Mic className="w-5 h-5" />
-                <span>Voice Support</span>
-              </button>
+              <div className="flex items-center justify-between px-2 pt-2 pb-2">
+                {/* Help button for mobile */}
+                <button 
+                  onClick={handleHelpClick}
+                  className="flex items-center space-x-2 text-red-600 font-medium"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  <span>{t('common.help')}</span>
+                </button>
+
+                {/* Language switcher for mobile */}
+                <LanguageToggle />
+              </div>
 
               <button
                 onClick={handleLogout}
@@ -194,7 +221,7 @@ const DashboardHeader = () => {
                 {isLoggingOut ? (
                   <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" />
                 ) : null}
-                {isLoggingOut ? 'Logging Out...' : 'Log Out'}
+                {isLoggingOut ? t('common.logging_out') : t('common.logout')}
               </button>
             </div>
           </div>

@@ -4,6 +4,7 @@ import Skeleton from "../../components/Skeleton";
 import Footer from "../../components/customer/Footer";
 import ServiceCard from "../../components/customer/services/ServiceCard"; // Import ServiceCard
 import DashboardHeader from '../../components/customer/DashboardHeader';
+import { buildLocalizedHeaders } from "../../utils/i18nRequest";
 
 const formatPrice = (n) => `Rs. ${n.toLocaleString()}`;
 
@@ -18,11 +19,12 @@ const SubServices = () => {
       try {
         // Fetch all categories first to get the category ID
         const categoriesRes = await fetch(
-          "http://127.0.0.1:8000/services/service-categories/"
+          "http://127.0.0.1:8000/services/service-categories/",
+          { headers: buildLocalizedHeaders() }
         );
         const categoriesData = await categoriesRes.json();
         const cat = categoriesData.find(
-          (c) => c.name.toLowerCase() === category.toLowerCase()
+          (c) => c.slug === category
         );
         if (!cat) {
           setServices([]);
@@ -34,7 +36,8 @@ const SubServices = () => {
 
         // Fetch services for this category
         const servicesRes = await fetch(
-          `http://127.0.0.1:8000/services/service/?category=${cat.id}`
+          `http://127.0.0.1:8000/services/service/?category=${cat.id}`,
+          { headers: buildLocalizedHeaders() }
         );
         const servicesData = await servicesRes.json();
         setServices(servicesData);
