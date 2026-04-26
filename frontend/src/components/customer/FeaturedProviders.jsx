@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import Skeleton from "../Skeleton";
 import { buildLocalizedHeaders } from "../../utils/i18nRequest";
+import { useTranslation } from "react-i18next";
 
 /**
  * Lists featured providers in a horizontal carousel.
  * Fetches from /accounts/providers/
  */
 const FeaturedProviders = () => {
+    const { i18n } = useTranslation();
     const [providers, setProviders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -32,7 +34,7 @@ const FeaturedProviders = () => {
             }
         };
         fetchProviders();
-    }, []);
+    }, [i18n.language]);
 
     const nextSlide = () => {
         if (currentIndex + 4 < providers.length) {

@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { buildLocalizedHeaders } from "../../utils/i18nRequest";
 
 const CustDashHero = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
   const [categories, setCategories] = useState([]);
@@ -26,7 +26,7 @@ const CustDashHero = () => {
       }
     };
     fetchCategories();
-  }, []);
+  }, [i18n.language]);
 
   const handleSearch = (e) => {
     e.preventDefault();

@@ -6,7 +6,9 @@ import Footer from "../../components/customer/Footer"; // Footer
 import Pagination from "../../components/common/Pagination";
 import DashboardHeader from '../../components/customer/DashboardHeader';
 import { buildLocalizedHeaders } from "../../utils/i18nRequest";
+import { useTranslation } from "react-i18next";
 const ServicesPage = () => {
+  const { i18n } = useTranslation();
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +38,7 @@ const ServicesPage = () => {
     };
 
     fetchCategories();
-  }, []);
+  }, [i18n.language]);
 
   // Fetch services whenever filters change
   useEffect(() => {
@@ -66,7 +68,7 @@ const ServicesPage = () => {
 
     fetchServices();
     setCurrentPage(1); // Reset to page 1 when filters change
-  }, [searchQuery, selectedCategories, minPrice, maxPrice, ordering]);
+  }, [searchQuery, selectedCategories, minPrice, maxPrice, ordering, i18n.language]);
 
   return (
     <div className="min-h-screen bg-[#F9F5F0]">

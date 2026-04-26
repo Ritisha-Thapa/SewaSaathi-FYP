@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 const formatPrice = (n) => `Rs. ${Number(n).toLocaleString()}`;
 
 const ServiceDetails = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { category, serviceId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -91,7 +91,7 @@ const ServiceDetails = () => {
 
   useEffect(() => {
     fetchService();
-  }, [category, serviceId]);
+  }, [category, serviceId, i18n.language]);
 
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {

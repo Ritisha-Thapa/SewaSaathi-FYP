@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { buildLocalizedHeaders } from "../../utils/i18nRequest";
 
 const FeaturedCategories = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,7 +22,7 @@ const FeaturedCategories = () => {
         console.error("Error fetching categories:", err);
         setLoading(false);
       });
-  }, []);
+  }, [i18n.language]);
 
   if (loading) {
     return (

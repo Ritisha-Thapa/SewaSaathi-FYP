@@ -5,10 +5,12 @@ import Footer from "../../components/customer/Footer";
 import ServiceCard from "../../components/customer/services/ServiceCard"; // Import ServiceCard
 import DashboardHeader from '../../components/customer/DashboardHeader';
 import { buildLocalizedHeaders } from "../../utils/i18nRequest";
+import { useTranslation } from "react-i18next";
 
 const formatPrice = (n) => `Rs. ${n.toLocaleString()}`;
 
 const SubServices = () => {
+  const { i18n } = useTranslation();
   const { category } = useParams(); // category slug from URL
   const [services, setServices] = useState([]);
   const [categoryData, setCategoryData] = useState(null);
@@ -50,7 +52,7 @@ const SubServices = () => {
     };
 
     fetchData();
-  }, [category]);
+  }, [category, i18n.language]);
 
   if (loading) {
     return (

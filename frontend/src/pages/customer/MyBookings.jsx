@@ -14,7 +14,7 @@ import PaymentModal from '../../components/customer/PaymentModal';
 import { useTranslation } from 'react-i18next';
 
 const MyBookings = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const location = useLocation();
@@ -39,7 +39,7 @@ const MyBookings = () => {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [i18n.language]);
 
     // Reset to page 1 when filters change
     useEffect(() => {

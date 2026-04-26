@@ -5,7 +5,9 @@ import Footer from "../../components/customer/Footer";
 import servicesBg from "../../assets/images/services/electrical.png";
 import DashboardHeader from '../../components/customer/DashboardHeader';
 import { buildLocalizedHeaders } from "../../utils/i18nRequest";
+import { useTranslation } from "react-i18next";
 const ServicesCategory = () => {
+  const { i18n } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +28,7 @@ const ServicesCategory = () => {
     };
 
     fetchCategories();
-  }, []);
+  }, [i18n.language]);
 
   if (loading) {
     return (

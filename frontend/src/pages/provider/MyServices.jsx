@@ -3,8 +3,10 @@ import { Edit2, Check, X, Loader2 } from 'lucide-react';
 import { api } from '../../utils/api';
 import Skeleton from '../../components/Skeleton';
 import NotificationPopup from '../../components/common/NotificationPopup';
+import { useTranslation } from 'react-i18next';
 
 const MyServices = () => {
+  const { i18n } = useTranslation();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
@@ -14,7 +16,7 @@ const MyServices = () => {
 
   useEffect(() => {
     fetchServices();
-  }, []);
+  }, [i18n.language]);
 
   const fetchServices = async () => {
     try {

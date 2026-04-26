@@ -6,6 +6,7 @@ import Footer from "../../components/customer/Footer";
 import { Calendar, Clock, MapPin, Phone, CreditCard, Image as ImageIcon, AlertCircle, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { api } from "../../utils/api";
+import { useTranslation } from "react-i18next";
 
 /**
  * Helper to get today's date in YYYY-MM-DD format
@@ -20,6 +21,7 @@ const getTodayDate = () => {
 };
 
 const ProviderDetails = () => {
+    const { i18n } = useTranslation();
     const { providerId } = useParams();
     const [provider, setProvider] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -55,7 +57,7 @@ const ProviderDetails = () => {
             }
         };
         fetchProvider();
-    }, [providerId]);
+    }, [providerId, i18n.language]);
 
     // Check for existing booking when service changes
     useEffect(() => {
@@ -82,7 +84,7 @@ const ProviderDetails = () => {
             }
         };
         fetchBookings();
-    }, [selectedServiceId, providerId]);
+    }, [selectedServiceId, providerId, i18n.language]);
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {

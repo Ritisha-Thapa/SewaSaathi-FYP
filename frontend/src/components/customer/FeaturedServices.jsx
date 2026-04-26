@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { buildLocalizedHeaders } from "../../utils/i18nRequest";
 
 const FeaturedServices = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,7 +26,7 @@ const FeaturedServices = () => {
                 console.error("Error fetching services:", err);
                 setLoading(false);
             });
-    }, []);
+    }, [i18n.language]);
 
     const nextSlide = () => {
         if (currentIndex < services.length - 4) { // Show 4 items
