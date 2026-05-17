@@ -1,0 +1,370 @@
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import toast from "react-hot-toast";
+import Button from "../../../shared/components/ui/Button";
+import Logo from "../../../assets/sewasathi_logo.png";
+
+const CustomerSignup = () => {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    phone: '',
+    email: '',
+    address: '',
+    password: '',
+    confirm_password: ''
+  });
+
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    // Phone number validation - only allow digits
+    if (name === 'phone') {
+      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+      setFormData(prev => ({
+        ...prev,
+        [name]: numericValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newErrors = {};
+
+    // Validation
+    if (!formData.first_name.trim()) newErrors.first_name = 'First name is required';
+    if (!formData.last_name.trim()) newErrors.last_name = 'Last name is required';
+    if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
+    else if (!/^\d{10}$/.test(formData.phone)) newErrors.phone = 'Phone must be exactly 10 digits';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
+    if (!formData.address.trim()) newErrors.address = 'Address is required';
+    if (!formData.password) newErrors.password = 'Password is required';
+    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+
+    if (formData.password !== formData.confirm_password) {
+      newErrors.confirm_password = 'Passwords do not match';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // Prepare data WITHOUT confirm_password
+    const payload = {
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      phone: formData.phone,
+      email: formData.email,
+      address: formData.address,
+      password: formData.password
+    };
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/accounts/customer-registration/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      // const data = await response.json();
+      // console.log("Signup response:", data);
+
+      let data;
+
+      try {
+        data = await response.json();
+      } catch (err) {
+        console.log("❌ JSON parse failed");
+        data = {};
+      }
+
+      console.log("STATUS:", response.status);
+      console.log("DATA:", data);
+
+      // ✅ SUCCESS
+      if (response.ok) {
+        toast.success(data.message || "Customer registration successful!");
+        setErrors({});
+
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+
+        return;
+      }
+
+      // ❌ ERROR HANDLING (clean & direct)
+      let fieldErrors = {};
+      let errorMessage = "Registration failed";
+
+      // Django sends: { email: ["..."], phone: ["..."] }
+      Object.keys(data).forEach((key) => {
+        if (Array.isArray(data[key])) {
+          fieldErrors[key] = data[key][0];
+        }
+      });
+
+      // If field errors exist → show under inputs
+      if (Object.keys(fieldErrors).length > 0) {
+        setErrors(fieldErrors);
+      } else {
+        toast.error(errorMessage);
+      }
+
+      setIsLoading(false);
+      return;
+
+
+
+    } catch (error) {
+      console.error("Signup Error:", error);
+      toast.error("Something went wrong!");
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F9F5F0] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+
+
+
+
+        <div className="flex flex-col items-center">
+          <Link to="/" className="flex items-center gap-4 cursor-pointer">
+            <img src={Logo} alt="logo" className="h-14 w-auto" />
+            <span className="text-3xl font-semibold text-[#1B3C53] tracking-wide">
+              SewaSaathi
+            </span>
+          </Link>
+          <h2 className="text-center text-3xl font-bold text-[#1B3C53] mt-12">
+            Create Customer Account
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Sign up to book services from verified providers
+          </p>
+        </div>
+
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">
+
+            {/* FIRST NAME & LAST NAME */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  First Name *
+                </label>
+                <input
+                  name="first_name"
+                  type="text"
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.first_name ? 'border-red-300' : 'border-gray-300'
+                    } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                  placeholder="First name"
+                />
+                {errors.first_name && (
+                  <p className="mt-1 text-sm text-red-600">{errors.first_name}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Last Name *
+                </label>
+                <input
+                  name="last_name"
+                  type="text"
+                  value={formData.last_name}
+                  onChange={handleChange}
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.last_name ? 'border-red-300' : 'border-gray-300'
+                    } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                  placeholder="Last name"
+                />
+                {errors.last_name && (
+                  <p className="mt-1 text-sm text-red-600">{errors.last_name}</p>
+                )}
+              </div>
+            </div>
+
+            {/* PHONE */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone *
+              </label>
+              <input
+                name="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                className={`appearance-none block w-full px-3 py-2 border ${errors.phone ? 'border-red-300' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                placeholder="Phone number"
+              />
+              {errors.phone && (
+                <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+              )}
+            </div>
+
+            {/* EMAIL */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email *
+              </label>
+              <input
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`appearance-none block w-full px-3 py-2 border ${errors.email ? 'border-red-300' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                placeholder="Email address"
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
+            </div>
+
+            {/* ADDRESS */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Address *
+              </label>
+              <input
+                name="address"
+                type="text"
+                value={formData.address}
+                onChange={handleChange}
+                className={`appearance-none block w-full px-3 py-2 border ${errors.address ? 'border-red-300' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                placeholder="Address"
+              />
+              {errors.address && (
+                <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+              )}
+            </div>
+
+            {/* PASSWORD FIELD WITH EYE */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password *
+              </label>
+
+              <div className="relative">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.password ? 'border-red-300' : 'border-gray-300'
+                    } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                  placeholder="Password"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                >
+                  {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+                </button>
+              </div>
+
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
+            </div>
+
+            {/* CONFIRM PASSWORD WITH EYE */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm Password *
+              </label>
+
+              <div className="relative">
+                <input
+                  name="confirm_password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={formData.confirm_password}
+                  onChange={handleChange}
+                  className={`appearance-none block w-full px-3 py-2 border ${errors.confirm_password ? 'border-red-300' : 'border-gray-300'
+                    } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                  placeholder="Confirm password"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                >
+                  {showConfirmPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+                </button>
+              </div>
+
+              {errors.confirm_password && (
+                <p className="mt-1 text-sm text-red-600">{errors.confirm_password}</p>
+              )}
+            </div>
+
+          </div>
+
+          {/* SUCCESS MESSAGE */}
+          {/* Removed inline successMessage in favor of toast */}
+
+          <div>
+            <Button
+              type="submit"
+              isLoading={isLoading}
+              loadingText="Signing Up..."
+            >
+              Sign Up
+            </Button>
+          </div>
+
+          {/* LOGIN LINK */}
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link to="/login" className="font-medium text-[#1B3C53] hover:text-[#1a3248]">
+                Login
+              </Link>
+            </p>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default CustomerSignup;
+
+

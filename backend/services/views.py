@@ -34,9 +34,9 @@ class ServiceViewSet(ModelViewSet):
         return [AllowAny()]
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     filterset_class = ServiceFilter # can filter category and price range at the same time
-    search_fields = ["name", "category__name"]
-    ordering_fields = ["base_price", "name"]
-    ordering = ["name"]
+    search_fields = ["name_key", "category__name_key"]
+    ordering_fields = ["base_price", "name_key"]
+    ordering = ["name_key"]
 
 
 class ProviderServiceViewSet(ModelViewSet):
@@ -45,7 +45,7 @@ class ProviderServiceViewSet(ModelViewSet):
 
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     filterset_class = ProviderServiceFilter  
-    search_fields = ["service__name","provider__first_name","provider__last_name","provider__phone",]
+    search_fields = ["service__name_key","provider__first_name","provider__last_name","provider__phone",]
     ordering_fields = ["price", "rating", "created_at"]
     ordering = ["created_at"]
 

@@ -2,8 +2,10 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Q
+from django.db.models import Prefetch
 from decimal import Decimal
 from .models import Booking, Review
+from insurance.models import InsuranceClaim
 from .serializers import BookingSerializer, BookingStatusUpdateSerializer, ReviewSerializer
 from notifications.models import Notification
 import requests
@@ -17,7 +19,15 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        base_qs = Booking.objects.select_related('customer', 'provider', 'service', 'service__category')
+        base_qs = Booking.objects.select_related(
+            'customer',
+            'provider',
+            'service',
+            'service__category'
+        ).prefetch_related(
+            Prefetch('claims', queryset=InsuranceClaim.objects.only('id', 'status', 'resolution', 'booking_id').order_by('-timestamp')),
+            'review'
+        )
         
         if user.role == 'customer':
             return base_qs.filter(customer=user).order_by('-created_at')
@@ -40,7 +50,7 @@ class BookingViewSet(viewsets.ModelViewSet):
                 # Show bookings from provider's skill category (service-based) + directly assigned bookings
                 queryset = base_qs.filter(
                     Q(provider=user) |  # Directly assigned bookings
-                    Q(provider__isnull=True, service__category__name=provider_category)  # Service-based bookings in their skill category
+                    Q(provider__isnull=True, service__category__name_key=provider_category)  # Service-based bookings in their skill category
                 ).distinct().order_by('-created_at')
             else:
                 # If no skill, only show directly assigned bookings
@@ -88,13 +98,16 @@ class BookingViewSet(viewsets.ModelViewSet):
         if booking.provider:
             Notification.objects.create(
                 recipient=booking.provider,
-                title="New Booking Request",
-                message=f"You have a new booking request from {booking.customer.first_name} for {booking.service.name}.",
+                notification_type="new_booking_request",
+                extra_data={
+                    "customer_name": booking.customer.first_name,
+                    "service_name_key": booking.service.name_key
+                },
                 booking=booking
             )
         else:
             # Broadcast to all providers with matching skills
-            category_name = booking.service.category.name
+            category_name = booking.service.category.name_key
             skill_map = {
                 'Cleaning': 'cleaner',
                 'Painting': 'painter',
@@ -110,8 +123,11 @@ class BookingViewSet(viewsets.ModelViewSet):
                 for provider in eligible_providers:
                     Notification.objects.create(
                         recipient=provider,
-                        title="New Job Available",
-                        message=f"A new request for {booking.service.name} is available in {category_name}.",
+                        notification_type="new_job_available",
+                        extra_data={
+                            "service_name_key": booking.service.name_key,
+                            "category_name_key": category_name
+                        },
                         booking=booking
                     )
 
@@ -137,7 +153,7 @@ class BookingViewSet(viewsets.ModelViewSet):
                 'Carpentry': 'carpenter',
                 'Plumbing': 'plumber'
             }
-            provider_category = skill_map.get(booking.service.category.name)
+            provider_category = skill_map.get(booking.service.category.name_key)
             
             is_assigned = booking.provider == user
             is_eligible_for_pending = (booking.provider is None and 
@@ -206,29 +222,38 @@ class BookingViewSet(viewsets.ModelViewSet):
                 booking.save()
             Notification.objects.create(
                 recipient=booking.customer,
-                title="Booking Accepted",
-                message=f"Your provider {booking.provider.first_name} has accepted the booking for {booking.service.name}.",
+                notification_type="booking_accepted",
+                extra_data={
+                    "provider_name": booking.provider.first_name,
+                    "service_name_key": booking.service.name_key
+                },
                 booking=booking
             )
         elif new_status == 'rejected':
             Notification.objects.create(
                 recipient=booking.customer,
-                title="Booking Rejected",
-                message=f"Your booking for {booking.service.name} was rejected.",
+                notification_type="booking_rejected",
+                extra_data={
+                    "service_name_key": booking.service.name_key
+                },
                 booking=booking
             )
         elif new_status == 'in_progress':
             Notification.objects.create(
                 recipient=booking.customer,
-                title="Service Started",
-                message=f"The provider has started working on your booking for {booking.service.name}.",
+                notification_type="service_started",
+                extra_data={
+                    "service_name_key": booking.service.name_key
+                },
                 booking=booking
             )
         elif new_status == 'completed':
             Notification.objects.create(
                 recipient=booking.customer,
-                title="Service Completed",
-                message=f"Your booking for {booking.service.name} has been marked as completed. Please review and pay.",
+                notification_type="service_completed",
+                extra_data={
+                    "service_name_key": booking.service.name_key
+                },
                 booking=booking
             )
         elif new_status == 'paid':
@@ -236,8 +261,10 @@ class BookingViewSet(viewsets.ModelViewSet):
             if payment_method == 'cash':
                 Notification.objects.create(
                     recipient=booking.customer,
-                    title="Payment Successful",
-                    message=f"Your cash payment for {booking.service.name} has been received.",
+                    notification_type="payment_successful_cash",
+                    extra_data={
+                        "service_name_key": booking.service.name_key
+                    },
                     booking=booking
                 )
 
@@ -379,16 +406,21 @@ class BookingViewSet(viewsets.ModelViewSet):
                 if booking.provider:
                     Notification.objects.create(
                         recipient=booking.provider,
-                        title="Payment Received",
-                        message=f"Payment of Rs. {booking.total_price} received via Khalti for {booking.service.name}.",
+                        notification_type="payment_received_khalti",
+                        extra_data={
+                            "amount": str(booking.total_price),
+                            "service_name_key": booking.service.name_key
+                        },
                         booking=booking
                     )
                 
                 # Notify Customer
                 Notification.objects.create(
                     recipient=booking.customer,
-                    title="Payment Successful",
-                    message=f"Your Khalti payment for {booking.service.name} was successful.",
+                    notification_type="payment_successful_khalti",
+                    extra_data={
+                        "service_name_key": booking.service.name_key
+                    },
                     booking=booking
                 )
                 

@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import Booking, Review
 from services.models import Service, ProviderService
-from services.i18n import get_localized_value, get_request_language
 from accounts.models import User
 
 class BookingSerializer(serializers.ModelSerializer):
@@ -9,8 +8,8 @@ class BookingSerializer(serializers.ModelSerializer):
     customer_address = serializers.CharField(source='customer.address', read_only=True)
     customer_city = serializers.CharField(source='customer.city', read_only=True)
     provider_name = serializers.CharField(source='provider.get_full_name', read_only=True)
-    service_name = serializers.SerializerMethodField()
-    service_category_name = serializers.SerializerMethodField()
+    service_name_key = serializers.CharField(source='service.name_key', read_only=True)
+    service_category_name_key = serializers.CharField(source='service.category.name_key', read_only=True)
     service_category_slug = serializers.CharField(source='service.category.slug', read_only=True)
     provider_phone = serializers.CharField(source='provider.phone', read_only=True)
     customer_phone = serializers.CharField(source='customer.phone', read_only=True)
@@ -22,38 +21,31 @@ class BookingSerializer(serializers.ModelSerializer):
     def get_has_reviewed(self, obj):
         return hasattr(obj, 'review')
 
+    def _get_latest_claim(self, obj):
+        # Use prefetched claims if available to avoid N+1 queries.
+        prefetched_claims = getattr(obj, '_prefetched_objects_cache', {}).get('claims')
+        if prefetched_claims is not None:
+            return prefetched_claims[0] if prefetched_claims else None
+        return obj.claims.order_by('-timestamp').first()
+
     def get_latest_claim_status(self, obj):
-        claim = obj.claims.last()
+        claim = self._get_latest_claim(obj)
         return claim.status if claim else None
     
     def get_latest_claim_resolution(self, obj):
-        claim = obj.claims.last()
+        claim = self._get_latest_claim(obj)
         return claim.resolution if claim else None
 
     def get_latest_claim_id(self, obj):
-        claim = obj.claims.last()
+        claim = self._get_latest_claim(obj)
         return claim.id if claim else None
-
-    def _get_language(self):
-        request = self.context.get("request")
-        return get_request_language(request) if request else "en"
-
-    def get_service_name(self, obj):
-        return get_localized_value(obj.service.name, obj.service.name_translations, self._get_language())
-
-    def get_service_category_name(self, obj):
-        return get_localized_value(
-            obj.service.category.name,
-            obj.service.category.name_translations,
-            self._get_language(),
-        )
     
     class Meta:
         model = Booking
         fields = [
             'id', 'customer', 'customer_name', 'customer_address', 'customer_city', 
             'provider', 'provider_name', 'provider_phone', 
-            'service', 'service_name', 'service_category_name', 'service_category_slug', 'scheduled_date', 'scheduled_time', 
+            'service', 'service_name_key', 'service_category_name_key', 'service_category_slug', 'scheduled_date', 'scheduled_time', 
             'issue_description', 'issue_images', 'status', 'address', 'phone', 'customer_phone',
             'service_price', 'final_price', 'price_note', 'insurance_fee', 'total_price',  
             'payment_method', 'is_paid', 'is_rework', 'created_at', 'updated_at', 'completed_at', 'paid_at',
@@ -62,17 +54,14 @@ class BookingSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'customer', 'service_price', 'created_at', 'updated_at', 'total_price', 'insurance_fee', 'is_paid', 'completed_at', 'paid_at', 'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id']
 
     def create(self, validated_data):
-        # Override create to set service_price from ProviderService or Service
         service = validated_data.get('service')
         provider = validated_data.get('provider')
         
         if provider:
-            # Try to get price from ProviderService
             try:
                 provider_service = ProviderService.objects.get(provider=provider, service=service)
                 validated_data['service_price'] = provider_service.price
             except ProviderService.DoesNotExist:
-                # If no specific price, use base service price
                 validated_data['service_price'] = service.base_price
         else:
             validated_data['service_price'] = service.base_price
@@ -85,14 +74,12 @@ class BookingStatusUpdateSerializer(serializers.ModelSerializer):
         fields = ['status']
         
     def validate_status(self, value):
-        # Add logic to validate status transitions if needed
-        # For example, cannot go from 'cancelled' to 'completed'
         return value
 
 class ReviewSerializer(serializers.ModelSerializer):
     customer_name = serializers.CharField(source='customer.get_full_name', read_only=True)
     provider_name = serializers.CharField(source='provider.get_full_name', read_only=True)
-    service_name = serializers.SerializerMethodField()
+    service_name_key = serializers.CharField(source='booking.service.name_key', read_only=True)
     customer_profile_image = serializers.SerializerMethodField()
 
     def get_customer_profile_image(self, obj):
@@ -103,18 +90,9 @@ class ReviewSerializer(serializers.ModelSerializer):
             return obj.customer.profile_image.url
         return None
 
-    def get_service_name(self, obj):
-        request = self.context.get("request")
-        language = get_request_language(request) if request else "en"
-        return get_localized_value(
-            obj.booking.service.name,
-            obj.booking.service.name_translations,
-            language,
-        )
-
     class Meta:
         model = Review
-        fields = ['id', 'booking', 'customer', 'customer_name', 'customer_profile_image', 'provider', 'provider_name', 'rating', 'comment', 'service_name', 'created_at']
+        fields = ['id', 'booking', 'customer', 'customer_name', 'customer_profile_image', 'provider', 'provider_name', 'rating', 'comment', 'service_name_key', 'created_at']
         read_only_fields = ['id', 'customer', 'created_at']
 
     def create(self, validated_data):

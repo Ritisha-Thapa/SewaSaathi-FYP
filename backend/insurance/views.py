@@ -53,8 +53,11 @@ class InsuranceClaimViewSet(viewsets.ModelViewSet):
             from notifications.models import Notification
             Notification.objects.create(
                 recipient=claim.customer,
-                title="Refund Initiated",
-                message=f"Your refund for Booking #{booking.id} ({booking.service.name}) will be sent within 3 days.",
+                notification_type="insurance_refund_initiated",
+                extra_data={
+                    "booking_id": str(booking.id),
+                    "service_name_key": booking.service.name_key
+                },
                 booking=booking
             )
 
@@ -69,15 +72,19 @@ class InsuranceClaimViewSet(viewsets.ModelViewSet):
             # Notify Customer
             Notification.objects.create(
                 recipient=claim.customer,
-                title="Rework Started",
-                message=f"Your rework request for Booking #{booking.id} has been accepted. The original provider will contact you soon.",
+                notification_type="insurance_rework_started",
+                extra_data={
+                    "booking_id": str(booking.id)
+                },
                 booking=booking
             )
             # Notify Provider
             Notification.objects.create(
                 recipient=booking.provider,
-                title="Rework Assigned",
-                message=f"A rework has been assigned to you for Booking #{booking.id}. Please check your active jobs.",
+                notification_type="insurance_rework_assigned",
+                extra_data={
+                    "booking_id": str(booking.id)
+                },
                 booking=booking
             )
 

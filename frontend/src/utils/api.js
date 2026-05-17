@@ -5,6 +5,13 @@ const api = axios.create({
   baseURL: 'http://127.0.0.1:8000',
 });
 
+const responseCache = new Map();
+
+const buildCacheKey = (url) => {
+  const lang = getCurrentLanguage() || 'en';
+  return `${lang}::${url}`;
+};
+
 // Request Interceptor: Attach JWT token
 api.interceptors.request.use(
   (config) => {
@@ -59,4 +66,35 @@ api.interceptors.response.use(
   }
 );
 
-export { api };
+const getCached = async (url, options = {}) => {
+  const { ttlMs = 30000, forceRefresh = false } = options;
+  const key = buildCacheKey(url);
+  const now = Date.now();
+
+  if (!forceRefresh && responseCache.has(key)) {
+    const cached = responseCache.get(key);
+    if (now - cached.timestamp < ttlMs) {
+      return cached.data;
+    }
+  }
+
+  const data = await api.get(url);
+  responseCache.set(key, { data, timestamp: now });
+  return data;
+};
+
+const invalidateCache = (urlPrefix = '') => {
+  if (!urlPrefix) {
+    responseCache.clear();
+    return;
+  }
+
+  for (const key of responseCache.keys()) {
+    const [, url] = key.split('::');
+    if (url?.startsWith(urlPrefix)) {
+      responseCache.delete(key);
+    }
+  }
+};
+
+export { api, getCached, invalidateCache };

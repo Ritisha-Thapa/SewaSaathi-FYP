@@ -1,2 +1,183 @@
+/* 
+ * SewaSaathi Global Stylesheet
+ * 1. Tailwind CSS v4 Core Import 
+ * (Includes base, components, and utilities)
+ */
 @import "tailwindcss";
 
+/* 
+ * 2. Design Tokens & Theme Extensions
+ * These variables are automatically mapped to Tailwind utility classes (e.g., bg-primary)
+ */
+@theme {
+  /* Brand Colors */
+  --color-primary: #1B3C53;
+  --color-primary-hover: #1A3248;
+  --color-accent-cream: #F9F5F0;
+
+  /* Semantic UI Colors */
+  --color-background: #F9F5F0;
+  --color-foreground: #1B3C53;
+  --color-secondary: #64748b;
+  --color-muted: #ffffff;
+  --color-border: #e2e8f0;
+
+  /* Design Tokens */
+  --radius-base: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-sans: 'Inter', 'Outfit', system-ui, -apple-system, sans-serif;
+  
+  /* Animation Extensions */
+  --animate-fade-in: fade-in 0.4s ease-out;
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* 
+ * 3. Global Reset & Base Typography 
+ */
+@layer base {
+  :root {
+    --primary: #1B3C53;
+    --primary-hover: #1A3248;
+    --background: #F9F5F0;
+    --foreground: #1B3C53;
+    --secondary: #64748b;
+    --muted: #ffffff;
+    --border: #e2e8f0;
+    --radius: 0.5rem;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  /* 7. Smooth Scrolling & UX Improvements */
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Default Typography Styles */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--foreground);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  h1 { font-size: clamp(2.25rem, 5vw, 3rem); }
+  h2 { font-size: clamp(1.875rem, 4vw, 2.25rem); }
+  h3 { font-size: clamp(1.5rem, 3vw, 1.875rem); }
+
+  p {
+    margin-bottom: 1.25rem;
+    color: var(--secondary);
+    max-width: 70ch; /* Optimal line length for readability */
+  }
+
+  ::selection {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: var(--primary);
+  }
+}
+
+/* 
+ * 5. Custom Reusable Component Classes
+ * Clean, modern SaaS-style UI components
+ */
+@layer components {
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 font-medium transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+    border-radius: var(--radius);
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary-hover shadow-sm shadow-primary/20;
+  }
+
+  .btn-secondary {
+    @apply bg-muted text-foreground hover:bg-border border border-transparent;
+  }
+
+  .btn-outline {
+    @apply border border-border bg-transparent hover:bg-muted hover:border-secondary/30;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-background border border-border overflow-hidden;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+  }
+
+  .card-hover:hover {
+    @apply shadow-xl border-primary/20;
+    transform: translateY(-4px);
+  }
+
+  /* Inputs & Forms */
+  .input {
+    @apply w-full px-4 py-2.5 bg-background border border-border outline-none transition-all duration-200 focus:border-primary focus:ring-4 focus:ring-primary/10;
+    border-radius: var(--radius);
+  }
+
+  .label {
+    @apply block text-sm font-semibold mb-1.5 text-foreground/80;
+  }
+
+  /* Status Badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+}
+
+/* 
+ * 6. Utility Extensions 
+ */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Modern Glassmorphism Utility */
+  .glass {
+    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/20 dark:border-slate-800/20;
+  }
+
+  /* Consistent Section Padding */
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+
+  /* Hide scrollbar but allow scrolling */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

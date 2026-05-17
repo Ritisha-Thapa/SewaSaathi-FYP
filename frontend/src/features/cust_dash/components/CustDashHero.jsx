@@ -1,0 +1,112 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import painting from "../../../assets/images/services/electricianman.png";
+import { Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { buildLocalizedHeaders } from "../../../utils/i18nRequest";
+import Button from "../../../shared/components/ui/Button";
+
+const CustDashHero = () => {
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const [searchValue, setSearchValue] = useState("");
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/services/service-categories/", {
+          headers: buildLocalizedHeaders(),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      }
+    };
+    fetchCategories();
+  }, [i18n.language]);
+
+  const handleSearch = (e) => {
+    if (e) e.preventDefault();
+    const query = searchValue.trim().toLowerCase();
+
+    if (!query) {
+      navigate("/services");
+      return;
+    }
+
+    // Find if the query matches any category name (case-insensitive)
+    const match = categories.find(c => c.name.toLowerCase() === query);
+
+    if (match) {
+      navigate(`/services/${match.slug}`);
+    } else {
+      // Fallback to services page if no category matches
+      navigate("/services");
+    }
+  };
+
+  return (
+    <section className="bg-background pt-10 pb-16 md:pt-16 md:pb-24 overflow-hidden">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
+          {/* Left Column: Content & Search */}
+          <div className="w-full lg:w-1/2 z-10">
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-gray-900 mb-6 leading-[1.1]">
+              {t('cust_dash.hero_title_part1')}{" "}
+              <span className="text-primary">{t('cust_dash.hero_title_part2')}</span> {t('cust_dash.hero_title_part3')}
+            </h1>
+
+            <p className="text-lg text-gray-600 mb-10 max-w-lg leading-relaxed">
+              {t('cust_dash.hero_subtitle')}
+            </p>
+
+            {/* Search Box Container */}
+            <div className="max-w-xl relative">
+              {/* Input Area */}
+              <form
+                onSubmit={handleSearch}
+                className="flex items-center bg-white rounded-2xl shadow-xl shadow-primary/5 overflow-hidden border border-gray-100 h-16 group focus-within:border-primary/30 transition-all"
+              >
+                <input
+                  type="text"
+                  placeholder={t('cust_dash.search_placeholder')}
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  className="flex-1 px-6 py-3 text-gray-700 placeholder-gray-400 focus:outline-none text-lg h-full"
+                />
+                <Button
+                  type="submit"
+                  fullWidth={false}
+                  rounded="none"
+                  className="h-full px-8"
+                >
+                  <Search size={24} />
+                </Button>
+              </form>
+            </div>
+          </div>
+
+          {/* Right Column: Image */}
+          <div className="w-full lg:w-1/2 relative flex justify-center lg:justify-end">
+            {/* Abstract Blur/Gradient Background Effect behind image */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-primary/10 to-transparent rounded-full blur-3xl -z-10 opacity-60"></div>
+
+            <div className="relative z-10 w-full max-w-xl">
+              <img
+                src={painting}
+                alt="Professional Service Provider"
+                className="w-full h-auto object-contain drop-shadow-2xl animate-fade-in-up"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default CustDashHero;

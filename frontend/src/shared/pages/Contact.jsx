@@ -1,0 +1,285 @@
+import React, { useState } from 'react';
+import { Mail, Phone, MapPin, ChevronDown } from 'lucide-react';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
+import contactBg from '../../assets/images/services/plumbing.png';
+import { api } from '../../utils/api';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+
+const Contact = () => {
+  const { t } = useTranslation();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
+  });
+
+  const [faqOpen, setFaqOpen] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await api.post('/accounts/contact/', formData);
+      toast.success(t('contact.toast_success', 'Thank you for your message! We will get back to you soon.'));
+
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: ''
+      });
+    } catch (err) {
+      console.error('Contact submission error:', err);
+      toast.error(t('contact.toast_error', 'Failed to send message. Please try again later.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const faqs = [
+    {
+      question: t('contact.faq_1_q', 'How do I book a service?'),
+      answer: t('contact.faq_1_a', 'You can book a service by browsing our services page, selecting the service you need, and clicking "Book Now"...')
+    },
+    {
+      question: t('contact.faq_2_q', 'How are service providers verified?'),
+      answer: t('contact.faq_2_a', 'All service providers on SewaSaathi undergo a thorough verification process including background checks...')
+    },
+    {
+      question: t('contact.faq_3_q', 'What payment methods do you accept?'),
+      answer: t('contact.faq_3_a', 'We accept eSewa, bank transfers, and cash on delivery (COD).')
+    },
+    {
+      question: t('contact.faq_4_q', 'Can I cancel or reschedule?'),
+      answer: t('contact.faq_4_a', 'Yes, up to 24 hours before the scheduled service.')
+    },
+    {
+      question: t('contact.faq_5_q', 'Not satisfied with service?'),
+      answer: t('contact.faq_5_a', 'Contact support within 48 hours for assistance or refund.')
+    },
+    {
+      question: t('contact.faq_6_q', 'How do I become a provider?'),
+      answer: t('contact.faq_6_a', 'Click “Become a Provider” in the header and fill out the form.')
+    }
+  ];
+
+  const contactInfo = [
+    {
+      icon: <Mail className="w-6 h-6" />,
+      title: t('contact.info_email', 'Email'),
+      details: ['support@sewasaathi.com', 'info@sewasaathi.com']
+    },
+    {
+      icon: <Phone className="w-6 h-6" />,
+      title: t('contact.info_phone', 'Phone'),
+      details: ['+977-1-1234567', '+977-9800000000']
+    },
+    {
+      icon: <MapPin className="w-6 h-6" />,
+      title: t('contact.info_address', 'Address'),
+      details: [t('contact.address_city', 'Kathmandu, Nepal'), t('contact.address_hours', 'Office Hours: 9 AM - 6 PM')]
+    }
+  ];
+
+  return (
+    <div className="font-sans text-gray-900 min-h-screen bg-white">
+      <Navbar />
+
+      {/* ---------------- HERO SECTION WITH BACKGROUND IMAGE ---------------- */}
+      <section
+        className="relative py-24 md:py-32 flex items-center"
+        style={{
+          backgroundImage: `url(${contactBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* overlay */}
+        <div className="absolute inset-0 bg-[#1B3C53] opacity-70"></div>
+
+        <div className="relative container mx-auto px-4 max-w-7xl text-center text-white">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">{t('contact.hero_title', 'Contact Us')}</h1>
+          <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
+            {t('contact.hero_subtitle', 'We’re always here to assist you. Connect with us anytime!')}
+          </p>
+        </div>
+      </section>
+
+      {/* ---------------- CONTACT FORM + INFO ---------------- */}
+      <section className="py-16 md:py-20">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+
+            {/* FORM */}
+            <div>
+              <h2 className="text-3xl font-bold text-[#1B3C53] mb-6">{t('contact.form_title', 'Send us a Message')}</h2>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">{t('contact.full_name', 'Full Name *')}</label>
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-[#1B3C53]"
+                    placeholder={t('contact.placeholder_name', 'Enter your full name')}
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">{t('contact.email', 'Email *')}</label>
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-[#1B3C53]"
+                    placeholder={t('contact.placeholder_email', 'your.email@example.com')}
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">{t('contact.phone', 'Phone')}</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-[#1B3C53]"
+                    placeholder={t('contact.placeholder_phone', '+977-9800000000')}
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">{t('contact.subject', 'Subject *')}</label>
+                  <input
+                    type="text"
+                    name="subject"
+                    required
+                    value={formData.subject}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-[#1B3C53]"
+                    placeholder={t('contact.placeholder_subject', 'What is this regarding?')}
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">{t('contact.message', 'Message *')}</label>
+                  <textarea
+                    name="message"
+                    rows="5"
+                    required
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-[#1B3C53] resize-none"
+                    placeholder={t('contact.placeholder_message', 'Tell us more...')}
+                  ></textarea>
+                </div>
+
+                <button
+                  disabled={loading}
+                  className={`w-full py-3 bg-[#1B3C53] text-white rounded-lg font-semibold transition ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#162f41]'}`}
+                >
+                  {loading ? t('contact.sending', 'Sending...') : t('contact.send_message', 'Send Message')}
+                </button>
+              </form>
+            </div>
+
+            {/* CONTACT INFO */}
+            <div>
+              <h2 className="text-3xl font-bold text-[#1B3C53] mb-6">{t('contact.info_title', 'Contact Information')}</h2>
+
+              <div className="space-y-6 mb-8">
+                {contactInfo.map((item, index) => (
+                  <div key={index} className="bg-white rounded-xl p-6 shadow-lg">
+                    <div className="flex items-start space-x-4">
+                      <div className="bg-[#1B3C53] text-white p-3 rounded-lg">
+                        {item.icon}
+                      </div>
+
+                      <div>
+                        <h3 className="text-xl font-bold text-[#1B3C53] mb-1">{item.title}</h3>
+                        {item.details.map((detail, i) => (
+                          <p key={i} className="text-gray-600">{detail}</p>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-[#1B3C53] text-white rounded-xl p-6">
+                <h3 className="text-xl font-bold mb-3">{t('contact.support_hours', 'Support Hours')}</h3>
+                <p className="flex justify-between"><span>{t('contact.mon_fri', 'Mon - Fri')}</span> <span>9 AM - 6 PM</span></p>
+                <p className="flex justify-between"><span>{t('contact.saturday', 'Saturday')}</span> <span>10 AM - 4 PM</span></p>
+                <p className="flex justify-between"><span>{t('contact.sunday', 'Sunday')}</span> <span>{t('contact.closed', 'Closed')}</span></p>
+
+                <p className="mt-4 text-sm text-gray-200">
+                  {t('contact.urgent', 'For urgent matters')}: +977-9800000000
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- FAQ ---------------- */}
+      <section className="py-16 md:py-20 bg-white">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#1B3C53] text-center mb-12">
+            {t('contact.faq_title', 'Frequently Asked Questions')}
+          </h2>
+
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div key={index} className="bg-[#F9F5F0] rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setFaqOpen(faqOpen === index ? null : index)}
+                  className="w-full px-6 py-4 flex justify-between items-center text-left hover:bg-gray-100"
+                >
+                  <span className="font-semibold text-[#1B3C53]">{faq.question}</span>
+
+                  <ChevronDown
+                    className={`w-5 h-5 transform transition ${faqOpen === index ? 'rotate-180' : ''}`}
+                  />
+                </button>
+
+                {faqOpen === index && (
+                  <div className="px-6 py-4 text-gray-700 border-t border-gray-200">
+                    {faq.answer}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center mt-6 text-gray-600">
+            {t('contact.more_questions', 'Have more questions?')} <span className="text-[#1B3C53] font-semibold">{t('contact.contact_anytime', 'Contact us anytime.')}</span>
+          </p>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Contact;

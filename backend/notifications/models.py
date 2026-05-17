@@ -9,8 +9,8 @@ class Notification(BaseModel):
         on_delete=models.CASCADE,
         related_name="notifications"
     )
-    title = models.CharField(max_length=255)
-    message = models.TextField()
+    notification_type = models.CharField(max_length=100)
+    extra_data = models.JSONField(default=dict, blank=True)
     is_read = models.BooleanField(default=False)
     booking = models.ForeignKey(
         Booking,
@@ -21,7 +21,7 @@ class Notification(BaseModel):
     )
 
     def __str__(self):
-        return f"Notification for {self.recipient.username}: {self.title}"
+        return f"Notification for {self.recipient.username}: {self.notification_type}"
 
     class Meta:
         ordering = ['-created_at']

@@ -21,7 +21,7 @@ class ProviderServiceFilter(django_filters.FilterSet):
     max_price = django_filters.NumberFilter(field_name="price", lookup_expr="lte")
     
     # Service name (partial match)
-    service_name = django_filters.CharFilter(field_name="service__name", lookup_expr="icontains")
+    service_name = django_filters.CharFilter(field_name="service__name_key", lookup_expr="icontains")
     
     # Rating (exact or you could add min_rating, max_rating)
     min_rating = django_filters.NumberFilter(field_name="rating", lookup_expr="gte")
