@@ -1,19 +1,34 @@
 import { useNotifications } from '../components/NotificationContext';
-import { Bell, Check, Calendar, Clock, X } from 'lucide-react';
+import { Bell, Check, Calendar, Clock, X, CheckCircle2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../shared/components/ui/Button';
+
+const PAGE_SIZE = 20;
 
 const NotificationsPage = ({ isModal = false, onClose = null, forceCustomer = false }) => {
     const { t, i18n } = useTranslation();
     const { notifications, markAsRead, markAllAsRead, fetchNotifications } = useNotifications();
     const location = useLocation();
     const isProvider = !forceCustomer && location.pathname.startsWith('/provider');
+    const isCustomerView = forceCustomer || !isProvider;
+    const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
 
     useEffect(() => {
         fetchNotifications();
     }, [fetchNotifications]);
+
+    useEffect(() => {
+        if (isCustomerView) {
+            setDisplayCount(PAGE_SIZE);
+        }
+    }, [isCustomerView, isModal, location.pathname]);
+
+    const displayedNotifications = isCustomerView
+        ? notifications.slice(0, displayCount)
+        : notifications;
+    const hasMore = isCustomerView && displayCount < notifications.length;
 
     const formatTime = (dateString) => {
         const date = new Date(dateString);
@@ -50,150 +65,175 @@ const NotificationsPage = ({ isModal = false, onClose = null, forceCustomer = fa
         return { title, message };
     };
 
-    const content = (
-        <div className={`${isProvider ? '' : isModal ? '' : 'min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8'}`}>
-            <div className={`${isProvider ? '' : isModal ? '' : 'max-w-4xl mx-auto'}`}>
-                {!isProvider && (
-                    <div className="flex justify-between items-center mb-8">
-                        {isModal ? (
-                            <button
+    const innerContent = (
+        <div className={`flex flex-col bg-white overflow-hidden ${isModal ? 'w-full h-full' : 'max-w-3xl mx-auto rounded-2xl shadow-sm border border-gray-100'}`}>
+            {/* Header */}
+            <div className="p-5 sm:p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-10 h-10 bg-primary/10 text-primary rounded-xl shrink-0">
+                        <Bell className="w-5 h-5" />
+                    </div>
+                    <h1 className="text-lg sm:text-xl font-bold text-gray-900 leading-none mb-0.5">
+                        {t('nav.notifications')}
+                    </h1>
+                </div>
+
+                <div className="flex items-center gap-3 sm:gap-4">
+                    {notifications.length > 0 && (
+                        <Button
+                            type="button"
+                            onClick={markAllAsRead}
+                            variant="ghost"
+                            size="sm"
+                            fullWidth={false}
+                            className="bg-primary/10 hover:bg-primary/20"
+                        >
+                            <CheckCircle2 className="w-4 h-4 shrink-0" />
+                            <span className="hidden sm:inline">{t('notifications.mark_all_as_read', 'Mark all as read')}</span>
+                        </Button>
+                    )}
+                    {isModal && (
+                        <>
+                            {notifications.length > 0 && <div className="w-px h-6 bg-gray-200 hidden sm:block"></div>}
+                            <Button
                                 type="button"
                                 onClick={onClose}
-                                className="text-primary hover:underline text-sm font-bold inline-flex items-center gap-2"
-                            >
-                                <X size={16} /> {t('common.close', 'Close')}
-                            </button>
-                        ) : (
-                            <Link to="/" className="text-primary hover:underline text-sm font-bold flex items-center gap-2">
-                                <span>←</span> {t('landing.go_to_dashboard', 'Go to Dashboard')}
-                            </Link>
-                        )}
-                    </div>
-                )}
-
-                <div className="bg-white rounded-3xl shadow-xl shadow-primary/5 overflow-hidden border border-gray-100">
-                    <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-primary text-white">
-                        <div className="flex items-center space-x-4">
-                            <div className="p-2 bg-white/10 rounded-lg">
-                                <Bell className="w-6 h-6" />
-                            </div>
-                            <h1 className="text-2xl font-black uppercase tracking-tight">
-                                {t('nav.notifications')}
-                            </h1>
-                        </div>
-
-                        {notifications.length > 0 && (
-                            <Button
-                                onClick={markAllAsRead}
-                                variant="secondary"
+                                variant="icon"
                                 fullWidth={false}
-                                rounded="full"
-                                className="bg-white/10 hover:bg-white/20 border-white/20 text-white !py-2 !px-5 text-xs font-bold uppercase tracking-wider"
+                                aria-label={t('common.close', 'Close')}
                             >
-                                {t('notifications.mark_all_as_read', 'Mark all as read')}
+                                <X size={20} />
                             </Button>
-                        )}
-                    </div>
-
-                    <div className="divide-y divide-gray-100">
-                        {notifications.length === 0 ? (
-                            <div className="p-20 text-center">
-                                <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <Bell className="w-12 h-12 text-gray-200" />
-                                </div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                                    {t('notifications.no_notifications', 'No notifications yet!')}
-                                </h3>
-                                <p className="text-gray-400 text-sm max-w-xs mx-auto">
-                                    {t(
-                                        'notifications.no_notifications_desc',
-                                        "We'll notify you when something important happens regarding your bookings."
-                                    )}
-                                </p>
-                            </div>
-                        ) : (
-                            notifications.map((notification) => {
-                                const { title, message } = renderNotificationContent(notification);
-
-                                return (
-                                    <div
-                                        key={notification.id}
-                                        className={`p-8 transition hover:bg-gray-50 flex items-start space-x-6 ${!notification.is_read ? 'bg-primary/5 border-l-4 border-primary' : ''
-                                            }`}
-                                    >
-                                        <div
-                                            className={`p-4 rounded-2xl shadow-sm ${!notification.is_read
-                                                ? 'bg-white text-primary'
-                                                : 'bg-gray-100 text-gray-400'
-                                                }`}
-                                        >
-                                            <Bell size={24} />
-                                        </div>
-
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-start">
-                                                <h3
-                                                    className={`font-black text-xl leading-tight ${!notification.is_read ? 'text-primary' : 'text-gray-700'
-                                                        }`}
-                                                >
-                                                    {title}
-                                                </h3>
-
-                                                <span className="text-xs font-bold text-gray-400 flex items-center bg-gray-50 px-2 py-1 rounded-md">
-                                                    <Clock size={12} className="mr-1.5" />
-                                                    {formatTime(notification.created_at)}
-                                                </span>
-                                            </div>
-
-                                            <p className="text-gray-600 mt-2 text-base leading-relaxed">
-                                                {message}
-                                            </p>
-
-                                            <div className="mt-6 flex items-center space-x-6">
-                                                {!notification.is_read && (
-                                                    <Button
-                                                        onClick={() => markAsRead(notification.id)}
-                                                        variant="ghost"
-                                                        fullWidth={false}
-                                                        className="!p-0 h-auto text-primary font-black text-sm uppercase tracking-tight flex items-center hover:bg-transparent hover:translate-x-1"
-                                                    >
-                                                        <Check size={18} className="mr-2" />
-                                                        {t('notifications.mark_as_read', 'Mark as read')}
-                                                    </Button>
-                                                )}
-
-                                                {notification.booking && (
-                                                    <Link
-                                                        to={isProvider ? `/provider/requests` : `/my-bookings`}
-                                                        className="text-sm font-black text-gray-900 uppercase tracking-tight flex items-center hover:translate-x-1 transition-transform"
-                                                    >
-                                                        <Calendar size={18} className="mr-2 text-primary" />
-                                                        {t('bookings.view_service', 'View Service')}
-                                                    </Link>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
+                        </>
+                    )}
                 </div>
+            </div>
+
+            {/* List */}
+            <div className="divide-y divide-gray-100 overflow-y-auto flex-1">
+                {notifications.length === 0 ? (
+                    <div className="p-12 text-center flex flex-col items-center justify-center h-full min-h-[300px]">
+                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                            <Bell className="w-8 h-8 text-gray-300" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                            {t('notifications.no_notifications', 'No notifications yet!')}
+                        </h3>
+                        <p className="text-gray-500 text-sm max-w-sm">
+                            {t(
+                                'notifications.no_notifications_desc',
+                                "We'll notify you when something important happens regarding your bookings."
+                            )}
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                    {displayedNotifications.map((notification) => {
+                        const { title, message } = renderNotificationContent(notification);
+
+                        return (
+                            <div
+                                key={notification.id}
+                                className={`p-4 sm:p-5 transition-colors hover:bg-gray-50 group flex items-start gap-4 ${!notification.is_read ? 'bg-blue-50/30' : ''}`}
+                            >
+                                {/* Icon */}
+                                <div className="relative shrink-0 mt-0.5">
+                                    <div className={`flex items-center justify-center w-10 h-10 rounded-full ${!notification.is_read ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'}`}>
+                                        <Bell size={18} />
+                                    </div>
+                                    {!notification.is_read && (
+                                        <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-blue-500 border-2 border-white rounded-full"></span>
+                                    )}
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-4">
+                                        <h3 className={`text-sm sm:text-base font-semibold truncate leading-tight mt-0.5 ${!notification.is_read ? 'text-gray-900' : 'text-gray-600'}`}>
+                                            {title}
+                                        </h3>
+                                        <span className="shrink-0 text-xs text-gray-400 flex items-center mt-1 sm:mt-0.5">
+                                            <Clock size={12} className="mr-1" />
+                                            {formatTime(notification.created_at)}
+                                        </span>
+                                    </div>
+
+                                    <p className={`mt-1 text-sm line-clamp-2 ${!notification.is_read ? 'text-gray-700' : 'text-gray-500'}`}>
+                                        {message}
+                                    </p>
+
+                                    <div className="mt-3 flex items-center gap-4">
+                                        {notification.booking && (
+                                            <Button
+                                                to={isProvider ? `/provider/requests` : `/my-bookings`}
+                                                variant="secondary"
+                                                size="sm"
+                                                fullWidth={false}
+                                            >
+                                                <Calendar size={14} className="shrink-0" />
+                                                {t('bookings.view_service', 'View Service')}
+                                            </Button>
+                                        )}
+
+                                        {!notification.is_read && (
+                                            <Button
+                                                type="button"
+                                                onClick={() => markAsRead(notification.id)}
+                                                variant="ghost"
+                                                size="sm"
+                                                fullWidth={false}
+                                                className="!px-0"
+                                            >
+                                                <Check size={14} className="shrink-0" />
+                                                {t('notifications.mark_as_read', 'Mark as read')}
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                    {hasMore && (
+                        <div className="p-4 sm:p-5 border-t border-gray-100 flex justify-center shrink-0">
+                            <Button
+                                type="button"
+                                onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
+                                variant="secondary"
+                                size="sm"
+                                fullWidth={false}
+                            >
+                                {t('notifications.load_more', 'Load more')}
+                            </Button>
+                        </div>
+                    )}
+                    </>
+                )}
             </div>
         </div>
     );
 
     if (!isModal) {
-        return content;
+        return (
+            <div className={`${isProvider ? '' : 'min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8'}`}>
+                {!isProvider && (
+                    <div className="max-w-3xl mx-auto mb-6">
+                        <Link to="/" className="text-gray-500 hover:text-primary text-sm font-medium flex items-center gap-2 transition-colors inline-flex">
+                            <span>←</span> {t('landing.go_to_dashboard', 'Go to Dashboard')}
+                        </Link>
+                    </div>
+                )}
+                {innerContent}
+            </div>
+        );
     }
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm p-4 sm:p-6" onClick={onClose}>
+        <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm p-4 sm:p-6 flex items-center justify-center animate-in fade-in duration-200" onClick={onClose}>
             <div
-                className="w-full max-w-4xl mx-auto max-h-[90vh] overflow-y-auto"
+                className="w-full max-w-2xl max-h-[85vh] bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
                 onClick={(e) => e.stopPropagation()}
             >
-                {content}
+                {innerContent}
             </div>
         </div>
     );

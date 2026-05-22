@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Star, X, Loader2 } from 'lucide-react';
+import { Star, X } from 'lucide-react';
 import { api } from '../../../utils/api';
+import Button from './Button';
 
 const ReviewModal = ({ isOpen, onClose, booking, onReviewSubmit }) => {
   const [rating, setRating] = useState(0);
@@ -25,15 +26,11 @@ const ReviewModal = ({ isOpen, onClose, booking, onReviewSubmit }) => {
         rating: rating,
         comment: comment
       };
-      console.log('Submitting review payload:', payload);
-      console.log('Booking details:', booking);
-      const response = await api.post('/booking/reviews/', payload);
-      console.log('Review response:', response);
+      await api.post('/booking/reviews/', payload);
       onReviewSubmit();
       onClose();
     } catch (err) {
       console.error("Failed to submit review", err);
-      console.error('Error response:', err.response?.data);
       alert("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -43,12 +40,15 @@ const ReviewModal = ({ isOpen, onClose, booking, onReviewSubmit }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden relative shadow-2xl animate-in fade-in zoom-in duration-200">
-        <button
+        <Button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 transition"
+          variant="icon"
+          fullWidth={false}
+          className="absolute top-4 right-4"
         >
           <X size={24} />
-        </button>
+        </Button>
 
         <div className="p-8">
           <div className="text-center mb-8">
@@ -88,16 +88,16 @@ const ReviewModal = ({ isOpen, onClose, booking, onReviewSubmit }) => {
               />
             </div>
 
-            <button
+            <Button
               type="submit"
-              disabled={isSubmitting || rating === 0}
-              className="w-full py-4 bg-[#1B3C53] text-white rounded-2xl font-bold hover:bg-[#1a3248] transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 flex items-center justify-center gap-2"
+              variant="primary"
+              size="lg"
+              disabled={rating === 0}
+              isLoading={isSubmitting}
+              loadingText="Submitting..."
             >
-              {isSubmitting ? (
-                <Loader2 className="animate-spin h-5 w-5 text-white" />
-              ) : null}
-              {isSubmitting ? 'Submitting...' : 'Submit Review'}
-            </button>
+              Submit Review
+            </Button>
             <p className="text-[10px] text-center text-gray-400 font-medium">Nothing is compulsory. Feedbacks are optional.</p>
           </form>
         </div>

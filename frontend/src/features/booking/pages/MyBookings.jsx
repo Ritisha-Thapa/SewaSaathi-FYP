@@ -9,6 +9,7 @@ import ReviewModal from '../../../shared/components/ui/ReviewModal';
 import ImageModal from '../../../shared/components/ui/ImageModal';
 import PaymentModal from '../../payment/components/PaymentModal';
 import { useTranslation } from 'react-i18next';
+import { toast } from '../../../shared/components/layout/ToastProvider';
 
 // New sub-components
 import BookingCard from '../components/BookingCard';
@@ -82,14 +83,14 @@ const MyBookings = () => {
             await api.post(`/insurance/claims/${claim.id}/choose-resolution/`, { resolution });
             invalidateCache('/booking/bookings/');
             if (resolution === 'refund') {
-                alert("Your refund will be sent within 3 days.");
+                toast.success(t('bookings.refund_processing_toast'));
             } else if (resolution === 'rework') {
-                alert("Rework request submitted! The provider will be notified.");
+                toast.success(t('bookings.rework_processing_toast'));
             }
             fetchData(); // Refresh
         } catch (err) {
             console.error("Failed to set resolution", err);
-            alert("Failed to set resolution.");
+            toast.error(t('bookings.resolution_failed_toast'));
         }
     };
 

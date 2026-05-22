@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
-import { X, Banknote, CheckCircle, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Banknote, CheckCircle } from 'lucide-react';
+import Button from '../../../../shared/components/ui/Button';
+
+const getDefaultFinalPrice = (job) => {
+  if (!job) return '';
+  const price = job.final_price ?? job.service_price ?? job.total_price;
+  if (price === null || price === undefined || price === '') return '';
+  return String(Number(price));
+};
 
 const CompleteJobModal = ({ isOpen, onClose, job, onComplete }) => {
-  const [finalPrice, setFinalPrice] = useState(job?.total_price || '');
+  const [finalPrice, setFinalPrice] = useState('');
   const [priceNote, setPriceNote] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && job) {
+      setFinalPrice(getDefaultFinalPrice(job));
+      setPriceNote(job.price_note ?? '');
+    }
+  }, [isOpen, job?.id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +36,6 @@ const CompleteJobModal = ({ isOpen, onClose, job, onComplete }) => {
       onClose();
     } catch (err) {
       console.error('Failed to complete job:', err);
-      // Re-throw if error already handled in onComplete
       throw err;
     } finally {
       setLoading(false);
@@ -35,12 +49,14 @@ const CompleteJobModal = ({ isOpen, onClose, job, onComplete }) => {
       <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold text-[#1B3C53]">Complete Job</h3>
-          <button
+          <Button
+            type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
+            variant="icon"
+            fullWidth={false}
           >
             <X size={24} />
-          </button>
+          </Button>
         </div>
 
         <div className="mb-6">
@@ -65,7 +81,7 @@ const CompleteJobModal = ({ isOpen, onClose, job, onComplete }) => {
                 value={finalPrice}
                 onChange={(e) => setFinalPrice(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent"
-                placeholder="Enter final price"
+                placeholder={job.service_price ? `Default: Rs. ${job.service_price}` : 'Enter final price'}
                 required
               />
             </div>
@@ -91,30 +107,26 @@ const CompleteJobModal = ({ isOpen, onClose, job, onComplete }) => {
           </div>
 
           <div className="flex gap-3 pt-4">
-            <button
+            <Button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition"
+              variant="secondary"
+              size="md"
+              className="flex-1"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              disabled={loading}
-              className="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              variant="pay"
+              size="md"
+              isLoading={loading}
+              loadingText="Completing..."
+              className="flex-1"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="animate-spin h-5 w-5 text-white" />
-                  Completing...
-                </>
-              ) : (
-                <>
-                  <CheckCircle size={20} />
-                  Complete Job
-                </>
-              )}
-            </button>
+              <CheckCircle size={20} className="shrink-0" />
+              Complete Job
+            </Button>
           </div>
         </form>
       </div>

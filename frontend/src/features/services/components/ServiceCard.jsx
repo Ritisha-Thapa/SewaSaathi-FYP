@@ -12,7 +12,7 @@ const ServiceCard = ({ service }) => {
   return (
     <Link
       to={`/services/${service.category.slug}/${service.id}`}
-      className="bg-background rounded-3xl shadow-md shadow-primary/5 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden block border border-white/20 group"
+      className="bg-white rounded-3xl shadow-md shadow-primary/5 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden block border border-gray-200 group"
     >
       {service.image && (
         <div className="relative h-52 overflow-hidden">
@@ -26,11 +26,11 @@ const ServiceCard = ({ service }) => {
       )}
 
       <div className="p-6 space-y-4">
-        <span className="inline-block px-4 py-1 text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary rounded-full">
+        <span className="inline-block px-4 py-1 text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary rounded-full">
           {t(`categories.${service.category.name_key}`)}
         </span>
 
-        <h3 className="text-xl font-black text-primary leading-tight">
+        <h3 className="text-xl font-bold text-primary leading-tight">
           {t(`service_names.${service.name_key}`)}
         </h3>
 
@@ -43,13 +43,13 @@ const ServiceCard = ({ service }) => {
             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
               {t("services.service_price", "Service Price")}
             </span>
-            <span className="text-lg font-black text-gray-900">
+            <span className="text-lg font-bold text-gray-900">
               {formatCurrency(service.base_price)}
             </span>
           </div>
-          <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-xl border border-primary/10">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-[10px] font-bold text-primary uppercase tracking-tight">
+          <div className="flex items-center gap-2 p-3 bg-orange-50 rounded-xl border border-orange-600">
+            <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+            <span className="text-[10px] font-bold text-orange-600 uppercase tracking-tight">
               {t("services.insurance_checkout_note", "Insurance (1%) included at checkout")}
             </span>
           </div>

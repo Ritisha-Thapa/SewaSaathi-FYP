@@ -83,16 +83,23 @@ const ProviderSidebar = ({ isOpen, toggleSidebar }) => {
         fixed top-0 left-0 h-full bg-[#1B3C53] text-white z-30 transition-transform duration-300 ease-in-out w-64
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10">
-          <h2 className="text-xl font-bold text-white">{t('provider.panel')}</h2>
-          <button onClick={toggleSidebar} className="lg:hidden">
+        {/* Header — h-16 matches main navbar */}
+        <div className="relative flex h-16 shrink-0 items-center justify-center border-b border-white/10 px-4">
+          <h2 className="mb-0 text-center text-xl font-bold leading-none text-white">
+            {t('provider.panel')}
+          </h2>
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className="absolute right-4 lg:hidden text-white/90 hover:text-white"
+            aria-label="Close menu"
+          >
             <X size={24} />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-2 overflow-y-auto h-[calc(100vh-80px)]">
+        <nav className="h-[calc(100vh-4rem)] space-y-2 overflow-y-auto p-4">
           {navItems.map((item) => (
             <NavLink
               key={item.to}

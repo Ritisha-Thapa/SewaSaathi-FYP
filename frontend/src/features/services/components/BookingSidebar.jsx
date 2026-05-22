@@ -33,8 +33,8 @@ const BookingSidebar = ({
     return (
         <div className="lg:col-span-1">
             <div className="sticky top-8 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                <div className="p-4 bg-[#1B3C53] text-white text-center">
-                    <h3 className="font-bold text-xl text-white">
+                <div className="p-4 bg-white text-white text-center">
+                    <h3 className="font-bold text-xl text-primary border-b border-gray-300 pb-2">
                         {bookingDetails?.latest_claim_status && bookingDetails.latest_claim_resolution === 'none'
                             ? t('booking_form.insurance_status')
                             : orderingStatus === "success"

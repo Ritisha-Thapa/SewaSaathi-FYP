@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Booking, Review
+from .models import Booking, Review, ProviderBookingResponse
+from .validators import validate_scheduled_slot
 from services.models import Service, ProviderService
 from accounts.models import User
 
@@ -17,7 +18,20 @@ class BookingSerializer(serializers.ModelSerializer):
     latest_claim_resolution = serializers.SerializerMethodField()
     latest_claim_id = serializers.SerializerMethodField()
     has_reviewed = serializers.SerializerMethodField()
-    
+    provider_has_declined = serializers.SerializerMethodField()
+
+    def get_provider_has_declined(self, obj):
+        request = self.context.get("request")
+        if not request or getattr(request.user, "role", None) != "provider":
+            return False
+        declined = getattr(obj, "my_decline_responses", None)
+        if declined is not None:
+            return len(declined) > 0
+        return obj.provider_responses.filter(
+            provider=request.user,
+            response=ProviderBookingResponse.RESPONSE_DECLINED,
+        ).exists()
+
     def get_has_reviewed(self, obj):
         return hasattr(obj, 'review')
 
@@ -39,7 +53,18 @@ class BookingSerializer(serializers.ModelSerializer):
     def get_latest_claim_id(self, obj):
         claim = self._get_latest_claim(obj)
         return claim.id if claim else None
-    
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if (
+            request
+            and getattr(request.user, "role", None) == "customer"
+            and data.get("status") == "rejected"
+        ):
+            data["status"] = "pending"
+        return data
+
     class Meta:
         model = Booking
         fields = [
@@ -49,9 +74,17 @@ class BookingSerializer(serializers.ModelSerializer):
             'issue_description', 'issue_images', 'status', 'address', 'phone', 'customer_phone',
             'service_price', 'final_price', 'price_note', 'insurance_fee', 'total_price',  
             'payment_method', 'is_paid', 'is_rework', 'created_at', 'updated_at', 'completed_at', 'paid_at',
-            'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id', 'has_reviewed'
+            'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id', 'has_reviewed',
+            'provider_has_declined',
         ]
-        read_only_fields = ['id', 'customer', 'service_price', 'created_at', 'updated_at', 'total_price', 'insurance_fee', 'is_paid', 'completed_at', 'paid_at', 'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id']
+        read_only_fields = ['id', 'customer', 'service_price', 'created_at', 'updated_at', 'total_price', 'insurance_fee', 'is_paid', 'completed_at', 'paid_at', 'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id', 'provider_has_declined']
+
+    def validate(self, attrs):
+        scheduled_date = attrs.get("scheduled_date")
+        scheduled_time = attrs.get("scheduled_time")
+        if scheduled_date is not None and scheduled_time is not None:
+            validate_scheduled_slot(scheduled_date, scheduled_time)
+        return attrs
 
     def create(self, validated_data):
         service = validated_data.get('service')

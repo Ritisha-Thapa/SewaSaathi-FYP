@@ -4,6 +4,7 @@ import { getCached } from '../../../utils/api';
 import { useState, useEffect } from 'react';
 import Pagination from '../../../shared/components/layout/Pagination';
 import ImageModal from '../../../shared/components/ui/ImageModal';
+import Button from '../../../shared/components/ui/Button';
 import { useTranslation } from 'react-i18next';
 
 const BookingHistory = () => {
@@ -236,16 +237,19 @@ const BookingHistory = () => {
 
                 {booking.issue_images && (
                   <div className="mt-2">
-                    <button
+                    <Button
+                      type="button"
                       onClick={() => {
                         setSelectedImage(booking.issue_images);
                         setIsImageModalOpen(true);
                       }}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 text-[#1B3C53] rounded border border-gray-200 hover:bg-gray-100 transition text-sm font-semibold inline-flex"
+                      variant="secondary"
+                      size="sm"
+                      fullWidth={false}
                     >
-                      <ImageIcon size={14} />
+                      <ImageIcon size={14} className="shrink-0" />
                       View Attached Image
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -269,7 +273,16 @@ const BookingHistory = () => {
       {filteredBookings.length === 0 && bookings.length > 0 && (
         <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100">
           <p className="text-gray-500 mb-2">No bookings match the selected filters.</p>
-          <button onClick={() => { setStatusFilter('all'); setServiceFilter('all'); setTimeFilter('all'); }} className="text-[#1B3C53] font-bold text-sm underline hover:opacity-80">Clear Filters</button>
+          <Button
+            type="button"
+            onClick={() => { setStatusFilter('all'); setServiceFilter('all'); setTimeFilter('all'); }}
+            variant="ghost"
+            size="sm"
+            fullWidth={false}
+            className="underline font-bold"
+          >
+            Clear Filters
+          </Button>
         </div>
       )}
 

@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import toast from "react-hot-toast";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { toast } from "../../../shared/components/layout/ToastProvider";
+import { ArrowLeft } from "lucide-react";
+import Button from "../../../shared/components/ui/Button";
 import Logo from "../../../assets/sewasathi_logo.png";
 
 
-const skillsOptions = [
-  "plumber",
-  "electrician",
-  "cleaner",
-  "painter",
-  "gardener",
+const categoryOptions = [
+  { value: "plumber", label: "Plumbing" },
+  { value: "electrician", label: "Electrical Repairing" },
+  { value: "cleaner", label: "Cleaning" },
+  { value: "painter", label: "Painting" },
+  { value: "gardener", label: "Gardening" },
+  { value: "carpenter", label: "Carpentry" },
 ];
 
 const ProviderSignup = () => {
@@ -23,7 +25,7 @@ const ProviderSignup = () => {
     address: "",
     city: "",
 
-    skills: [],
+    skills: "",
     experience_years: "",
     citizenship_image: null,
     profile_image: null,
@@ -59,21 +61,6 @@ const ProviderSignup = () => {
       ...prev,
       [name]: "",
     }));
-  };
-
-  // SKILLS CHECKBOX
-
-  const handleSkillChange = (skill) => {
-    setFormData((prev) => {
-      const updated = prev.skills.includes(skill)
-        ? prev.skills.filter((s) => s !== skill)
-        : [...prev.skills, skill];
-
-      return {
-        ...prev,
-        skills: updated,
-      };
-    });
   };
 
   // FILE HANDLING
@@ -114,7 +101,7 @@ const ProviderSignup = () => {
     if (!formData.address.trim()) newErrors.address = "Required";
     if (!formData.city.trim()) newErrors.city = "Required";
 
-    if (formData.skills.length === 0) newErrors.skills = "Select at least one";
+    if (!formData.skills) newErrors.skills = "Select a service category";
     if (!formData.experience_years) newErrors.experience_years = "Required";
     if (!formData.citizenship_image) newErrors.citizenship_image = "Required";
     if (!formData.profile_image) newErrors.profile_image = "Required";
@@ -133,13 +120,7 @@ const ProviderSignup = () => {
     form.append("address", formData.address);
     form.append("city", formData.city);
 
-    // Append skills as separate entries
-    if (Array.isArray(formData.skills)) {
-      formData.skills.forEach(skill => form.append("skills", skill));
-    } else if (formData.skills) {
-      // Handle case where skills might be a string
-      form.append("skills", formData.skills);
-    }
+    form.append("skills", formData.skills);
 
     form.append("experience_years", formData.experience_years);
 
@@ -184,7 +165,7 @@ const ProviderSignup = () => {
           phone: "",
           email: "",
           address: "",
-          skills: [],
+          skills: "",
           experience_years: "",
           citizenship_image: null,
           profile_image: null,
@@ -233,7 +214,7 @@ const ProviderSignup = () => {
         <div className="flex flex-col items-center">
           <Link to="/" className="flex items-center gap-4 cursor-pointer">
             <img src={Logo} alt="logo" className="h-14 w-auto" />
-            <span className="text-3xl font-semibold text-[#1B3C53] tracking-wide">
+            <span className="text-2xl font-bold text-[#1B3C53] tracking-tight">
               SewaSaathi
             </span>
           </Link>
@@ -393,27 +374,29 @@ const ProviderSignup = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Skills * (Select all that apply)
+              <label
+                htmlFor="skills"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Service Category *
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {skillsOptions.map((skill) => (
-                  <label
-                    key={skill}
-                    className="flex items-center space-x-2 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={formData.skills.includes(skill)}
-                      onChange={() => handleSkillChange(skill)}
-                      className="w-4 h-4 text-[#1B3C53] border-gray-300 rounded focus:ring-[#1B3C53]"
-                    />
-                    <span className="text-sm text-gray-700 capitalize">
-                      {skill}
-                    </span>
-                  </label>
+              <select
+                id="skills"
+                name="skills"
+                required
+                value={formData.skills}
+                onChange={handleChange}
+                className={`appearance-none relative block w-full px-3 py-2 border ${
+                  errors.skills ? "border-red-300" : "border-gray-300"
+                } text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
+              >
+                <option value="">Select a category</option>
+                {categoryOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
                 ))}
-              </div>
+              </select>
               {errors.skills && (
                 <p className="mt-1 text-sm text-red-600">{errors.skills}</p>
               )}
@@ -512,17 +495,15 @@ const ProviderSignup = () => {
 
           <div>
             {/* Removed inline successMessage in favor of toast */}
-            <button
+            <Button
               type="submit"
-              disabled={isLoading}
-              className={`group relative w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-medium rounded-full text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B3C53] transition ${isLoading ? "bg-[#1B3C53]/70 cursor-not-allowed" : "bg-[#1B3C53] hover:bg-[#1a3248]"
-                }`}
+              variant="primary"
+              size="md"
+              isLoading={isLoading}
+              loadingText="Submitting Application..."
             >
-              {isLoading ? (
-                <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
-              ) : null}
-              {isLoading ? "Submitting Application..." : "Submit Application"}
-            </button>
+              Submit Application
+            </Button>
           </div>
 
           <div className="text-center">

@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { X, AlertCircle, CheckCircle } from 'lucide-react';
+import Button from '../../../../shared/components/ui/Button';
 
 const ConfirmActionModal = ({ isOpen, onClose, onConfirm, title, message, actionType, loading }) => {
   if (!isOpen) return null;
@@ -11,38 +12,41 @@ const ConfirmActionModal = ({ isOpen, onClose, onConfirm, title, message, action
           icon: <CheckCircle size={48} className="text-green-500" />,
           bgColor: 'bg-green-50',
           borderColor: 'border-green-200',
-          buttonColor: 'bg-green-600 hover:bg-green-700'
+          confirmVariant: 'success',
         };
       case 'reject':
         return {
           icon: <AlertCircle size={48} className="text-red-500" />,
           bgColor: 'bg-red-50',
           borderColor: 'border-red-200',
-          buttonColor: 'bg-red-600 hover:bg-red-700'
+          confirmVariant: 'danger',
         };
       default:
         return {
           icon: <AlertCircle size={48} className="text-blue-500" />,
           bgColor: 'bg-blue-50',
           borderColor: 'border-blue-200',
-          buttonColor: 'bg-blue-600 hover:bg-blue-700'
+          confirmVariant: 'primary',
         };
     }
   };
 
-  const { icon, bgColor, borderColor, buttonColor } = getIconAndColor();
+  const { icon, bgColor, borderColor, confirmVariant } = getIconAndColor();
 
   return (
     <div className="fixed inset-0 bg-[#F9F5F0]/80 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold text-[#1B3C53]">{title}</h3>
-          <button
+          <Button
+            type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
+            variant="icon"
+            fullWidth={false}
+            disabled={loading}
           >
             <X size={24} />
-          </button>
+          </Button>
         </div>
 
         <div className={`flex flex-col items-center p-6 rounded-xl ${bgColor} ${borderColor} border mb-6`}>
@@ -51,25 +55,28 @@ const ConfirmActionModal = ({ isOpen, onClose, onConfirm, title, message, action
         </div>
 
         <div className="flex gap-3">
-          <button
+          <Button
+            type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition"
+            variant="secondary"
+            size="md"
             disabled={loading}
+            className="flex-1"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
             onClick={onConfirm}
+            variant={confirmVariant}
+            size="md"
+            isLoading={loading}
+            loadingText="Processing..."
             disabled={loading}
-            className={`flex-1 px-4 py-3 text-white rounded-xl font-medium transition ${buttonColor} disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+            className="flex-1"
           >
-            {loading ? (
-              <>
-                <Loader2 className="animate-spin h-5 w-5 text-white" />
-                Processing...
-              </>
-            ) : title}
-          </button>
+            {title}
+          </Button>
         </div>
       </div>
     </div>

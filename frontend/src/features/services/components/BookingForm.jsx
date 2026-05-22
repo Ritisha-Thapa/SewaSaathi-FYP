@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../shared/components/ui/Button';
+import {
+    getLocalDateString,
+    isSlotSelectable,
+    isTimeSelectionValid,
+} from '../../../utils/bookingTimeSlots';
 
 const BookingForm = ({
     address,
@@ -24,10 +29,33 @@ const BookingForm = ({
     timeSlots
 }) => {
     const { t } = useTranslation();
+    const [now, setNow] = useState(() => new Date());
+
+    const minDate = getLocalDateString(now);
+    const isToday = date === minDate;
+    const showTimeHint = Boolean(date) && isToday;
+
+    useEffect(() => {
+        const intervalId = setInterval(() => setNow(new Date()), 60_000);
+        return () => clearInterval(intervalId);
+    }, []);
+
+    useEffect(() => {
+        if (time && date && !isTimeSelectionValid(time, date, now)) {
+            setTime('');
+        }
+    }, [date, time, now, setTime]);
+
+    const handleDateChange = (e) => {
+        const nextDate = e.target.value;
+        setDate(nextDate);
+        if (time && nextDate && !isSlotSelectable(time, nextDate, now)) {
+            setTime('');
+        }
+    };
 
     return (
         <div className="space-y-6">
-            {/* Address & Phone */}
             <div className="space-y-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -62,35 +90,47 @@ const BookingForm = ({
                 <input
                     type="date"
                     value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
+                    onChange={handleDateChange}
+                    min={minDate}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent outline-none transition cursor-pointer"
                 />
             </div>
 
-            {/* Time Slots */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t('booking_form.select_time')}
                 </label>
+                {showTimeHint && (
+                    <p className="text-xs text-gray-500 mb-2">
+                        {t('booking_form.time_buffer_hint')}
+                    </p>
+                )}
                 <div className="grid grid-cols-4 gap-2">
-                    {timeSlots.map((slot) => (
-                        <button
-                            key={slot}
-                            type="button"
-                            onClick={() => setTime(slot)}
-                            className={`py-2 px-1 rounded-lg text-xs font-medium transition border ${time === slot
-                                ? "bg-[#1B3C53] text-white border-[#1B3C53]"
-                                : "bg-white text-gray-600 border-gray-200 hover:border-[#1B3C53] hover:text-[#1B3C53]"
+                    {timeSlots.map((slot) => {
+                        const selectable = date && isSlotSelectable(slot, date, now);
+                        const isSelected = time === slot;
+
+                        return (
+                            <button
+                                key={slot}
+                                type="button"
+                                disabled={!selectable}
+                                onClick={() => selectable && setTime(slot)}
+                                className={`py-2 px-1 rounded-lg text-xs font-medium transition border ${
+                                    !selectable
+                                        ? 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed'
+                                        : isSelected
+                                          ? 'bg-[#1B3C53] text-white border-[#1B3C53]'
+                                          : 'bg-white text-gray-600 border-gray-200 hover:border-[#1B3C53] hover:text-[#1B3C53]'
                                 }`}
-                        >
-                            {slot}
-                        </button>
-                    ))}
+                            >
+                                {slot}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* Issue Description */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                     {t('booking_form.problem_desc')}
@@ -103,7 +143,6 @@ const BookingForm = ({
                 ></textarea>
             </div>
 
-            {/* Image Upload */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                     {t('booking_form.upload_image')}
@@ -121,7 +160,6 @@ const BookingForm = ({
                 </div>
             </div>
 
-            {/* Error Message */}
             {errorMessage && (
                 <div className="p-3 bg-red-50 text-red-700 rounded-lg text-xs border border-red-100">
                     {errorMessage}
@@ -134,12 +172,12 @@ const BookingForm = ({
                 </div>
             )}
 
-            {/* Submit Button */}
             <Button
                 onClick={handleBookService}
+                variant="primary"
+                size="lg"
                 isLoading={orderingStatus === "submitting"}
                 loadingText={t('booking_form.processing')}
-                className="!py-4 text-lg shadow-lg"
             >
                 {t('booking_form.confirm_booking')}
             </Button>

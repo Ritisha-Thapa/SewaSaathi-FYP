@@ -8,17 +8,17 @@ const HowItWorks = () => {
     {
       title: t('landing.how_it_works_step1_title', 'Browse & Choose'),
       description: t('landing.how_it_works_step1_desc', 'Find the service you need'),
-      icon: <Search className="w-12 h-12 text-[#1B3C53]" />
+      icon: <Search className="w-12 h-12 text-blue-500" />
     },
     {
       title: t('landing.how_it_works_step2_title', 'Book & Pay'),
       description: t('landing.how_it_works_step2_desc', 'Schedule and pay via eSewa or COD'),
-      icon: <CheckCircle className="w-12 h-12 text-[#1B3C53]" />
+      icon: <CheckCircle className="w-12 h-12 text-green-500" />
     },
     {
       title: t('landing.how_it_works_step3_title', 'Relax & Review'),
       description: t('landing.how_it_works_step3_desc', 'Get service done and give feedback'),
-      icon: <Star className="w-12 h-12 text-[#1B3C53]" />
+      icon: <Star className="w-12 h-12 text-yellow-500" />
     }
   ];
 

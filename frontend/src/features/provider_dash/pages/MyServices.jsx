@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../../../utils/api';
 import Skeleton from '../../../shared/components/layout/Skeleton';
 import { useTranslation } from 'react-i18next';
@@ -7,76 +7,31 @@ const MyServices = () => {
   const { t, i18n } = useTranslation();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchServices();
-  }, [i18n.language]);
-
-  const fetchServices = async () => {
+  const fetchServices = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const [profile, categories, allServices] = await Promise.all([
-        api.get('/accounts/profile/'),
-        api.get('/services/service-categories/'),
-        api.get('/services/service/')
-      ]);
-
-      const rawSkills = Array.isArray(profile?.skills)
-        ? profile.skills
-        : String(profile?.skills || '')
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean);
-
-      const normalizedSkills = rawSkills.map((s) => String(s || '').trim().toLowerCase()).filter(Boolean);
-      const skillToCategoryHints = {
-        cleaner: ['category_cleaning', 'cleaning', 'clean'],
-        painter: ['category_painting', 'painting', 'paint'],
-        electrician: ['category_electrical_repairing', 'electrical_repairing', 'electrical', 'electric'],
-        gardener: ['category_gardening', 'gardening', 'garden'],
-        carpenter: ['category_carpentry', 'carpentry', 'carpenter'],
-        plumber: ['category_plumbing', 'plumbing', 'plumb'],
-      };
-
-      const matchedCategoryIds = new Set();
-
-      normalizedSkills.forEach((skill) => {
-        const hints = skillToCategoryHints[skill] || [skill];
-        categories.forEach((c) => {
-          const nameKey = String(c.name_key || '').toLowerCase();
-          const slug = String(c.slug || '').toLowerCase();
-          const matched = hints.some((hint) => hint && (nameKey === hint || slug === hint || nameKey.includes(hint) || slug.includes(hint)));
-          if (matched) {
-            matchedCategoryIds.add(c.id);
-          }
-        });
-      });
-
-      if (matchedCategoryIds.size === 0) {
-        // Final fallback: keep old behavior if provider skill/category cannot be resolved.
-        const providerServices = await api.get('/services/provider-services/?my_services=true');
-        const normalizedRows = providerServices.map((row) => ({
-          id: row?.service?.id || row.id,
-          name_key: row?.service?.name_key,
-          category: row?.service?.category,
-          base_price: row?.price,
-          pricing_type: row?.pricing_type,
-        }));
-        setServices(normalizedRows);
-        return;
-      }
-
-      const servicesData = (allServices || []).filter((service) =>
-        matchedCategoryIds.has(service?.category?.id)
-      );
-      setServices(servicesData);
+      const data = await api.get('/services/provider-category-services/');
+      setServices(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Failed to fetch services", err);
+      console.error('Failed to fetch services', err);
+      setError(
+        t(
+          'provider.my_services_load_error',
+          'Unable to load services. Please try again later.'
+        )
+      );
       setServices([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [t, i18n.language]);
+
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
 
   if (loading) {
     return (
@@ -93,14 +48,28 @@ const MyServices = () => {
         {t('provider.my_services', 'My Services')}
       </h2>
 
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="min-w-full text-left">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
-              <th className="px-6 py-4 text-sm font-semibold text-gray-600">Service Name</th>
-              <th className="px-6 py-4 text-sm font-semibold text-gray-600">Category</th>
-              <th className="px-6 py-4 text-sm font-semibold text-gray-600">Price (Rs.)</th>
-              <th className="px-6 py-4 text-sm font-semibold text-gray-600">Pricing Type</th>
+              <th className="px-6 py-4 text-sm font-semibold text-gray-600">
+                {t('provider.service_name', 'Service Name')}
+              </th>
+              <th className="px-6 py-4 text-sm font-semibold text-gray-600">
+                {t('provider.category', 'Category')}
+              </th>
+              <th className="px-6 py-4 text-sm font-semibold text-gray-600">
+                {t('provider.price', 'Price (Rs.)')}
+              </th>
+              <th className="px-6 py-4 text-sm font-semibold text-gray-600">
+                {t('provider.pricing_type', 'Pricing Type')}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -127,9 +96,9 @@ const MyServices = () => {
           </tbody>
         </table>
 
-        {services.length === 0 && (
+        {!error && services.length === 0 && (
           <div className="p-8 text-center text-gray-500">
-            No services found.
+            {t('provider.no_services_found', 'No services found for your category.')}
           </div>
         )}
       </div>

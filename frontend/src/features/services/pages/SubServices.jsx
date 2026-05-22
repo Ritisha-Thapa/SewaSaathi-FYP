@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Skeleton from "../../../shared/components/layout/Skeleton";
 import Footer from "../../../shared/components/layout/Footer";
-import ServiceCard from "../components/ServiceCard"; // Import ServiceCard
+import ServiceCard from "../components/ServiceCard";
+import ServiceBackLink from "../components/ServiceBackLink";
 import Navbar from '../../../shared/components/layout/Navbar';
 import { buildLocalizedHeaders } from "../../../utils/i18nRequest";
 import { useTranslation } from "react-i18next";
@@ -101,14 +102,13 @@ const SubServices = () => {
 
       {/* Content Section */}
       <div className="container mx-auto px-4 max-w-7xl py-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-bold text-primary capitalize">
-            {t('services.available_services', 'Available Services')}
-          </h2>
-          <Link to="/services-category" className="text-primary hover:text-[#1a3248]">
-            {t('nav.back_to_category', '← Back to Category')}
-          </Link>
-        </div>
+        <ServiceBackLink to="/services-category" className="mb-4">
+          {t("nav.back_to_category", "Back to Category")}
+        </ServiceBackLink>
+
+        <h2 className="text-3xl font-bold text-primary capitalize mb-6">
+          {t("services.available_services", "Available Services")}
+        </h2>
 
         <p className="text-gray-600 mb-10">
           {t('services.pick_category_service', {

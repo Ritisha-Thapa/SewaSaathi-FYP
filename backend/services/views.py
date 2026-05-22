@@ -2,11 +2,15 @@
 from .models import ServiceCategory, Service, ProviderService, ProviderAvailability
 from .serializers import ServiceCategorySerializer,ServiceSerializer,ProviderServiceSerializer,ProviderAvailabilitySerializer
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.permissions import IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .utils import ServiceFilter,ProviderServiceFilter  
+from .utils import ServiceFilter,ProviderServiceFilter
+from .provider_category import get_services_for_provider  
 
 
 
@@ -75,4 +79,21 @@ class ProviderAvailabilityViewSet(ModelViewSet):
             qs = qs.filter(provider=user)
         return qs
 
+
+class ProviderCategoryServicesView(APIView):
+    """Return all catalog services for the authenticated provider's signup category."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if user.role != "provider":
+            return Response(
+                {"detail": "Only providers can access category services."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        services = get_services_for_provider(user)
+        serializer = ServiceSerializer(services, many=True, context={"request": request})
+        return Response(serializer.data)
 

@@ -31,11 +31,11 @@ const ServiceHero = ({ item }) => {
                 <div className="mt-8 pt-8 border-t border-gray-100">
                     <div className="flex items-center gap-4">
                         <span className="text-gray-600 text-lg">{t('booking_form.base_price')}:</span>
-                        <span className="text-3xl font-bold text-[#1B3C53]">
+                        <span className="text-2xl font-bold text-[#1B3C53]">
                             {formatPrice(item.base_price)}
                         </span>
                     </div>
-                    <p className="text-gray-500 mt-2 text-sm bg-blue-50 inline-block px-3 py-1 rounded-full border border-blue-100">
+                    <p className="text-orange-600 mt-2 text-sm bg-orange-50 inline-block px-3 py-1 rounded-full border border-orange-400">
                         {t('booking_form.insurance_note')}
                     </p>
                 </div>

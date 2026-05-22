@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cloudinary',
     'analytics',
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -148,6 +149,7 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 
 # Password validation
@@ -185,6 +187,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 # Static files (frontend assets)
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # for collectstatic in production
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
@@ -219,5 +224,80 @@ KHALTI_PUBLIC_KEY = os.getenv('KHALTI_PUBLIC_KEY')
 KHALTI_SECRET_KEY = os.getenv('KHALTI_SECRET_KEY')
 KHALTI_INITIATE_URL = "https://a.khalti.com/api/v2/epayment/initiate/"
 KHALTI_LOOKUP_URL = "https://a.khalti.com/api/v2/epayment/lookup/"
+
+# Jazzmin Admin Theme Custom Settings
+JAZZMIN_SETTINGS = {
+    "site_title": "SewaSaathi Admin",
+    "site_header": "SewaSaathi",
+    "site_brand": "SewaSaathi",
+    "site_logo": "images/sewasathi_favicon.png",
+    "login_logo": "images/sewasathi_favicon.png",
+    "site_icon": "images/sewasathi_favicon.png",
+    "site_logo_classes": "img-circle",
+    "welcome_sign": "Welcome to SewaSaathi Admin Panel",
+    "copyright": "SewaSaathi",
+    "search_model": ["accounts.User", "services.Service"],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "order_with_respect_to": ["accounts", "services", "booking", "insurance", "notifications"],
+    "icons": {
+        "accounts": "fas fa-users-cog",
+        "accounts.user": "fas fa-user",
+        "accounts.customer": "fas fa-user-friends",
+        "accounts.serviceprovider": "fas fa-user-tie",
+        "accounts.contactmessage": "fas fa-envelope",
+        "services": "fas fa-hands-helping",
+        "services.service": "fas fa-concierge-bell",
+        "services.servicecategory": "fas fa-tags",
+        "services.providerservice": "fas fa-tools",
+        "booking": "fas fa-calendar-check",
+        "booking.booking": "fas fa-book",
+        "insurance": "fas fa-shield-alt",
+        "insurance.insurancepool": "fas fa-piggy-bank",
+        "insurance.insuranceclaim": "fas fa-clipboard-list",
+        "notifications": "fas fa-bell",
+        "auth": "fas fa-lock",
+        "auth.group": "fas fa-layer-group",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+    "custom_css": "css/custom_admin.css",
+    "show_ui_builder": False,
+    "topmenu_links": [
+        {"name": "Analytics", "url": "/admin/analytics/dashboard/", "permissions": ["auth.view_user"], "new_window": False},
+    ],
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-dark",
+    "accent": "accent-primary",
+    "navbar": "navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": False,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": False,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": False,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "default",
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
+}
 
 

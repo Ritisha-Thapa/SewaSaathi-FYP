@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Calendar as CalendarIcon, Filter, TrendingUp } from 'lucide-react';
+import { Download, Filter, TrendingUp } from 'lucide-react';
 import { getCached } from '../../../utils/api';
 import Skeleton from '../../../shared/components/layout/Skeleton';
+import { useTranslation } from 'react-i18next';
+import Button from '../../../shared/components/ui/Button';
 
 const Earnings = () => {
+  const { t } = useTranslation();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('monthly'); // 'daily' or 'monthly'
@@ -13,6 +16,11 @@ const Earnings = () => {
   useEffect(() => {
     fetchEarnings();
   }, []);
+
+  const getServiceLabel = (serviceNameKey) =>
+    t(`service_names.${serviceNameKey}`, {
+      defaultValue: serviceNameKey || '-',
+    });
 
   const fetchEarnings = async () => {
     setLoading(true);
@@ -82,17 +90,24 @@ const Earnings = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-[#1B3C53]">Earnings & Payments</h2>
-        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 text-sm">
-          <Download size={16} /> Export Report
-        </button>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          fullWidth={false}
+        >
+          <Download size={16} className="shrink-0" /> Export Report
+        </Button>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-[#1B3C53] text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
           <div className="relative z-10">
-            <p className="text-blue-100 text-sm font-medium opacity-80">Total Lifetime Earnings</p>
-            <h3 className="text-4xl font-black mt-2">Rs. {totalLifetimeEarnings.toLocaleString()}</h3>
+            <p className="text-white/80 text-sm font-medium">Total Lifetime Earnings</p>
+            <p className="text-4xl font-black mt-2 text-white">
+              Rs. {totalLifetimeEarnings.toLocaleString()}
+            </p>
           </div>
           <TrendingUp className="absolute right-[-10px] bottom-[-10px] w-32 h-32 text-white/5" />
         </div>
@@ -198,8 +213,12 @@ const Earnings = () => {
                 <tr key={txn.id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-4 text-gray-500 font-medium">{new Date(txn.paid_at || txn.updated_at).toLocaleDateString()}</td>
                   <td className="px-6 py-4">
-                    <p className="text-[#1B3C53] font-bold">{txn.service_name}</p>
-                    <p className="text-[10px] text-gray-400">#{txn.id}</p>
+                    <p className="text-[#1B3C53] font-bold">
+                      {getServiceLabel(txn.service_name_key)}
+                    </p>
+                    <p className="text-[10px] text-gray-400">
+                      Booking #{txn.id}
+                    </p>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${txn.payment_method === 'online' ? 'bg-indigo-50 text-indigo-600' : 'bg-green-50 text-green-600'

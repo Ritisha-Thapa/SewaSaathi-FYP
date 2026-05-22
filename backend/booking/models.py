@@ -14,6 +14,7 @@ class Booking(BaseModel):
         ("completed", "Completed"),
         ("paid", "Paid"),
         ("cancelled", "Cancelled"),
+        ("not_accepted", "Not Accepted"),
         ("rejected", "Rejected"),
         ("refunded", "Refunded"),
     )
@@ -98,6 +99,42 @@ class Booking(BaseModel):
             pool, created = InsurancePool.objects.get_or_create(id=1)
             pool.total_funds += self.insurance_fee
             pool.save()
+
+
+class ProviderBookingResponse(BaseModel):
+    """Tracks a provider declining a pending job without changing booking status."""
+
+    RESPONSE_DECLINED = "declined"
+    RESPONSE_CHOICES = ((RESPONSE_DECLINED, "Declined"),)
+
+    booking = models.ForeignKey(
+        Booking,
+        on_delete=models.CASCADE,
+        related_name="provider_responses",
+    )
+    provider = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="booking_responses",
+        limit_choices_to={"role": "provider"},
+    )
+    response = models.CharField(
+        max_length=20,
+        choices=RESPONSE_CHOICES,
+        default=RESPONSE_DECLINED,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["booking", "provider"],
+                name="unique_provider_booking_response",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.provider_id} declined booking #{self.booking_id}"
+
 
 class Review(BaseModel):
     booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name="review")

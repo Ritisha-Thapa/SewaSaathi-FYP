@@ -74,7 +74,7 @@ class ProviderRegisterSerializer(ModelSerializer):
     # Global validation for required provider fields
     def validate(self, data):
         if not data.get('skills'):
-            raise ValidationError({"skills": "Skill is required."})
+            raise ValidationError({"skills": "Service category is required."})
         
         
         return data
@@ -302,8 +302,18 @@ class ResetPasswordSerializer(Serializer):
 class UserProfileSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'city', 'profile_image']
-        read_only_fields = ['email']
+        fields = [
+            'first_name',
+            'last_name',
+            'email',
+            'phone',
+            'address',
+            'city',
+            'profile_image',
+            'role',
+            'skills',
+        ]
+        read_only_fields = ['email', 'role', 'skills']
 
 
 class ChangePasswordSerializer(Serializer):

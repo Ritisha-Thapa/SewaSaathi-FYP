@@ -23,7 +23,7 @@
     "contact": "सम्पर्क",
     "dashboard": "ड्यासबोर्ड",
     "notifications": "सूचनाहरू",
-    "back_to_category": "← श्रेणीमा फर्कनुहोस्"
+    "back_to_category": "श्रेणीमा फर्कनुहोस्"
   },
   "labels": {
     "name": "नाम",
@@ -37,8 +37,13 @@
   },
   "status": {
     "pending": "पेन्डिङ",
+    "accepted": "स्वीकृत",
     "completed": "सम्पन्न",
-    "in_progress": "प्रगतिमा"
+    "in_progress": "प्रगतिमा",
+    "cancelled": "रद्द गरिएको",
+    "not_accepted": "स्वीकृत भएन",
+    "paid": "भुक्तानी गरिएको",
+    "refunded": "फिर्ता गरिएको"
   },
   "landing": {
     "book_service": "सेवा बुक गर्नुहोस्",
@@ -129,6 +134,11 @@
     "refund_80": "८०% फिर्ता",
     "request_rework": "पुनः कामका लागि अनुरोध गर्नुहोस्",
     "resolution": "समाधान",
+    "refund_processing_toast": "तपाईंको फिर्ता २ दिन भित्र पठाइनेछ।",
+    "rework_processing_toast": "पुनः कामको अनुरोध पेश भयो! प्रदायकलाई सूचित गरिनेछ।",
+    "resolution_failed_toast": "समाधान सेट गर्न सकिएन। कृपया फेरि प्रयास गर्नुहोस्।",
+    "not_accepted_title": "स्वीकृत भएन",
+    "not_accepted_message": "तपाईंको निर्धारित समय अघि कुनै प्रदायक उपलब्ध भएनन्। तपाईं यो सेवा फेरि बुक गर्न सक्नुहुन्छ।",
     "default_ordering": "पूर्वनिर्धारित क्रम",
     "price_low_high": "मूल्य: कम देखि धेरै",
     "price_high_low": "मूल्य: धेरै देखि कम",
@@ -144,7 +154,25 @@
     "earnings": "आम्दानी",
     "reviews": "समीक्षाहरू",
     "profile": "प्रोफाइल",
-    "notifications": "सूचनाहरू"
+    "notifications": "सूचनाहरू",
+    "accept": "स्वीकार गर्नुहोस्",
+    "job_request_previously_declined": "तपाईंले पहिले यो अनुरोध अस्वीकार गर्नुभएको थियो।",
+    "job_request_still_open": "यो काम अझै खुला छ।",
+    "job_request_can_still_accept": "तपाईं अझै यो बुकिङ स्वीकार गर्न सक्नुहुन्छ।",
+    "decline_request_confirm": "अहिलेलाई अस्वीकार गर्ने? अर्को प्रदायकले स्वीकार नगरेसम्म वा निर्धारित समय नसकिएसम्म यो अनुरोध तपाईंको सूचीमा रहन्छ। पछि पनि स्वीकार गर्न सक्नुहुन्छ।",
+    "booking_accepted_toast": "बुकिङ स्वीकार भयो।",
+    "booking_declined_toast": "बुकिङ अस्वीकार गरियो।",
+    "job_completed_toast": "काम सम्पन्न भयो।",
+    "action_failed": "स्थिति अद्यावधिक गर्न सकिएन",
+    "update_status_failed": "स्थिति अद्यावधिक गर्न सकिएन।",
+    "payment_confirmed_toast": "भुक्तानी पुष्टि भयो।",
+    "complete_job_failed": "काम पूरा गर्न सकिएन"
+  },
+  "profile": {
+    "load_failed": "प्रोफाइल डाटा लोड गर्न सकिएन।",
+    "save_success": "प्रोफाइल अद्यावधिक भयो। तपाईंका परिवर्तनहरू सुरक्षित गरियो।",
+    "save_failed": "परिवर्तनहरू सुरक्षित गर्न सकिएन। कृपया इनपुट जाँच गर्नुहोस्।",
+    "save_error": "केही गडबड भयो। कृपया पुन: प्रयास गर्नुहोस्।"
   },
   "booking_form": {
     "address_label": "ठेगाना *",
@@ -153,6 +181,8 @@
     "phone_placeholder": "सम्पर्क नम्बर",
     "select_date": "मिति छान्नुहोस्",
     "select_time": "समय छान्नुहोस्",
+    "time_buffer_hint": "तपाईं अहिलेबाट कम्तीमा १ घण्टा पछिको समय मात्र बुक गर्न सक्नुहुन्छ।",
+    "invalid_time_slot": "छानिएको समय अब उपलब्ध छैन। कृपया अर्को समय छान्नुहोस्।",
     "problem_desc": "समस्याको विवरण (ऐच्छिक)",
     "problem_placeholder": "समस्याको वर्णन गर्नुहोस्...",
     "upload_image": "फोटो अपलोड गर्नुहोस् (ऐच्छिक)",
@@ -231,6 +261,7 @@
     "new_notification": "नयाँ सूचना",
     "mark_as_read": "पढिएको चिन्ह लगाउनुहोस्",
     "mark_all_as_read": "सबै पढिएको चिन्ह लगाउनुहोस्",
+    "load_more": "थप हेर्नुहोस्",
     "no_notifications": "अहिलेसम्म कुनै सूचना छैन!",
     "no_notifications_desc": "तपाईंको बुकिङ सम्बन्धी महत्वपूर्ण कुरा हुँदा हामी सूचना दिनेछौं।",
     "new_booking_request_title": "नयाँ बुकिङ अनुरोध",

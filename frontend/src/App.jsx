@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Toaster } from 'react-hot-toast';
+import ToastProvider from './shared/components/layout/ToastProvider';
 
 // --- Authentication Features ---
 import Login from "./features/authentication/pages/Login";
@@ -54,7 +54,7 @@ function App() {
   return (
     <AuthProvider>
       <NotificationProvider>
-        <Toaster position="top-right" />
+        <ToastProvider />
         <Router>
           <Routes>
             <Route path="/" element={<Landing />} />

@@ -4,7 +4,8 @@ import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import contactBg from '../../assets/images/services/plumbing.png';
 import { api } from '../../utils/api';
-import toast from 'react-hot-toast';
+import { toast } from '../components/layout/ToastProvider';
+import Button from '../components/ui/Button';
 import { useTranslation } from 'react-i18next';
 
 const Contact = () => {
@@ -193,12 +194,15 @@ const Contact = () => {
                   ></textarea>
                 </div>
 
-                <button
-                  disabled={loading}
-                  className={`w-full py-3 bg-[#1B3C53] text-white rounded-lg font-semibold transition ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#162f41]'}`}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                  isLoading={loading}
+                  loadingText={t('contact.sending', 'Sending...')}
                 >
-                  {loading ? t('contact.sending', 'Sending...') : t('contact.send_message', 'Send Message')}
-                </button>
+                  {t('contact.send_message', 'Send Message')}
+                </Button>
               </form>
             </div>
 

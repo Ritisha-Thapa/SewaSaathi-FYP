@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import Button from "../../../../shared/components/ui/Button";
 
 const OTPVerification = () => {
   const navigate = useNavigate();
@@ -175,18 +176,24 @@ const OTPVerification = () => {
         {error && <div className="text-sm text-red-600 mb-3">{error}</div>}
         {info && <div className="text-sm text-green-600 mb-3">{info}</div>}
         <div className="flex items-center justify-between">
-          <button
+          <Button
+            type="button"
             onClick={resendOtp}
-            className="text-sm text-[#1B3C53] hover:text-[#1a3248]"
+            variant="ghost"
+            size="sm"
+            fullWidth={false}
           >
             Resend OTP
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
             onClick={verifyOtp}
-            className="px-4 py-2 rounded-full text-white bg-[#1B3C53] hover:bg-[#1a3248]"
+            variant="primary"
+            size="md"
+            fullWidth={false}
           >
             Verify OTP
-          </button>
+          </Button>
         </div>
       </div>
     </div>

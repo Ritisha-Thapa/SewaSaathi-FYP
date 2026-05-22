@@ -1,6 +1,5 @@
 import React from 'react';
 import { Calendar, MapPin, CheckCircle, User, Phone, Banknote, Image as ImageIcon, AlertCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../shared/components/ui/Button';
 
@@ -22,6 +21,8 @@ const BookingCard = ({
             case 'accepted': return 'bg-blue-100 text-blue-700';
             case 'in_progress': return 'bg-orange-100 text-orange-700';
             case 'refunded': return 'bg-purple-100 text-purple-700';
+            case 'not_accepted': return 'bg-red-100 text-red-700';
+            case 'cancelled': return 'bg-gray-100 text-gray-600';
             default: return 'bg-gray-100 text-gray-700';
         }
     };
@@ -31,8 +32,8 @@ const BookingCard = ({
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-bold text-[#1B3C53]">{t(`service_names.${booking.service_name_key}`)}</h3>
+                <div className="flex flex-wrap items-center justify-start gap-x-2 gap-y-1 text-left mb-2">
+                    <h3 className="mb-0 text-xl font-bold text-[#1B3C53]">{t(`service_names.${booking.service_name_key}`)}</h3>
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${getStatusStyles(booking.status)}`}>
                         {booking.status === 'refunded' ? t('bookings.refunded') :
                             booking.is_rework && booking.status === 'completed' ? t('bookings.rework_completed') :
@@ -93,10 +94,11 @@ const BookingCard = ({
                         <div className="col-span-1 sm:col-span-2 mt-2">
                             <Button
                                 onClick={() => onViewImage(booking.issue_images)}
-                                variant="outline"
-                                className="!py-2 !px-4 bg-gray-100 border-gray-200 text-[#1B3C53] hover:bg-gray-200"
+                                variant="secondary"
+                                size="sm"
+                                fullWidth={false}
                             >
-                                <ImageIcon size={16} className="mr-2" />
+                                <ImageIcon size={16} className="shrink-0" />
                                 {t('bookings.view_attached_image')}
                             </Button>
                         </div>
@@ -105,16 +107,20 @@ const BookingCard = ({
                     {claim && claim.status === 'approved' && claim.resolution === 'none' && (
                         <div className="col-span-1 sm:col-span-2 mt-4 p-4 bg-green-50 rounded-xl border border-green-200">
                             <p className="font-bold text-green-800 mb-2">{t('bookings.claim_approved')}</p>
-                            <div className="flex gap-4">
+                            <div className="flex flex-wrap gap-3">
                                 <Button
                                     onClick={() => handleResolution(booking.id, 'refund')}
-                                    className="!py-2 !px-4 bg-green-600 hover:bg-green-700 !text-xs"
+                                    variant="pay"
+                                    size="sm"
+                                    fullWidth={false}
                                 >
                                     {t('bookings.refund_80')}
                                 </Button>
                                 <Button
                                     onClick={() => handleResolution(booking.id, 'rework')}
-                                    className="!py-2 !px-4 !text-xs"
+                                    variant="primary"
+                                    size="sm"
+                                    fullWidth={false}
                                 >
                                     {t('bookings.request_rework')}
                                 </Button>
@@ -134,9 +140,10 @@ const BookingCard = ({
                 {booking.status === 'completed' && !booking.is_paid && (
                     <Button
                         onClick={() => onPayNow(booking)}
-                        className="shadow-md !py-2"
+                        variant="pay"
+                        size="sm"
                     >
-                        <Banknote size={20} className="mr-2" />
+                        <Banknote size={18} className="shrink-0" />
                         {t('bookings.pay_now')}
                     </Button>
                 )}
@@ -144,16 +151,17 @@ const BookingCard = ({
                 {isEligibleForClaim(booking) && !claim && (
                     <Button
                         to={`/claim-insurance/${booking.id}`}
-                        className="bg-orange-500 hover:bg-orange-600 shadow-md !py-2"
+                        variant="insurance"
+                        size="sm"
                     >
-                        <AlertCircle size={18} className="mr-2" />
+                        <AlertCircle size={18} className="shrink-0" />
                         {t('bookings.claim_insurance')}
                     </Button>
                 )}
                 <Button
                     to={`/services/${booking.service_category_slug || booking.service_category_name}/${booking.service}`}
-                    variant="outline"
-                    className="!py-2 border-[#1B3C53] text-[#1B3C53] hover:bg-gray-50"
+                    variant="secondary"
+                    size="sm"
                 >
                     {t('bookings.view_service')}
                 </Button>

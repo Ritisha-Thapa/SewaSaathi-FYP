@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import Button from "../../../../shared/components/ui/Button";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -115,14 +116,17 @@ const ForgotPassword = () => {
         )}
 
         <div className="flex items-center justify-between">
-          <button
+          <Button
             type="button"
             onClick={handleForgotSubmit}
-            disabled={loading}
-            className="px-4 py-2 rounded-full text-white bg-[#1B3C53]"
+            variant="primary"
+            size="md"
+            fullWidth={false}
+            isLoading={loading}
+            loadingText="Sending..."
           >
-            {loading ? "Sending..." : "Send Reset Link"}
-          </button>
+            Send Reset Link
+          </Button>
 
           <Link
             to="/login"

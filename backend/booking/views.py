@@ -1,13 +1,19 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db import transaction
 from django.db.models import Q
 from django.db.models import Prefetch
 from decimal import Decimal
-from .models import Booking, Review
+from .models import Booking, Review, ProviderBookingResponse
+from .expiration import expire_pending_bookings
 from insurance.models import InsuranceClaim
 from .serializers import BookingSerializer, BookingStatusUpdateSerializer, ReviewSerializer
 from notifications.models import Notification
+from services.provider_category import (
+    skill_to_category_name_key,
+    category_name_key_to_skill,
+)
 import requests
 from django.conf import settings
 from django.utils import timezone
@@ -16,6 +22,14 @@ from django.utils import timezone
 class BookingViewSet(viewsets.ModelViewSet):
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        expire_pending_bookings()
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        expire_pending_bookings()
+        return super().retrieve(request, *args, **kwargs)
 
     def get_queryset(self):
         user = self.request.user
@@ -26,37 +40,35 @@ class BookingViewSet(viewsets.ModelViewSet):
             'service__category'
         ).prefetch_related(
             Prefetch('claims', queryset=InsuranceClaim.objects.only('id', 'status', 'resolution', 'booking_id').order_by('-timestamp')),
-            'review'
+            'review',
         )
         
         if user.role == 'customer':
             return base_qs.filter(customer=user).order_by('-created_at')
         elif user.role == 'provider':
-            # Provider sees pending requests based on skills + assigned bookings
-            # Map provider skills to service categories
-            skill_to_category = {
-                'cleaner': 'Cleaning',
-                'painter': 'Painting', 
-                'electrician': 'Electrical Repairing',
-                'gardener': 'Gardening',
-                'carpenter': 'Carpentry',
-                'plumber': 'Plumbing'
-            }
-            
-            # Get provider's skill category
-            provider_category = skill_to_category.get(user.skills)
-            
-            if provider_category:
-                # Show bookings from provider's skill category (service-based) + directly assigned bookings
+            category_name_key = skill_to_category_name_key(user.skills)
+
+            if category_name_key:
                 queryset = base_qs.filter(
-                    Q(provider=user) |  # Directly assigned bookings
-                    Q(provider__isnull=True, service__category__name_key=provider_category)  # Service-based bookings in their skill category
+                    Q(provider=user)
+                    | Q(
+                        provider__isnull=True,
+                        service__category__name_key=category_name_key,
+                    )
                 ).distinct().order_by('-created_at')
             else:
-                # If no skill, only show directly assigned bookings
                 queryset = base_qs.filter(provider=user).order_by('-created_at')
-            
-            return queryset
+
+            return queryset.prefetch_related(
+                Prefetch(
+                    "provider_responses",
+                    queryset=ProviderBookingResponse.objects.filter(
+                        provider=user,
+                        response=ProviderBookingResponse.RESPONSE_DECLINED,
+                    ),
+                    to_attr="my_decline_responses",
+                )
+            )
         elif user.role == 'admin':
             return base_qs.all().order_by('-created_at')
         return base_qs.none()
@@ -106,20 +118,16 @@ class BookingViewSet(viewsets.ModelViewSet):
                 booking=booking
             )
         else:
-            # Broadcast to all providers with matching skills
             category_name = booking.service.category.name_key
-            skill_map = {
-                'Cleaning': 'cleaner',
-                'Painting': 'painter',
-                'Electrical Repairing': 'electrician',
-                'Gardening': 'gardener',
-                'Carpentry': 'carpenter',
-                'Plumbing': 'plumber'
-            }
-            target_skill = skill_map.get(category_name)
+            target_skill = category_name_key_to_skill(category_name)
             if target_skill:
                 from accounts.models import User
-                eligible_providers = User.objects.filter(role='provider', skills=target_skill)
+                eligible_providers = User.objects.filter(
+                    role='provider',
+                    skills=target_skill,
+                    provider_status='approved',
+                    is_active=True,
+                )
                 for provider in eligible_providers:
                     Notification.objects.create(
                         recipient=provider,
@@ -131,36 +139,137 @@ class BookingViewSet(viewsets.ModelViewSet):
                         booking=booking
                     )
 
+    def _provider_can_act_on_booking(self, booking, user):
+        required_skill = category_name_key_to_skill(
+            booking.service.category.name_key
+        )
+        is_assigned = booking.provider == user
+        is_eligible_for_pending = (
+            booking.provider is None
+            and booking.status == "pending"
+            and user.skills == required_skill
+        )
+        return is_assigned or is_eligible_for_pending
+
+    def _open_job_unavailable_response(self, booking):
+        if booking.provider_id:
+            return Response(
+                {
+                    "error": "This booking has already been accepted by another provider."
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+        return Response(
+            {"error": "This booking is no longer available."},
+            status=status.HTTP_409_CONFLICT,
+        )
+
+    def _get_locked_booking(self, pk):
+        return (
+            Booking.objects.select_related("service__category")
+            .select_for_update()
+            .get(pk=pk)
+        )
+
+    def _record_provider_decline(self, booking, provider):
+        if booking.status != "pending":
+            return Response(
+                {"error": "Only pending bookings can be declined."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if booking.provider_id and booking.provider_id != provider.id:
+            return self._open_job_unavailable_response(booking)
+        ProviderBookingResponse.objects.get_or_create(
+            booking=booking,
+            provider=provider,
+            defaults={"response": ProviderBookingResponse.RESPONSE_DECLINED},
+        )
+        return Response(BookingSerializer(booking, context={"request": self.request}).data)
+
+    @action(detail=True, methods=["post"], url_path="decline")
+    def decline(self, request, pk=None):
+        user = request.user
+        if user.role != "provider":
+            return Response(
+                {"error": "Only providers can decline booking requests."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        try:
+            with transaction.atomic():
+                booking = self._get_locked_booking(pk)
+                if booking.status != "pending" or booking.provider_id:
+                    return self._open_job_unavailable_response(booking)
+                if not self._provider_can_act_on_booking(booking, user):
+                    return Response(
+                        {"error": "You are not authorized to decline this booking."},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+                return self._record_provider_decline(booking, user)
+        except Booking.DoesNotExist:
+            return Response({"error": "Booking not found"}, status=status.HTTP_404_NOT_FOUND)
+
     @action(detail=True, methods=['post'], url_path='update-status')
     def update_status(self, request, pk=None):
+        new_status = request.data.get('status')
+        user = request.user
+
+        # Atomic accept/decline for open job requests — prevents duplicate assignment.
+        if user.role == "provider" and new_status in ("accepted", "rejected"):
+            try:
+                with transaction.atomic():
+                    booking = self._get_locked_booking(pk)
+                    if new_status == "rejected":
+                        if booking.status != "pending" or booking.provider_id:
+                            return self._open_job_unavailable_response(booking)
+                        if not self._provider_can_act_on_booking(booking, user):
+                            return Response(
+                                {"error": "You are not authorized to update this booking."},
+                                status=status.HTTP_403_FORBIDDEN,
+                            )
+                        return self._record_provider_decline(booking, user)
+
+                    # Accept
+                    if booking.provider_id and booking.provider_id != user.id:
+                        return self._open_job_unavailable_response(booking)
+                    if booking.status != "pending":
+                        return self._open_job_unavailable_response(booking)
+                    if not self._provider_can_act_on_booking(booking, user):
+                        return Response(
+                            {"error": "You are not authorized to update this booking."},
+                            status=status.HTTP_403_FORBIDDEN,
+                        )
+                    booking.provider = user
+                    booking.status = "accepted"
+                    booking.save(update_fields=["provider", "status", "updated_at"])
+                    ProviderBookingResponse.objects.filter(
+                        booking=booking,
+                        provider=user,
+                    ).delete()
+            except Booking.DoesNotExist:
+                return Response({"error": "Booking not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            Notification.objects.create(
+                recipient=booking.customer,
+                notification_type="booking_accepted",
+                extra_data={
+                    "provider_name": booking.provider.first_name,
+                    "service_name_key": booking.service.name_key,
+                },
+                booking=booking,
+            )
+            return Response(
+                BookingSerializer(booking, context={"request": request}).data
+            )
+
         # We manually fetch the booking to avoid 404 if it's not in the 'default' filtered queryset
         try:
             booking = Booking.objects.get(pk=pk)
         except Booking.DoesNotExist:
             return Response({"error": "Booking not found"}, status=status.HTTP_404_NOT_FOUND)
-            
-        new_status = request.data.get('status')
-        user = request.user
 
         # Manual Authorization Check
         if user.role == 'provider':
-            # Check if this provider is allowed to act on this booking
-            skill_map = {
-                'Cleaning': 'cleaner',
-                'Painting': 'painter',
-                'Electrical Repairing': 'electrician',
-                'Gardening': 'gardener',
-                'Carpentry': 'carpenter',
-                'Plumbing': 'plumber'
-            }
-            provider_category = skill_map.get(booking.service.category.name_key)
-            
-            is_assigned = booking.provider == user
-            is_eligible_for_pending = (booking.provider is None and 
-                                      booking.status == 'pending' and 
-                                      user.skills == provider_category)
-            
-            if not (is_assigned or is_eligible_for_pending or user.role == 'admin'):
+            if not self._provider_can_act_on_booking(booking, user):
                 return Response({"error": "You are not authorized to update this booking."}, 
                                 status=status.HTTP_403_FORBIDDEN)
         
@@ -220,20 +329,16 @@ class BookingViewSet(viewsets.ModelViewSet):
             if not booking.provider:
                 booking.provider = user
                 booking.save()
+            if user.role == "provider":
+                ProviderBookingResponse.objects.filter(
+                    booking=booking,
+                    provider=user,
+                ).delete()
             Notification.objects.create(
                 recipient=booking.customer,
                 notification_type="booking_accepted",
                 extra_data={
                     "provider_name": booking.provider.first_name,
-                    "service_name_key": booking.service.name_key
-                },
-                booking=booking
-            )
-        elif new_status == 'rejected':
-            Notification.objects.create(
-                recipient=booking.customer,
-                notification_type="booking_rejected",
-                extra_data={
                     "service_name_key": booking.service.name_key
                 },
                 booking=booking
@@ -283,13 +388,12 @@ class BookingViewSet(viewsets.ModelViewSet):
         # Provider can manage the flow
         if user.role == 'provider':
             valid_transitions = {
-                'pending': ['accepted', 'rejected'],
-                'assigned': ['accepted', 'rejected', 'in_progress', 'completed', 'cancelled'],
+                'pending': ['accepted'],
+                'assigned': ['accepted', 'in_progress', 'completed', 'cancelled'],
                 'accepted': ['in_progress', 'completed', 'cancelled'],
                 'in_progress': ['completed', 'cancelled'],
                 'completed': ['paid'],
                 'cancelled': [],
-                'rejected': [],
                 'paid': []
             }
             return new_status in valid_transitions.get(current_status, [])

@@ -76,9 +76,10 @@ const BookingStatusSummary = ({
                         bookingDetails.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
                             bookingDetails.status === 'in_progress' ? 'bg-orange-100 text-orange-700' :
                                 bookingDetails.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                    'bg-gray-100 text-gray-700'
+                                    bookingDetails.status === 'not_accepted' ? 'bg-red-100 text-red-700' :
+                                        'bg-gray-100 text-gray-700'
                         }`}>
-                        {bookingDetails.status.replace('_', ' ')}
+                        {t(`status.${bookingDetails.status}`, { defaultValue: bookingDetails.status.replace('_', ' ') })}
                     </span>
                 </div>
                 <div className="flex justify-between items-center bg-white p-2 rounded border">
@@ -94,9 +95,10 @@ const BookingStatusSummary = ({
                         <Button
                             onClick={onViewImage}
                             variant="secondary"
-                            className="!py-2 border-gray-200"
+                            size="sm"
+                            fullWidth={false}
                         >
-                            <ImageIcon size={16} className="mr-2" />
+                            <ImageIcon size={16} className="shrink-0" />
                             View Attached Image
                         </Button>
                     </div>
@@ -118,9 +120,10 @@ const BookingStatusSummary = ({
             {bookingDetails.status === 'completed' && !bookingDetails.is_paid && (
                 <Button
                     onClick={onShowPayment}
-                    className="!py-3 shadow-lg"
+                    variant="pay"
+                    size="md"
                 >
-                    <Banknote size={20} className="mr-2" />
+                    <Banknote size={20} className="shrink-0" />
                     Pay Now
                 </Button>
             )}
@@ -129,14 +132,16 @@ const BookingStatusSummary = ({
                 <div className="space-y-3">
                     <Button
                         onClick={() => handleResolution('refund')}
-                        className="!py-3 bg-green-600 hover:bg-green-700 shadow-md"
+                        variant="pay"
+                        size="md"
                     >
-                        <CheckCircle size={18} className="mr-2" />
+                        <CheckCircle size={18} className="shrink-0" />
                         80% Refund
                     </Button>
                     <Button
                         onClick={() => handleResolution('rework')}
-                        className="!py-3 shadow-md"
+                        variant="primary"
+                        size="md"
                     >
                         Request Rework
                     </Button>

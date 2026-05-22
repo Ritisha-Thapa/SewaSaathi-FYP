@@ -15,7 +15,6 @@ const ProfileHeader = ({ title, subtitle, onPasswordClick, showPasswordButton = 
           onClick={onPasswordClick}
           variant="secondary"
           fullWidth={false}
-          rounded="xl"
           className="bg-white border border-gray-200 !text-primary hover:bg-gray-50 transition font-bold shadow-sm"
         >
           <Lock size={18} className="text-primary" />

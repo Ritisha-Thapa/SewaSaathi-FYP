@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Wrench, Zap, Sparkles, Leaf } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../shared/components/ui/Button';
@@ -23,16 +22,12 @@ const LandingHero = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-              <Link to="/signup/customer">
-                <Button className="px-10 py-4 shadow-xl">
-                  {t('landing.book_service')}
-                </Button>
-              </Link>
-              <Link to="/signup/provider">
-                <Button variant="outline" className="px-10 py-4">
-                  {t('landing.become_provider')}
-                </Button>
-              </Link>
+              <Button to="/signup/customer" variant="primary" size="md" fullWidth={false}>
+                {t('landing.book_service')}
+              </Button>
+              <Button to="/signup/provider" variant="outline" size="md" fullWidth={false}>
+                {t('landing.become_provider')}
+              </Button>
             </div>
           </div>
 
@@ -42,7 +37,7 @@ const LandingHero = () => {
               {/* Plumber */}
               <div className="bg-background rounded-2xl p-6 shadow-lg shadow-primary/5 text-center transition-all hover:scale-105 border border-white/50">
                 <div className="w-20 h-20 bg-plumber-bg rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
-                  <Wrench className="w-10 h-10 text-plumber" />
+                  <Wrench className="w-10 h-10 text-[#0EA5E9]" />
                 </div>
                 <h3 className="font-bold text-gray-800">{t('landing.plumber')}</h3>
               </div>
@@ -50,7 +45,7 @@ const LandingHero = () => {
               {/* Electrician */}
               <div className="bg-background rounded-2xl p-6 shadow-lg shadow-primary/5 text-center transition-all hover:scale-105 border border-white/50">
                 <div className="w-20 h-20 bg-electrician-bg rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
-                  <Zap className="w-10 h-10 text-electrician" />
+                  <Zap className="w-10 h-10 text-[#F59E0B]" />
                 </div>
                 <h3 className="font-bold text-gray-800">{t('landing.electrician')}</h3>
               </div>
@@ -58,7 +53,7 @@ const LandingHero = () => {
               {/* Cleaner */}
               <div className="bg-background rounded-2xl p-6 shadow-lg shadow-primary/5 text-center transition-all hover:scale-105 border border-white/50">
                 <div className="w-20 h-20 bg-cleaner-bg rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
-                  <Sparkles className="w-10 h-10 text-cleaner" />
+                  <Sparkles className="w-10 h-10 text-[#8B5CF6]" />
                 </div>
                 <h3 className="font-bold text-gray-800">{t('landing.cleaner')}</h3>
               </div>
@@ -66,7 +61,7 @@ const LandingHero = () => {
               {/* Gardener */}
               <div className="bg-background rounded-2xl p-6 shadow-lg shadow-primary/5 text-center transition-all hover:scale-105 border border-white/50">
                 <div className="w-20 h-20 bg-gardener-bg rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
-                  <Leaf className="w-10 h-10 text-gardener" />
+                  <Leaf className="w-10 h-10 text-[#22C55E]" />
                 </div>
                 <h3 className="font-bold text-gray-800">{t('landing.gardener')}</h3>
               </div>

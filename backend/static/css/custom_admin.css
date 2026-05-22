@@ -1,0 +1,258 @@
+/* Custom theme styles for SewaSaathi Django Admin (Jazzmin 3.x / AdminLTE 4) */
+:root {
+    --primary-color: #1B3C53;
+    --primary-hover: #1A3248;
+    --primary-light: rgba(27, 60, 83, 0.08);
+    --secondary-color: #64748b;
+    --secondary-hover: #4b5563;
+    --background-cream: #F9F5F0;
+    --border-color: #dee2e6;
+}
+
+/* ─── Top Navbar (app-header) ─── */
+#jazzy-navbar.app-header {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+#jazzy-navbar .nav-link,
+#jazzy-navbar .navbar-text {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+#jazzy-navbar .nav-link:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+#jazzy-navbar .btn-navbar {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+}
+
+#jazzy-navbar .form-control-navbar {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+}
+
+#jazzy-navbar .form-control-navbar::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* ─── Sidebar (app-sidebar) ─── */
+#jazzy-sidebar.app-sidebar {
+    background-color: var(--primary-color) !important;
+}
+
+.sidebar-brand {
+    background-color: var(--primary-color) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Brand link — no blue highlight on click/focus */
+#jazzy-logo.brand-link,
+#jazzy-logo.brand-link:hover,
+#jazzy-logo.brand-link:visited {
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+}
+
+#jazzy-logo.brand-link:focus,
+#jazzy-logo.brand-link:focus-visible,
+#jazzy-logo.brand-link:active {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+}
+
+.brand-text {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+/* Sidebar nav links */
+#jazzy-sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+#jazzy-sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+#jazzy-sidebar .nav-link.active,
+#jazzy-sidebar .nav-item.menu-open > .nav-link {
+    background-color: var(--secondary-color) !important;
+    color: #ffffff !important;
+}
+
+#jazzy-sidebar .nav-treeview {
+    background-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+#jazzy-sidebar .nav-treeview .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+}
+
+/* User panel in sidebar */
+#jazzy-sidebar .user-panel a {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+#jazzy-sidebar .user-panel a:hover {
+    color: #ffffff !important;
+}
+
+/* ─── Content Area ─── */
+.app-content {
+    background-color: #f4f6f9 !important;
+}
+
+.content-header h1 {
+    color: var(--primary-color) !important;
+    font-weight: 600;
+}
+
+/* ─── Cards ─── */
+.card-header {
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid var(--primary-hover) !important;
+}
+
+.card-header h3,
+.card-header .card-title {
+    color: #ffffff !important;
+}
+
+/* ─── Breadcrumbs ─── */
+.breadcrumb-item a {
+    color: var(--primary-color) !important;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--primary-hover) !important;
+    text-decoration: underline;
+}
+
+/* ─── Buttons ─── */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #ffffff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.btn-info {
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
+    color: #ffffff !important;
+}
+
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active {
+    background-color: var(--secondary-hover) !important;
+    border-color: var(--secondary-hover) !important;
+}
+
+/* ─── Badges ─── */
+.badge-primary,
+.badge.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.badge-info,
+.badge.bg-info {
+    background-color: var(--secondary-color) !important;
+}
+
+/* ─── Tables ─── */
+.table thead th {
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.table-hover tbody tr:hover {
+    background-color: var(--primary-light) !important;
+}
+
+#result_list thead th a,
+#result_list thead th a:visited {
+    color: #ffffff !important;
+}
+
+#result_list thead th a:hover {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* ─── Form Inputs ─── */
+.form-control:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem rgba(27, 60, 83, 0.25) !important;
+}
+
+/* ─── Links ─── */
+a {
+    color: var(--primary-color);
+}
+
+a:hover {
+    color: var(--primary-hover);
+}
+
+/* ─── Pagination ─── */
+.page-item.active .page-link {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.page-link {
+    color: var(--primary-color) !important;
+}
+
+.page-link:hover {
+    color: var(--primary-hover) !important;
+}
+
+/* ─── Footer ─── */
+.app-footer {
+    background-color: #ffffff !important;
+    border-top: 1px solid var(--border-color) !important;
+    color: var(--secondary-color) !important;
+}
+
+/* ─── Login Page ─── */
+.login-page {
+    background-color: var(--background-cream) !important;
+}
+
+.login-box .card {
+    border-top: 4px solid var(--primary-color) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+.login-box .card .btn-primary {
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 1rem;
+    letter-spacing: 0.03em;
+}
+
+.login-logo img {
+    max-height: 80px;
+    width: auto;
+}

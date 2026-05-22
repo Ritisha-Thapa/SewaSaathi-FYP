@@ -87,7 +87,7 @@ const ServicesCategory = () => {
         <div className="absolute inset-0 bg-primary opacity-70"></div>
 
         <div className="relative container mx-auto px-4 max-w-7xl text-center text-white">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             {t('services.featured_categories', 'Service Categories')}
           </h1>
           <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">

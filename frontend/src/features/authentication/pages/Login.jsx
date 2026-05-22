@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
+import { toast } from "../../../shared/components/layout/ToastProvider";
 import Button from "../../../shared/components/ui/Button";
 
 import { useAuth } from "../components/auths/AuthContext";
@@ -114,7 +114,7 @@ const Login = () => {
 
           <Link to="/" className="flex items-center gap-4 cursor-pointer">
             <img src={Logo} alt="logo" className="h-14 w-auto" />
-            <span className="text-3xl font-semibold text-[#1B3C53] tracking-wide">
+            <span className="text-2xl font-bold text-[#1B3C53] tracking-tight">
               SewaSaathi
             </span>
           </Link>
@@ -124,7 +124,10 @@ const Login = () => {
         </div>
 
         {/* Form */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form
+          className="mt-8 space-y-6"
+          onSubmit={handleSubmit}
+        >
           <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">
             {/* Email or Phone Field */}
             <div>
@@ -156,6 +159,7 @@ const Login = () => {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
+                                  autoComplete="off"
                   value={formData.password}
                   onChange={handleChange}
                   className={`w-full px-3 py-2 border rounded-lg ${errors.password ? "border-red-300" : "border-gray-300"

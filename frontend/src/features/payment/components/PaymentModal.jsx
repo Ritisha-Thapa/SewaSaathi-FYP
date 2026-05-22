@@ -1,9 +1,9 @@
 import React from 'react';
 import { X, Banknote, ShieldCheck, ArrowRight, MessageSquare } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from '../../../shared/components/layout/ToastProvider';
 import { api } from '../../../utils/api';
-import khaltiLogo from "../../../assets/khalti_logo.png";
 import Button from '../../../shared/components/ui/Button';
+import khaltiLogo from "../../../assets/khalti_logo.png";
 
 const PaymentModal = ({ isOpen, onClose, booking, onPaymentSuccess }) => {
   if (!isOpen || !booking) return null;
@@ -34,7 +34,6 @@ const PaymentModal = ({ isOpen, onClose, booking, onPaymentSuccess }) => {
 
   const handleCashPayment = async () => {
     try {
-      // Set payment method to cash
       await api.patch(`/booking/bookings/${booking.id}/`, { payment_method: 'cash' });
 
       toast.success(
@@ -42,7 +41,6 @@ const PaymentModal = ({ isOpen, onClose, booking, onPaymentSuccess }) => {
         { duration: 8000 }
       );
 
-      // Notify parent that "payment" (choice) is done
       if (onPaymentSuccess) {
         onPaymentSuccess(booking);
       }
@@ -54,107 +52,109 @@ const PaymentModal = ({ isOpen, onClose, booking, onPaymentSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-white/20">
-
-        {/* Header */}
-        <div className="bg-primary p-6 flex justify-between items-center text-white">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/10 rounded-lg">
-              <Banknote size={24} className="text-white" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+      <div
+        className="bg-white rounded-2xl w-full max-w-[420px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="relative overflow-hidden bg-gradient-to-r from-blue-50/50 to-indigo-50/30 p-5 sm:p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-md" />
+          <div className="relative flex items-center gap-3 z-10">
+            <div className="flex items-center justify-center w-10 h-10 bg-primary/10 text-primary rounded-xl shrink-0 shadow-sm border border-primary/5">
+              <Banknote size={20} />
             </div>
-            <h3 className="text-xl font-bold">Complete Payment</h3>
+            <h3 className="text-lg font-bold text-gray-900 tracking-tight leading-none mb-0.5">
+              Complete Payment
+            </h3>
           </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors p-1 bg-white/10 rounded-full hover:bg-white/20">
+          <Button
+            type="button"
+            onClick={onClose}
+            variant="icon"
+            fullWidth={false}
+            aria-label="Close"
+            className="relative z-10 border border-transparent hover:border-gray-200"
+          >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
-        {/* Body */}
-        <div className="p-6">
-          <div className="mb-6">
-            <h4 className="font-bold text-gray-900 text-lg mb-1">{booking.service_name}</h4>
-            <p className="text-sm text-gray-500 mb-6">Service provided by {booking.provider_name}</p>
+        <div className="p-5 sm:p-6 bg-gray-50/30">
+          <div className="mb-2">
+            <h4 className="font-semibold text-gray-900 text-base mb-1 truncate">{booking.service_name}</h4>
+            <p className="text-sm text-gray-500 mb-5">Service by <span className="font-medium text-gray-700">{booking.provider_name}</span></p>
 
-            {/* Bill Breakdown */}
-            <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 space-y-4">
-
-              {/* Original service cost */}
-              <div className="flex justify-between text-sm text-gray-600">
-                <span className="font-medium">Original Service Cost</span>
-                <span className={`font-semibold ${hasPriceAdjustment ? 'line-through text-gray-400' : 'text-gray-900'}`}>
+            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm space-y-3.5">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500 font-medium">Original Service Cost</span>
+                <span className={`font-medium ${hasPriceAdjustment ? 'line-through text-gray-400 decoration-gray-300' : 'text-gray-900'}`}>
                   {formatPrice(booking.service_price)}
                 </span>
               </div>
 
-              {/* Final price — only shown if provider adjusted it */}
               {hasPriceAdjustment && (
-                <div className="flex justify-between text-sm">
-                  <span className="flex items-center gap-1.5 text-orange-700 font-medium">
-                    <ArrowRight size={14} />
+                <div className="flex justify-between items-center text-sm">
+                  <span className="flex items-center gap-1.5 text-gray-700 font-medium">
+                    <ArrowRight size={14} className="text-gray-400" />
                     Final Service Cost
                   </span>
-                  <span className="font-bold text-orange-600">{formatPrice(booking.final_price)}</span>
+                  <span className="font-semibold text-gray-900">{formatPrice(booking.final_price)}</span>
                 </div>
               )}
 
-              {/* Provider note — shown only if set */}
               {booking.price_note && (
-                <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 flex gap-2.5 text-[13px] text-orange-800 leading-relaxed shadow-sm">
-                  <MessageSquare size={14} className="mt-1 shrink-0 text-orange-600" />
+                <div className="bg-blue-50/50 border border-blue-100/50 rounded-xl p-3 flex gap-2.5 text-sm text-blue-800 leading-relaxed shadow-sm mt-2">
+                  <MessageSquare size={16} className="mt-0.5 shrink-0 text-blue-500" />
                   <span>
-                    <span className="font-bold">Note: </span>
+                    <span className="font-semibold">Note: </span>
                     {booking.price_note}
                   </span>
                 </div>
               )}
 
-              {/* Insurance */}
-              <div className="flex justify-between text-sm text-gray-600">
-                <span className="flex items-center gap-1.5 font-medium">
+              <div className="flex justify-between items-center text-sm">
+                <span className="flex items-center gap-1.5 text-gray-500 font-medium">
                   <ShieldCheck size={16} className="text-blue-500" />
                   Insurance Fee (1%)
                 </span>
-                <span className="font-semibold text-gray-900">{formatPrice(booking.insurance_fee)}</span>
+                <span className="font-medium text-gray-900">{formatPrice(booking.insurance_fee)}</span>
               </div>
 
-              {/* Total */}
-              <div className="border-t border-gray-200 pt-4 flex justify-between items-center">
-                <span className="font-black text-gray-900 text-lg uppercase tracking-tight">Total Due</span>
-                <span className="text-2xl font-black text-primary">{formatPrice(booking.total_price)}</span>
+              <div className="h-px bg-gray-100 w-full my-1" />
+
+              <div className="flex justify-between items-center pt-1">
+                <span className="font-bold text-gray-900 text-base">Total Due</span>
+                <span className="text-xl font-bold text-primary tracking-tight">{formatPrice(booking.total_price)}</span>
               </div>
             </div>
           </div>
 
-          {/* Payment options */}
-          <div className="space-y-4 pt-2">
+          <div className="space-y-3 mt-6">
             <Button
               onClick={handleKhaltiPayment}
-              rounded="xl"
-              className="bg-[#5C2D91] hover:bg-[#4a2475] py-4 text-base shadow-xl shadow-purple-200 border-b-4 border-purple-800 active:border-b-0"
+              variant="khalti"
+              size="md"
             >
-              <img src={khaltiLogo} alt="Khalti" className="h-6 mr-2" />
+              <img src={khaltiLogo} alt="Khalti" className="h-5 object-contain shrink-0" />
               Pay Online via Khalti
             </Button>
 
-            <div className="relative flex py-2 items-center">
-              <div className="flex-grow border-t border-gray-100"></div>
-              <span className="flex-shrink-0 mx-4 text-gray-400 text-[10px] font-black uppercase tracking-widest">or</span>
-              <div className="flex-grow border-t border-gray-100"></div>
+            <div className="relative flex items-center py-1">
+              <div className="flex-grow border-t border-gray-200" />
+              <span className="flex-shrink-0 mx-4 text-gray-400 text-xs font-medium uppercase tracking-wider">OR</span>
+              <div className="flex-grow border-t border-gray-200" />
             </div>
 
             <Button
               onClick={handleCashPayment}
               variant="secondary"
-              rounded="xl"
-              className="py-4 text-base border-2 border-green-600 text-green-700 hover:bg-green-50 shadow-sm"
+              size="md"
             >
-              <Banknote size={22} className="mr-2" />
+              <Banknote size={18} className="shrink-0 text-gray-500" />
               Pay Offline with Cash
             </Button>
           </div>
         </div>
-
       </div>
     </div>
   );

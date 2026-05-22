@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import Button from '../../../../shared/components/ui/Button';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -132,13 +133,15 @@ const ResetPassword = () => {
           </div>
           {error && <div className="text-sm text-red-600">{error}</div>}
           {info && <div className="text-sm text-green-600">{info}</div>}
-          <button
+          <Button
             type="submit"
-            disabled={loading}
-            className="w-full py-3 rounded-full text-white bg-[#1B3C53] hover:bg-[#1a3248]"
+            variant="primary"
+            size="md"
+            isLoading={loading}
+            loadingText="Resetting..."
           >
-            {loading ? 'Resetting...' : 'Reset Password'}
-          </button>
+            Reset Password
+          </Button>
         </form>
       </div>
     </div>

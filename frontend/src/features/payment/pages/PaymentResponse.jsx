@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../../../utils/api';
-import toast from 'react-hot-toast';
+import { toast } from '../../../shared/components/layout/ToastProvider';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import Navbar from '../../../shared/components/layout/Navbar';
 import Footer from '../../../shared/components/layout/Footer';
@@ -94,8 +94,9 @@ const PaymentResponse = () => {
 
                             <Button
                                 onClick={() => navigate('/my-bookings')}
-                                rounded="2xl"
-                                className="mt-4 py-4 text-base shadow-xl"
+                                variant="primary"
+                                size="lg"
+                                className="mt-4"
                             >
                                 Back to My Bookings
                             </Button>
@@ -114,16 +115,15 @@ const PaymentResponse = () => {
                             <div className="flex flex-col gap-3 mt-6">
                                 <Button
                                     onClick={() => navigate('/my-bookings')}
-                                    rounded="2xl"
-                                    className="py-4 text-base shadow-xl"
+                                    variant="primary"
+                                    size="lg"
                                 >
                                     Try Again
                                 </Button>
                                 <Button
                                     onClick={() => navigate('/')}
-                                    variant="ghost"
-                                    rounded="2xl"
-                                    className="py-3 text-sm text-gray-500 font-bold hover:bg-gray-50"
+                                    variant="secondary"
+                                    size="md"
                                 >
                                     Back to Home
                                 </Button>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "../../../shared/components/layout/ToastProvider";
 import Button from "../../../shared/components/ui/Button";
 import Logo from "../../../assets/sewasathi_logo.png";
 
@@ -161,7 +161,7 @@ const CustomerSignup = () => {
         <div className="flex flex-col items-center">
           <Link to="/" className="flex items-center gap-4 cursor-pointer">
             <img src={Logo} alt="logo" className="h-14 w-auto" />
-            <span className="text-3xl font-semibold text-[#1B3C53] tracking-wide">
+            <span className="text-2xl font-bold text-[#1B3C53] tracking-tight">
               SewaSaathi
             </span>
           </Link>

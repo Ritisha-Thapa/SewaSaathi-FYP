@@ -18,7 +18,7 @@
   "nav": {
     "home": "Home",
     "services": "Services",
-    "back_to_category": "← Back to Category",
+    "back_to_category": "Back to Category",
     "my_bookings": "My Bookings",
     "about_us": "About Us",
     "contact": "Contact",
@@ -37,8 +37,13 @@
   },
   "status": {
     "pending": "Pending",
+    "accepted": "Accepted",
     "completed": "Completed",
-    "in_progress": "In Progress"
+    "in_progress": "In Progress",
+    "cancelled": "Cancelled",
+    "not_accepted": "Not Accepted",
+    "paid": "Paid",
+    "refunded": "Refunded"
   },
   "landing": {
     "book_service": "Book a Service",
@@ -129,6 +134,11 @@
     "refund_80": "80% Refund",
     "request_rework": "Request Rework",
     "resolution": "Resolution",
+    "refund_processing_toast": "Your refund will be sent within 2 days.",
+    "rework_processing_toast": "Rework request submitted! The provider will be notified.",
+    "resolution_failed_toast": "Failed to set resolution. Please try again.",
+    "not_accepted_title": "Not Accepted",
+    "not_accepted_message": "No provider was available before your scheduled time. You can book this service again.",
     "default_ordering": "Default Ordering",
     "price_low_high": "Price: Low to High",
     "price_high_low": "Price: High to Low",
@@ -144,7 +154,25 @@
     "earnings": "Earnings",
     "reviews": "Reviews",
     "profile": "Profile",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "accept": "Accept",
+    "job_request_previously_declined": "You previously rejected this request.",
+    "job_request_still_open": "This job is still open.",
+    "job_request_can_still_accept": "You can still accept this booking.",
+    "decline_request_confirm": "Decline for now? This request stays on your list until the scheduled time passes or another provider accepts. You can still accept it later.",
+    "booking_accepted_toast": "Booking accepted.",
+    "booking_declined_toast": "Booking declined for now.",
+    "job_completed_toast": "Job marked complete.",
+    "action_failed": "Failed to update status",
+    "update_status_failed": "Could not update status.",
+    "payment_confirmed_toast": "Payment confirmed.",
+    "complete_job_failed": "Failed to complete job"
+  },
+  "profile": {
+    "load_failed": "Could not fetch profile data.",
+    "save_success": "Profile updated. Your changes have been saved.",
+    "save_failed": "Failed to save changes. Please check your input.",
+    "save_error": "Something went wrong. Please try again."
   },
   "booking_form": {
     "address_label": "Address *",
@@ -153,6 +181,8 @@
     "phone_placeholder": "Contact Number",
     "select_date": "Select Date",
     "select_time": "Select Time",
+    "time_buffer_hint": "You can only book slots at least 1 hour from now.",
+    "invalid_time_slot": "The selected time is no longer available. Please choose another slot.",
     "problem_desc": "Problem Description (Optional)",
     "problem_placeholder": "Describe the issue...",
     "upload_image": "Upload Image (Optional)",
@@ -160,7 +190,7 @@
     "confirm_booking": "Confirm Booking",
     "processing": "Processing...",
     "base_price": "Base Price",
-    "insurance_note": "Note: A 1% insurance fee will be added to the total.",
+    "insurance_note": "Note: Extra 1% insurance fee will be added to the total.",
     "back_to": "Back to",
     "book_this_service": "Book This Service",
     "booking_status": "Booking Status",
@@ -231,6 +261,7 @@
     "new_notification": "New Notification",
     "mark_as_read": "Mark as read",
     "mark_all_as_read": "Mark all as read",
+    "load_more": "Load more",
     "no_notifications": "No notifications yet!",
     "no_notifications_desc": "We'll notify you when something important happens regarding your bookings.",
     "new_booking_request_title": "New Booking Request",

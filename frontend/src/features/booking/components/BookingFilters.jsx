@@ -31,6 +31,7 @@ const BookingFilters = ({
                     <option value="in_progress">{t('status.in_progress')}</option>
                     <option value="completed">{t('status.completed')}</option>
                     <option value="paid">{t('bookings.paid')}</option>
+                    <option value="not_accepted">{t('status.not_accepted', 'Not Accepted')}</option>
                     <option value="cancelled">{t('status.cancelled', 'Cancelled')}</option>
                 </select>
                 <select

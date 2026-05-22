@@ -7,6 +7,7 @@ import NotificationsPage from '../../../features/notifications/pages/Notificatio
 import { useTranslation } from 'react-i18next';
 import logo from '../../../assets/sewasathi_logo.png';
 import LanguageToggle from '../ui/LanguageToggle';
+import Button from '../ui/Button';
 
 /**
  * Unified Navbar component for SewaSaathi
@@ -97,7 +98,7 @@ const Navbar = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium transition-colors hover:text-[#1B3C53] ${location.pathname === link.path ? 'text-[#1B3C53]' : 'text-gray-600'
+                className={`text-md font-medium transition-colors hover:text-[#1B3C53] ${location.pathname === link.path ? 'text-[#1B3C53]' : 'text-gray-600'
                   }`}
               >
                 {link.name}
@@ -189,12 +190,12 @@ const Navbar = () => {
             ) : (
               /* Guest View */
               <div className="flex items-center space-x-3">
-                <Link to="/login" className="px-5 py-2 text-sm font-semibold text-[#1B3C53] border border-[#1B3C53] rounded-full hover:bg-[#1B3C53] hover:text-white transition">
+                <Button to="/login" variant="outline" size="sm" fullWidth={false}>
                   {t('landing.login')}
-                </Link>
-                <Link to="/signup/customer" className="px-5 py-2 text-sm font-semibold text-white bg-[#1B3C53] rounded-full hover:bg-[#1a3248] transition shadow-md">
+                </Button>
+                <Button to="/signup/customer" variant="primary" size="sm" fullWidth={false}>
                   {t('landing.book_service')}
-                </Link>
+                </Button>
                 <button
                   onClick={handleHelpClick}
                   className="p-2 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition"
@@ -248,18 +249,25 @@ const Navbar = () => {
                     </Link>
                   )}
                   <Link to="/profile" className="block py-2 text-gray-700">{t('common.view_profile')}</Link>
-                  <button onClick={handleLogout} className="w-full py-3 bg-[#1B3C53] text-white rounded-xl text-center font-bold">
-                    {isLoggingOut ? t('common.logging_out') : t('common.logout')}
-                  </button>
+                  <Button
+                    type="button"
+                    onClick={handleLogout}
+                    variant="primary"
+                    size="md"
+                    isLoading={isLoggingOut}
+                    loadingText={t('common.logging_out')}
+                  >
+                    {t('common.logout')}
+                  </Button>
                 </>
               ) : (
                 <>
-                  <Link to="/login" className="block w-full py-3 border border-[#1B3C53] text-[#1B3C53] rounded-xl text-center font-bold">
+                  <Button to="/login" variant="outline" size="md">
                     {t('landing.login')}
-                  </Link>
-                  <Link to="/signup/customer" className="block w-full py-3 bg-[#1B3C53] text-white rounded-xl text-center font-bold">
+                  </Button>
+                  <Button to="/signup/customer" variant="primary" size="md">
                     {t('landing.book_service')}
-                  </Link>
+                  </Button>
                 </>
               )}
 

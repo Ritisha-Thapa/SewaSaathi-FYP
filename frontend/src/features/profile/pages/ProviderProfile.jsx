@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Save, RotateCcw } from 'lucide-react';
 import ChangePasswordModal from '../../authentication/components/pass_change/ChangePasswordModal';
-import NotificationPopup from '../../notifications/components/NotificationPopup';
+import { toast } from '../../../shared/components/layout/ToastProvider';
 import Button from '../../../shared/components/ui/Button';
+import { useTranslation } from 'react-i18next';
 
 // Refactored Components
 import ProfileHeader from "../components/shared/ProfileHeader";
@@ -12,12 +13,12 @@ import StatusBanner from "../components/shared/StatusBanner";
 import ProviderProfileForm from "../components/prov/ProviderProfileForm";
 
 const ProviderProfile = () => {
+   const { t } = useTranslation();
    const [isEditing, setIsEditing] = useState(false);
    const [isLoading, setIsLoading] = useState(true);
    const [isSaving, setIsSaving] = useState(false);
    const [previewImage, setPreviewImage] = useState(null);
    const [originalProfile, setOriginalProfile] = useState(null);
-   const [notification, setNotification] = useState({ isOpen: false, type: 'success', title: '', message: '' });
    const [showPasswordModal, setShowPasswordModal] = useState(false);
 
    const [formData, setFormData] = useState({
@@ -62,7 +63,7 @@ const ProviderProfile = () => {
          }
       } catch (error) {
          console.error("Error fetching profile:", error);
-         showNotification('error', 'Failed to Load', 'Could not fetch profile data.');
+         toast.error(t('profile.load_failed', 'Could not fetch profile data.'));
       } finally {
          setIsLoading(false);
       }
@@ -114,20 +115,16 @@ const ProviderProfile = () => {
             setOriginalProfile(newProfile);
             setIsEditing(false);
             setPreviewImage(null);
-            showNotification('success', 'Profile Updated', 'Your changes have been saved successfully.');
+            toast.success(t('profile.save_success', 'Profile updated. Your changes have been saved.'));
          } else {
-            showNotification('error', 'Update Failed', 'Failed to save changes. Please check input.');
+            toast.error(t('profile.save_failed', 'Failed to save changes. Please check your input.'));
          }
       } catch (error) {
          console.error("Error saving profile:", error);
-         showNotification('error', 'Error', 'Something went wrong. Please try again.');
+         toast.error(t('profile.save_error', 'Something went wrong. Please try again.'));
       } finally {
          setIsSaving(false);
       }
-   };
-
-   const showNotification = (type, title, message) => {
-      setNotification({ isOpen: true, type, title, message });
    };
 
    const avatarSrc = previewImage || (formData.profile_image
@@ -225,14 +222,6 @@ const ProviderProfile = () => {
             </div>
          </div>
 
-         <NotificationPopup
-            isOpen={notification.isOpen}
-            onClose={() => setNotification({ ...notification, isOpen: false })}
-            type={notification.type}
-            title={notification.title}
-            message={notification.message}
-         />
-         
          <ChangePasswordModal
             isOpen={showPasswordModal}
             onClose={() => setShowPasswordModal(false)}

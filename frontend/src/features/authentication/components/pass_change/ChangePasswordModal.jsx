@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Loader2, Lock, Eye, EyeOff } from 'lucide-react';
+import { X, Lock, Eye, EyeOff } from 'lucide-react';
+import Button from '../../../../shared/components/ui/Button';
 import { api } from '../../../../utils/api';
-import toast from 'react-hot-toast';
+import { toast } from '../../../../shared/components/layout/ToastProvider';
 
 const ChangePasswordModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -66,12 +67,15 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden relative shadow-2xl animate-in fade-in zoom-in duration-200">
-        <button
+        <Button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 transition"
+          variant="icon"
+          fullWidth={false}
+          className="absolute top-4 right-4"
         >
           <X size={24} />
-        </button>
+        </Button>
 
         <div className="p-8">
           <div className="text-center mb-8">
@@ -152,14 +156,16 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
               {errors.confirm_password && <p className="text-red-500 text-[10px] font-bold mt-1 uppercase">{errors.confirm_password[0]}</p>}
             </div>
 
-            <button
+            <Button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full py-4 bg-[#1B3C53] text-white rounded-2xl font-bold hover:bg-[#1a3248] transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 flex items-center justify-center gap-2 mt-4"
+              variant="primary"
+              size="lg"
+              isLoading={isSubmitting}
+              loadingText="Updating..."
+              className="mt-4"
             >
-              {isSubmitting ? <Loader2 className="animate-spin h-5 w-5" /> : null}
-              {isSubmitting ? 'Updating...' : 'Update Password'}
-            </button>
+              Update Password
+            </Button>
           </form>
         </div>
       </div>

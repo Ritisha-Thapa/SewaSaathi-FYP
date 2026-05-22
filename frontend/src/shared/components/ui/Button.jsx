@@ -3,9 +3,40 @@ import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 /**
- * Reusable Button component for SewaSaathi
- * Supports loading states, custom styling, and React Router Link
+ * Shared action button for SewaSaathi.
+ * All variants use a consistent capsule shape (rounded-full).
  */
+const VARIANTS = {
+  primary:
+    'bg-primary text-white hover:bg-primary-hover shadow-md shadow-primary/10',
+  secondary:
+    'bg-white border border-gray-200 text-[#1B3C53] hover:bg-gray-50 shadow-sm',
+  outline:
+    'bg-transparent border-2 border-[#1B3C53] text-[#1B3C53] hover:bg-gray-50',
+  ghost:
+    'bg-transparent text-[#1B3C53] hover:bg-primary/5',
+  pay:
+    'bg-green-600 text-white hover:bg-green-700 shadow-md shadow-green-600/15',
+  khalti:
+    'bg-[#5C2D91] text-white hover:bg-[#4d257a] shadow-md shadow-[#5C2D91]/20',
+  insurance:
+    'bg-orange-500 text-white hover:bg-orange-600 shadow-md shadow-orange-500/15',
+  danger:
+    'bg-red-600 text-white hover:bg-red-700 shadow-md',
+  'danger-outline':
+    'bg-white border border-red-200 text-red-600 hover:bg-red-50 shadow-sm',
+  success:
+    'bg-green-600 text-white hover:bg-green-700 shadow-md',
+  icon:
+    'bg-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-100 !p-2 !w-auto rounded-full',
+};
+
+const SIZES = {
+  sm: 'py-2 px-5 text-sm gap-2',
+  md: 'py-3 px-6 text-sm gap-2',
+  lg: 'py-4 px-8 text-base gap-2.5',
+};
+
 const Button = ({
   children,
   isLoading = false,
@@ -14,41 +45,48 @@ const Button = ({
   disabled = false,
   className = '',
   variant = 'primary',
-  rounded = 'full', // 'full' or 'xl' or 'lg' etc
+  size = 'md',
   fullWidth = true,
   onClick,
   to,
   ...props
 }) => {
-  // Base styles
-  const baseStyles = "group relative flex justify-center items-center py-3 px-4 text-sm font-medium transition duration-200 active:scale-[0.98]";
-  
-  const widthStyles = fullWidth ? "w-full" : "";
-  const roundedStyles = rounded === 'full' ? 'rounded-full' : `rounded-${rounded}`;
+  const baseStyles =
+    'group relative inline-flex justify-center items-center font-semibold rounded-full transition duration-200 active:scale-[0.98]';
 
-  // Specific color logic
-  const getVariantStyles = () => {
-    if (isLoading || disabled) return "bg-gray-200 text-gray-500 cursor-not-allowed";
-    
-    switch (variant) {
-      case 'secondary':
-        return "bg-white border border-gray-200 text-primary hover:bg-gray-50 shadow-sm";
-      case 'outline':
-        return "bg-transparent border-2 border-primary text-primary hover:bg-primary/5";
-      case 'ghost':
-        return "bg-transparent text-primary hover:bg-primary/5";
-      default: // primary
-        return "bg-primary text-white hover:bg-primary-hover shadow-md shadow-primary/10";
-    }
-  };
+  const isDisabled = isLoading || disabled;
+  const widthStyles =
+    variant === 'icon' ? '' : fullWidth ? 'w-full' : '';
+  const sizeStyles = variant === 'icon' ? '' : SIZES[size] ?? SIZES.md;
 
-  const variantStyles = getVariantStyles();
-  const combinedClasses = `${baseStyles} ${widthStyles} ${roundedStyles} ${variantStyles} ${className}`;
+  const variantStyles =
+    isDisabled && variant !== 'icon'
+      ? 'bg-gray-200 text-gray-500 shadow-none border-transparent cursor-not-allowed hover:bg-gray-200'
+      : VARIANTS[variant] ?? VARIANTS.primary;
 
-  if (to && !disabled && !isLoading) {
+  const combinedClasses = [
+    baseStyles,
+    widthStyles,
+    sizeStyles,
+    variantStyles,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const content = isLoading ? (
+    <>
+      <Loader2 className="animate-spin h-5 w-5 shrink-0" />
+      <span>{loadingText || children}</span>
+    </>
+  ) : (
+    children
+  );
+
+  if (to && !isDisabled) {
     return (
       <Link to={to} className={combinedClasses} {...props}>
-        {children}
+        {content}
       </Link>
     );
   }
@@ -56,19 +94,12 @@ const Button = ({
   return (
     <button
       type={type}
-      disabled={isLoading || disabled}
+      disabled={isDisabled}
       onClick={onClick}
       className={combinedClasses}
       {...props}
     >
-      {isLoading ? (
-        <>
-          <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-current" />
-          <span>{loadingText || children}</span>
-        </>
-      ) : (
-        children
-      )}
+      {content}
     </button>
   );
 };

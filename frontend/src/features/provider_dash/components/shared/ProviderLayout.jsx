@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Link } from 'react-router-dom';
 import ProviderSidebar from './ProviderSidebar';
-import { Menu, Bell, MessageCircle, Globe } from 'lucide-react';
+import { Menu, MessageCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from '../../../../shared/components/ui/LanguageToggle';
+import logo from '../../../../assets/sewasathi_logo.png';
 
 const ProviderLayout = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -36,9 +37,15 @@ const ProviderLayout = () => {
             <button onClick={toggleSidebar} className="lg:hidden text-gray-600 hover:text-[#1B3C53]">
               <Menu size={24} />
             </button>
-            <h1 className="text-xl font-semibold text-[#1B3C53] hidden sm:block">
-              SewaSaathi {t('nav.dashboard')}
-            </h1>
+            <Link
+              to="/provider/dashboard"
+              className="flex items-center gap-2 hover:opacity-80 transition"
+            >
+              <img src={logo} alt="SewaSaathi Logo" className="h-10 w-auto" />
+              <span className="text-2xl font-bold text-[#1B3C53] tracking-tight">
+                SewaSaathi 
+              </span>
+            </Link>
           </div>
 
           <div className="flex items-center space-x-4">

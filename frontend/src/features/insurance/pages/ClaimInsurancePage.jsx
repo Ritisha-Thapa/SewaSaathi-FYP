@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { toast } from "react-hot-toast";
+import { toast } from "../../../shared/components/layout/ToastProvider";
 import { api } from "../../../utils/api";
 import Navbar from "../../../shared/components/layout/Navbar";
 import Footer from "../../../shared/components/layout/Footer";
 import Skeleton from "../../../shared/components/layout/Skeleton";
 import { ArrowLeft, Upload, CheckCircle, AlertTriangle } from "lucide-react";
+import Button from "../../../shared/components/ui/Button";
 
 const ClaimInsurancePage = () => {
     const { bookingId } = useParams();
@@ -220,19 +221,21 @@ const ClaimInsurancePage = () => {
                                 </div>
                             )}
 
-                            <button
+                            <Button
                                 type="submit"
-                                disabled={submitting}
-                                className="w-full py-4 bg-orange-500 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-orange-600 transition disabled:opacity-70 disabled:cursor-not-allowed"
+                                variant="insurance"
+                                size="md"
+                                isLoading={submitting}
+                                loadingText="Submitting Claim..."
                             >
-                                {submitting ? "Submitting Claim..." : "Submit Claim"}
-                            </button>
+                                Submit Claim
+                            </Button>
                         </form>
                     </div>
 
                     <div className="lg:col-span-1">
                         <div className="bg-[#1B3C53] text-white rounded-2xl p-6 shadow-lg sticky top-8">
-                            <h3 className="font-bold text-xl mb-4 border-b border-white/20 pb-3">Booking Details</h3>
+                            <h3 className="font-bold text-white text-xl  mb-4 border-b border-white/20 pb-3">Booking Details</h3>
                             {booking && (
                                 <div className="space-y-4 text-sm text-gray-200">
                                     <div>

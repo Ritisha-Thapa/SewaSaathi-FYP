@@ -8,22 +8,22 @@ const OurFeatures = () => {
     {
       title: t('landing.features_verified_title', 'Verified Providers'),
       description: t('landing.features_verified_desc', 'All service providers are background checked and verified'),
-      icon: <ShieldCheck className="w-8 h-8 text-[#1B3C53]" />
+      icon: <ShieldCheck className="w-8 h-8 text-[#2563EB]" />
     },
     {
       title: t('landing.features_secure_payment_title', 'Secure Payments'),
       description: t('landing.features_secure_payment_desc', 'Pay safely via eSewa or Cash on Delivery'),
-      icon: <Lock className="w-8 h-8 text-[#1B3C53]" />
+      icon: <Lock className="w-8 h-8 text-[#16A34A]" />
     },
     {
       title: t('landing.features_insurance_title', '1% Insurance Fund'),
       description: t('landing.features_insurance_desc', 'Protected by our insurance fund for your peace of mind'),
-      icon: <ShieldCheck className="w-8 h-8 text-[#1B3C53]" />
+      icon: <ShieldCheck className="w-8 h-8 text-[#7C3AED]" />
     },
     {
       title: t('landing.features_support_title', 'WhatsApp Support'),
       description: t('landing.features_support_desc', 'Connect directly with our support team via WhatsApp for any help'),
-      icon: <MessageCircle className="w-8 h-8 text-[#1B3C53]" />
+      icon: <MessageCircle className="w-8 h-8 text-[#0D9488]" />
     }
   ];
 

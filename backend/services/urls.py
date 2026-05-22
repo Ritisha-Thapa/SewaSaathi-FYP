@@ -1,5 +1,11 @@
 from django.urls import path
-from .views import ServiceCategoryViewSet, ServiceViewSet, ProviderServiceViewSet, ProviderAvailabilityViewSet
+from .views import (
+    ServiceCategoryViewSet,
+    ServiceViewSet,
+    ProviderServiceViewSet,
+    ProviderAvailabilityViewSet,
+    ProviderCategoryServicesView,
+)
 
 urlpatterns = [
 
@@ -8,6 +14,12 @@ urlpatterns = [
     
     path('service/', ServiceViewSet.as_view({'get': 'list', 'post': 'create'}), name='services-list'),
     path('service/<str:pk>/', ServiceViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='service-detail'),
+
+    path(
+        'provider-category-services/',
+        ProviderCategoryServicesView.as_view(),
+        name='provider-category-services',
+    ),
 
     path('provider-services/', ProviderServiceViewSet.as_view({'get': 'list', 'post': 'create'}), name='provider-service-list'),
     path('provider-services/<str:pk>/', ProviderServiceViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='provider-service-detail'),

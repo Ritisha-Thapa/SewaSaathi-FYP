@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "../../../shared/components/layout/ToastProvider";
 import Skeleton from "../../../shared/components/layout/Skeleton";
 import Footer from "../../../shared/components/layout/Footer";
 import { api } from "../../../utils/api";
+import {
+  BOOKING_TIME_SLOTS,
+  isTimeSelectionValid,
+} from "../../../utils/bookingTimeSlots";
 import Navbar from '../../../shared/components/layout/Navbar';
 import ReviewModal from '../../../shared/components/ui/ReviewModal';
 import ImageModal from '../../../shared/components/ui/ImageModal';
@@ -14,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 // New sub-components
 import ServiceHero from "../components/ServiceHero";
 import BookingSidebar from "../components/BookingSidebar";
+import ServiceBackLink from "../components/ServiceBackLink";
 
 const ServiceDetails = () => {
   const { t, i18n } = useTranslation();
@@ -58,7 +62,7 @@ const ServiceDetails = () => {
     try {
       const bookings = await api.get(`/booking/bookings/`);
       const activeBooking = bookings.find((b) => {
-        if (!['cancelled', 'rejected', 'completed', 'paid', 'refunded'].includes(b.status)) {
+        if (!['cancelled', 'not_accepted', 'completed', 'paid', 'refunded'].includes(b.status)) {
           return b.service === Number(serviceId);
         }
         if (b.status === 'completed' && !b.is_paid) {
@@ -130,6 +134,12 @@ const ServiceDetails = () => {
       return;
     }
 
+    if (!isTimeSelectionValid(time, date)) {
+      setErrorMessage(t("booking_form.invalid_time_slot"));
+      setOrderingStatus("");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("service", serviceId);
     formData.append("scheduled_date", date);
@@ -193,8 +203,14 @@ const ServiceDetails = () => {
     in_progress: { title: "Service In Progress", message: "Provider is currently working on your request" },
     completed: { title: "Service Completed!", message: "Please review and complete payment" },
     paid: { title: "Payment Received!", message: "Thank you for using SewaSaathi" },
-    rejected: { title: "Booking Rejected", message: "The provider was unavailable for this slot" },
     cancelled: { title: "Booking Cancelled", message: "This booking request has been cancelled" },
+    not_accepted: {
+      title: t("bookings.not_accepted_title", "Not Accepted"),
+      message: t(
+        "bookings.not_accepted_message",
+        "No provider was available before your scheduled time. You can book this service again."
+      ),
+    },
     claim_pending: { title: "Insurance Claim Request Sent", message: "Admin is reviewing your claim" },
     claim_approved: { title: "Insurance Claim Approved", message: "Processing Claim" }
   };
@@ -213,7 +229,7 @@ const ServiceDetails = () => {
     }
   }
 
-  const timeSlots = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
+  const timeSlots = BOOKING_TIME_SLOTS;
 
   if (loading) {
     return (
@@ -249,9 +265,9 @@ const ServiceDetails = () => {
         <Navbar />
         <div className="flex flex-col items-center justify-center py-20">
           <p className="text-lg text-gray-700">Service not found.</p>
-          <Link to={`/services/${category}`} className="text-primary mt-4 inline-block underline">
-            Back to {category}
-          </Link>
+          <ServiceBackLink to={`/services/${category}`}>
+            {t("booking_form.back_to")} {t(`categories.${category}`, { defaultValue: category })}
+          </ServiceBackLink>
         </div>
       </div>
     );
@@ -263,10 +279,10 @@ const ServiceDetails = () => {
       <div className="container mx-auto px-4 max-w-7xl py-10">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <Link to={`/services/${category}`} className="text-gray-500 hover:text-primary text-sm mb-2 inline-flex items-center gap-2">
-              <ArrowLeft size={16} />
-              {t('booking_form.back_to')} {t(`categories.${item?.category?.name_key}`, { defaultValue: category })}
-            </Link>
+            <ServiceBackLink to={`/services/${category}`}>
+              {t("booking_form.back_to")}{" "}
+              {t(`categories.${item?.category?.name_key}`, { defaultValue: category })}
+            </ServiceBackLink>
             <h2 className="text-4xl font-bold text-primary">
               {t(`service_names.${item?.name_key}`, { defaultValue: item?.name_key || "Service Details" })}
             </h2>
