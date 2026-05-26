@@ -40,19 +40,17 @@ const ReviewModal = ({ isOpen, onClose, booking, onReviewSubmit }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden relative shadow-2xl animate-in fade-in zoom-in duration-200">
-        <Button
+        <button
           type="button"
           onClick={onClose}
-          variant="icon"
-          fullWidth={false}
-          className="absolute top-4 right-4"
+          className="absolute top-4 right-4 z-10 p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
         >
           <X size={24} />
-        </Button>
+        </button>
 
         <div className="p-8">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-black text-[#1B3C53] mb-2">How was your service?</h2>
+            <h2 className="text-2xl font-bold text-[#1B3C53] mb-2">How was your service?</h2>
             <p className="text-gray-500 text-sm">Your feedback helps {booking.provider_name} and our community.</p>
           </div>
 

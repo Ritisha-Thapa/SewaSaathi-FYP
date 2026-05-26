@@ -25,39 +25,66 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Handle 401s and retry requests or logout
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Response Interceptor: Handle 401s — queues concurrent requests while one refresh is in flight
 api.interceptors.response.use(
   (response) => response.data,
   async (error) => {
     const originalRequest = error.config;
 
-    // Check if the error is 401 and the request hasn't been retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // If a refresh is already in progress, queue this request until it resolves
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return axios(originalRequest).then((res) => res.data);
+        }).catch((err) => Promise.reject(err));
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       const refreshToken = localStorage.getItem('refresh');
       if (refreshToken) {
         try {
-          // Attempt to get a new access token
-          const refreshResponse = await axios.post('http://127.0.0.1:8000/accounts/api/token/refresh/', {
-            refresh: refreshToken
-          });
+          const refreshResponse = await axios.post(
+            'http://127.0.0.1:8000/accounts/api/token/refresh/',
+            { refresh: refreshToken }
+          );
 
-          if (refreshResponse.data && refreshResponse.data.access) {
+          if (refreshResponse.data?.access) {
             const newAccess = refreshResponse.data.access;
             localStorage.setItem('access', newAccess);
 
-            // Set the Authorization header on the original request and retry it
+            processQueue(null, newAccess);
+            isRefreshing = false;
+
             originalRequest.headers.Authorization = `Bearer ${newAccess}`;
-            return axios(originalRequest).then(res => res.data); // Return .data since the interceptor unwraps it
+            return axios(originalRequest).then((res) => res.data);
           }
         } catch (refreshError) {
-          // Refresh token is expired or invalid
+          processQueue(refreshError, null);
+          isRefreshing = false;
           console.error('Token refresh failed:', refreshError);
         }
       }
 
-      // If no refresh token or refresh failed, force logout
+      isRefreshing = false;
       localStorage.clear();
       window.location.href = '/login';
     }
