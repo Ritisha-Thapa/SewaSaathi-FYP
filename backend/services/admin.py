@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .forms import ProviderServiceAdminForm, ServiceAdminForm, ServiceCategoryAdminForm
-from .models import ProviderService, Service, ServiceCategory
+from .forms import ServiceAdminForm, ServiceCategoryAdminForm
+from .models import Service, ServiceCategory
 
 
 @admin.register(ServiceCategory)
@@ -28,9 +28,3 @@ class ServiceAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(ProviderService)
-class ProviderServiceAdmin(admin.ModelAdmin):
-    form = ProviderServiceAdminForm
-    list_display = ("provider", "service", "price", "pricing_type", "is_available", "rating")
-    list_filter = ("pricing_type", "is_available")
-    search_fields = ("provider__phone", "provider__email", "service__name_key")

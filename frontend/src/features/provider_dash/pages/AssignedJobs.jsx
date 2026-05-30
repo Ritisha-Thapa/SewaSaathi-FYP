@@ -3,13 +3,14 @@ import { MapPin, Calendar, ArrowRight, User, Image as ImageIcon, Phone, Clock } 
 import Skeleton from '../../../shared/components/layout/Skeleton';
 import { api, getCached, invalidateCache } from '../../../utils/api';
 import CompleteJobModal from '../components/shared/CompleteJobModal';
+import ConfirmActionModal from '../components/shared/ConfirmActionModal';
 import ImageModal from '../../../shared/components/ui/ImageModal';
 import Button from '../../../shared/components/ui/Button';
 import { toast } from '../../../shared/components/layout/ToastProvider';
 
 import { useTranslation } from 'react-i18next';
 
-const JobCard = ({ job, type, onUpdateStatus, onCompleteJob, isUpdating, pendingStatus, fromStatus }) => {
+const JobCard = ({ job, type, onUpdateStatus, onCompleteJob, onCancelJob, isUpdating, pendingStatus, fromStatus }) => {
   const { t } = useTranslation();
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const effectiveStatus = pendingStatus || job.status;
@@ -53,15 +54,27 @@ const JobCard = ({ job, type, onUpdateStatus, onCompleteJob, isUpdating, pending
             <span className="block text-lg font-bold text-green-600">Rs. {job.total_price}</span>
           </div>
           {actionStatus === 'accepted' ? (
-            <Button
-              onClick={() => onUpdateStatus(job.id, 'in_progress')}
-              variant="primary"
-              size="sm"
-              isLoading={isUpdating}
-              loadingText={t('provider.starting_job', 'Starting...')}
-            >
-              {t('provider.start_job', 'Start Job')}
-            </Button>
+            <>
+              <Button
+                onClick={() => onUpdateStatus(job.id, 'in_progress')}
+                variant="primary"
+                size="sm"
+                isLoading={isUpdating}
+                loadingText={t('provider.starting_job', 'Starting...')}
+              >
+                {t('provider.start_job', 'Start Job')}
+              </Button>
+              {onCancelJob && (
+                <Button
+                  onClick={() => onCancelJob(job)}
+                  variant="danger-outline"
+                  size="sm"
+                  disabled={isUpdating}
+                >
+                  {t('bookings.cancel_booking', 'Cancel Booking')}
+                </Button>
+              )}
+            </>
           ) : actionStatus === 'in_progress' ? (
             <Button
               onClick={() => onCompleteJob(job)}
@@ -229,7 +242,11 @@ const AssignedJobs = () => {
               fromStatus={updatingState.id === job.id ? updatingState.fromStatus : null}
             />
           ))}
-          {assigned.length === 0 && <p className="text-gray-500">No assigned jobs.</p>}
+          {assigned.length === 0 && (
+            <div className="bg-white p-8 rounded-xl shadow-sm text-center text-gray-500">
+              {t('provider.no_assigned_jobs', 'No assigned jobs at the moment.')}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -243,6 +260,8 @@ export const ActiveJobs = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [updatingState, setUpdatingState] = useState({ id: null, nextStatus: null, fromStatus: null });
+  const [cancelModal, setCancelModal] = useState({ isOpen: false, job: null });
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   useEffect(() => {
     fetchJobs();
@@ -323,6 +342,25 @@ export const ActiveJobs = () => {
     }
   };
 
+  const handleCancelJob = async () => {
+    const job = cancelModal.job;
+    if (!job) return;
+    setCancelLoading(true);
+    try {
+      await api.post(`/booking/bookings/${job.id}/cancel/`);
+      invalidateCache('/booking/bookings/');
+      invalidateCache('/booking/bookings/stats/');
+      setJobs(prev => prev.filter(j => j.id !== job.id));
+      toast.success(t('provider.booking_cancelled_toast', 'Booking cancelled.'));
+    } catch (err) {
+      const msg = err.response?.data?.error || t('provider.cancel_failed', 'Could not cancel booking.');
+      toast.error(msg);
+    } finally {
+      setCancelLoading(false);
+      setCancelModal({ isOpen: false, job: null });
+    }
+  };
+
   const openCompleteModal = (job) => {
     setSelectedJob(job);
     setShowCompleteModal(true);
@@ -381,12 +419,17 @@ export const ActiveJobs = () => {
                 openCompleteModal(job);
               }
             }}
+            onCancelJob={(job) => setCancelModal({ isOpen: true, job })}
             isUpdating={updatingState.id === job.id}
             pendingStatus={updatingState.id === job.id ? updatingState.nextStatus : null}
             fromStatus={updatingState.id === job.id ? updatingState.fromStatus : null}
           />
         ))}
-        {active.length === 0 && <p className="text-gray-500">No active jobs running.</p>}
+        {active.length === 0 && (
+          <div className="bg-white p-8 rounded-xl shadow-sm text-center text-gray-500">
+            {t('provider.no_active_jobs', 'No active jobs at the moment.')}
+          </div>
+        )}
       </div>
 
       <CompleteJobModal
@@ -394,6 +437,16 @@ export const ActiveJobs = () => {
         onClose={closeCompleteModal}
         job={selectedJob}
         onComplete={handleCompleteJob}
+      />
+
+      <ConfirmActionModal
+        isOpen={cancelModal.isOpen}
+        onClose={() => !cancelLoading && setCancelModal({ isOpen: false, job: null })}
+        onConfirm={handleCancelJob}
+        title={t('bookings.cancel_booking', 'Cancel Booking')}
+        message={t('bookings.cancel_confirm_message', 'Are you sure you want to cancel this booking?')}
+        actionType="reject"
+        loading={cancelLoading}
       />
     </div>
   )

@@ -1,0 +1,40 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block content %}
+
+<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px;">
+
+    <div style="flex:1;min-width:180px;background:linear-gradient(135deg,#1B3C53,#2a5a7c);color:white;border-radius:10px;padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.75;margin-bottom:4px;">Total Revenue Collected</div>
+        <div style="font-size:26px;font-weight:700;">Rs. {{ total_revenue }}</div>
+        <div style="font-size:11px;opacity:.6;margin-top:4px;">Khalti collected + COD received</div>
+    </div>
+
+    <div style="flex:1;min-width:180px;background:linear-gradient(135deg,#155724,#1e7e34);color:white;border-radius:10px;padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.75;margin-bottom:4px;">Pending Provider Payouts</div>
+        <div style="font-size:26px;font-weight:700;">Rs. {{ pending_payouts_amount }}</div>
+        <div style="font-size:11px;opacity:.6;margin-top:4px;">{{ pending_payouts_count }} Khalti booking(s) — transfer to provider</div>
+    </div>
+
+    <div style="flex:1;min-width:180px;background:linear-gradient(135deg,#721c24,#c82333);color:white;border-radius:10px;padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.75;margin-bottom:4px;">Pending Commission Dues</div>
+        <div style="font-size:26px;font-weight:700;">Rs. {{ pending_dues_amount }}</div>
+        <div style="font-size:11px;opacity:.6;margin-top:4px;">{{ pending_dues_count }} COD booking(s) — collect from provider</div>
+    </div>
+
+    <div style="flex:1;min-width:180px;background:linear-gradient(135deg,#533d0c,#856404);color:white;border-radius:10px;padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.75;margin-bottom:4px;">Insurance Pool Balance</div>
+        <div style="font-size:26px;font-weight:700;">Rs. {{ pool_balance }}</div>
+        <div style="font-size:11px;opacity:.6;margin-top:4px;">Available for refund payouts</div>
+    </div>
+
+</div>
+
+<p style="font-size:12px;color:#6c757d;margin-bottom:16px;">
+    Use the <strong>Status</strong> and <strong>Payment Method</strong> filters on the right to view pending payouts, pending dues, or resolved history.
+</p>
+
+{{ block.super }}
+
+{% endblock %}

@@ -169,16 +169,16 @@ const Navbar = () => {
                   {isProfileOpen && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)}></div>
-                      <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in duration-200 origin-top-right">
-                        <div className="px-4 py-2 border-b border-gray-50 mb-1">
-                          <p className="text-xs font-bold text-[#1B3C53] truncate">{user?.first_name} {user?.last_name}</p>
-                          <p className="text-[10px] text-gray-500 truncate">{user?.email}</p>
+                      <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 animate-in fade-in zoom-in duration-200 origin-top-right">
+                        <div className="px-4 py-2 border-b border-gray-100">
+                          <p className="text-sm font-bold text-[#1B3C53] truncate">{user?.first_name} {user?.last_name}</p>
+  
                         </div>
-                        <Link to="/profile" onClick={() => setIsProfileOpen(false)} className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                        <Link to="/profile" onClick={() => setIsProfileOpen(false)} className="flex items-center space-x-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-50">
                           <User className="w-4 h-4 text-gray-400" />
                           <span>{t('common.view_profile')}</span>
                         </Link>
-                        <button onClick={handleLogout} disabled={isLoggingOut} className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                        <button onClick={handleLogout} disabled={isLoggingOut} className="w-full flex items-center space-x-2 px-4 py-1 text-sm text-red-600 hover:bg-red-50">
                           {isLoggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
                           <span>{isLoggingOut ? t('common.logging_out') : t('common.logout')}</span>
                         </button>

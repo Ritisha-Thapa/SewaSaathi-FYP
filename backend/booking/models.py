@@ -19,6 +19,18 @@ class Booking(BaseModel):
         ("refunded", "Refunded"),
     )
 
+    COMMISSION_STATUS = (
+        ("collected", "Collected"),  # Khalti
+        ("due", "Due"),              # COD — provider owes platform
+        ("received", "Received"),    # COD — provider paid commission
+    )
+
+    PAYOUT_STATUS = (
+        ("pending", "Pending"),           # Khalti — platform owes provider
+        ("sent", "Sent"),                 # Khalti — sent to provider
+        ("not_applicable", "N/A"),        # COD — no platform payout needed
+    )
+
     customer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -37,11 +49,10 @@ class Booking(BaseModel):
 
     scheduled_date = models.DateField()
     scheduled_time = models.TimeField()
-    
+
     issue_description = models.TextField(blank=True, null=True)
     issue_images = models.ImageField(upload_to="booking_issues/", blank=True, null=True)
 
-    # Added fields for explicit location and contact if different from profile
     address = models.CharField(max_length=255, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
 
@@ -50,11 +61,24 @@ class Booking(BaseModel):
     paid_at = models.DateTimeField(null=True, blank=True)
 
     # Prices
-    service_price = models.DecimalField(max_digits=10, decimal_places=2, default=0) # Price of service at booking time
-    final_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) # Final price set by provider after completion
-    price_note = models.TextField(blank=True, null=True) # Optional provider note explaining any price change
-    insurance_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0) # 1% of service_price
-    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0) # service_price + insurance_fee or final_price + insurance_fee
+    service_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    final_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    price_note = models.TextField(blank=True, null=True)
+    insurance_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    # Commission ledger (populated when booking is paid)
+    commission_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    provider_payout_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    commission_status = models.CharField(max_length=20, choices=COMMISSION_STATUS, null=True, blank=True)
+    payout_status = models.CharField(max_length=20, choices=PAYOUT_STATUS, null=True, blank=True)
+
+    cancelled_by = models.CharField(
+        max_length=10,
+        choices=(("customer", "Customer"), ("provider", "Provider")),
+        null=True,
+        blank=True,
+    )
 
     payment_method = models.CharField(
         max_length=20,
@@ -66,39 +90,48 @@ class Booking(BaseModel):
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
-        
-        # Calculate pricing on save
+        was_just_paid = False
+
+        # Recalculate pricing
         if self.final_price is not None:
-            # Use final price if set
             self.insurance_fee = self.final_price * Decimal('0.01')
             self.total_price = self.final_price + self.insurance_fee
         elif not self.total_price:
-            # Use service price if no final price
-            self.insurance_fee = self.service_price * Decimal('0.01')  # 1% insurance
+            self.insurance_fee = self.service_price * Decimal('0.01')
             self.total_price = self.service_price + self.insurance_fee
-        
-        # If status changed to completed, set completed_at
+
         if not is_new:
-            old_status = Booking.objects.get(pk=self.pk).status
-            if old_status != 'completed' and self.status == 'completed':
+            old = Booking.objects.get(pk=self.pk)
+
+            if old.status != 'completed' and self.status == 'completed':
                 from django.utils import timezone
                 self.completed_at = timezone.now()
-                # Auto-pay if price is 0 (e.g. for reworks)
                 if self.total_price == 0:
                     self.is_paid = True
-            
+
+            if self.is_paid and not old.is_paid:
+                was_just_paid = True
+
             if self.is_paid and not self.paid_at:
                 from django.utils import timezone
                 self.paid_at = timezone.now()
-                
+
         super().save(*args, **kwargs)
 
-        # Add to insurance pool if new booking
+        # Add to insurance pool on new booking (1% contribution)
         if is_new:
             from insurance.models import InsurancePool
-            pool, created = InsurancePool.objects.get_or_create(id=1)
-            pool.total_funds += self.insurance_fee
+            pool, _ = InsurancePool.objects.get_or_create(id=1)
+            pool.current_balance += self.insurance_fee
+            pool.total_contributed += self.insurance_fee
             pool.save()
+
+        # Record commission split when booking is paid
+        if was_just_paid:
+            from revenue.models import PlatformRevenue
+            from django.db import transaction as db_transaction
+            with db_transaction.atomic():
+                PlatformRevenue.record_for_booking(self)
 
 
 class ProviderBookingResponse(BaseModel):

@@ -1,0 +1,48 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block content %}
+
+{% if pool_balance is not None %}
+<div style="
+    background: linear-gradient(135deg, #1B3C53 0%, #2a5a7c 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 16px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+">
+    <div>
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.75; margin-bottom: 2px;">
+            Insurance Pool Balance
+        </div>
+        <div style="font-size: 26px; font-weight: 700;">
+            Rs. {{ pool_balance }}
+        </div>
+    </div>
+    <div style="border-left: 1px solid rgba(255,255,255,0.3); padding-left: 40px;">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.75; margin-bottom: 2px;">
+            Total Contributed
+        </div>
+        <div style="font-size: 18px; font-weight: 600;">
+            Rs. {{ pool_contributed }}
+        </div>
+    </div>
+    <div style="border-left: 1px solid rgba(255,255,255,0.3); padding-left: 40px;">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.75; margin-bottom: 2px;">
+            Total Paid Out
+        </div>
+        <div style="font-size: 18px; font-weight: 600;">
+            Rs. {{ pool_paid_out }}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{{ block.super }}
+
+{% endblock %}

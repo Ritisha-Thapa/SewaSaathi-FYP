@@ -50,25 +50,42 @@ const MyBookings = () => {
     }, [statusFilter, serviceFilter, timeFilter]);
 
 
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchClaims = async () => {
         try {
-            const [bookingsData, claimsData] = await Promise.all([
-                getCached('/booking/bookings/', { ttlMs: 30000 }),
-                api.get('/insurance/claims/')
-            ]);
-
-            setBookings(bookingsData);
-
+            const claimsData = await api.get('/insurance/claims/');
             const claimsMap = {};
             claimsData.forEach(claim => {
                 claimsMap[String(claim.booking)] = claim;
             });
             setClaims(claimsMap);
         } catch (err) {
-            console.error("Failed to fetch data", err);
+            console.error("Failed to fetch claims", err);
+        }
+    };
+
+    const fetchData = async (forceRefresh = false) => {
+        setLoading(true);
+        // Fire both requests concurrently — claims don't block the skeleton
+        fetchClaims();
+        try {
+            const bookingsData = await getCached('/booking/bookings/', { ttlMs: 30000, forceRefresh });
+            setBookings(bookingsData);
+        } catch (err) {
+            console.error("Failed to fetch bookings", err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleCancelBooking = async (bookingId) => {
+        try {
+            await api.post(`/booking/bookings/${bookingId}/cancel/`);
+            invalidateCache('/booking/bookings/');
+            toast.success(t('bookings.cancel_success_toast', 'Booking cancelled.'));
+            fetchData(true);
+        } catch (err) {
+            const msg = err.response?.data?.error || t('bookings.cancel_failed_toast', 'Could not cancel booking.');
+            toast.error(msg);
         }
     };
 
@@ -87,7 +104,7 @@ const MyBookings = () => {
             } else if (resolution === 'rework') {
                 toast.success(t('bookings.rework_processing_toast'));
             }
-            fetchData(); // Refresh
+            fetchData(true);
         } catch (err) {
             console.error("Failed to set resolution", err);
             toast.error(t('bookings.resolution_failed_toast'));
@@ -232,6 +249,7 @@ const MyBookings = () => {
                                 setSelectedBookingForPayment(b);
                                 setShowPaymentModal(true);
                             }}
+                            onCancelBooking={handleCancelBooking}
                         />
                     ))}
 
@@ -276,7 +294,7 @@ const MyBookings = () => {
                 onPaymentSuccess={(booking) => {
                     setSelectedBookingForReview(booking);
                     setShowReviewModal(true);
-                    fetchData(); // Refetch bookings after payment success
+                    fetchData(true);
                 }}
             />
 

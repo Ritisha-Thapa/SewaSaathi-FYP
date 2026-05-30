@@ -91,7 +91,7 @@ class BookingViewSet(viewsets.ModelViewSet):
         from django.db.models import Sum, Avg
         earnings = queryset.filter(is_paid=True, status='paid').aggregate(total=Sum('total_price'))['total'] or 0
         
-        # Calculate average rating for provider
+        # Calculate average rating for Provider
         avg_rating = 0
         if request.user.role == 'provider':
             avg_rating = Review.objects.filter(provider=request.user).aggregate(Avg('rating'))['rating__avg'] or 0
@@ -381,17 +381,17 @@ class BookingViewSet(viewsets.ModelViewSet):
         if current_status == new_status:
             return True
 
-        # Customer can only cancel
+        # Customer can only cancel a pending booking (use the /cancel endpoint instead)
         if user.role == 'customer':
-            return new_status in ['cancelled']
-        
+            return current_status == 'pending' and new_status == 'cancelled'
+
         # Provider can manage the flow
         if user.role == 'provider':
             valid_transitions = {
                 'pending': ['accepted'],
                 'assigned': ['accepted', 'in_progress', 'completed', 'cancelled'],
-                'accepted': ['in_progress', 'completed', 'cancelled'],
-                'in_progress': ['completed', 'cancelled'],
+                'accepted': ['in_progress', 'completed'],
+                'in_progress': ['completed'],
                 'completed': ['paid'],
                 'cancelled': [],
                 'paid': []
@@ -400,6 +400,54 @@ class BookingViewSet(viewsets.ModelViewSet):
         
         # Admin can do anything
         return True
+
+    @action(detail=True, methods=['post'], url_path='cancel')
+    def cancel(self, request, pk=None):
+        user = request.user
+        try:
+            booking = Booking.objects.select_related('customer', 'provider', 'service').get(pk=pk)
+        except Booking.DoesNotExist:
+            return Response({"error": "Booking not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.role == 'customer':
+            if booking.customer_id != user.id:
+                return Response({"error": "You are not authorized to cancel this booking."}, status=status.HTTP_403_FORBIDDEN)
+            if booking.status != 'pending':
+                return Response({"error": "You can only cancel a booking while it is pending."}, status=status.HTTP_400_BAD_REQUEST)
+        elif user.role == 'provider':
+            if booking.provider_id != user.id:
+                return Response({"error": "You are not authorized to cancel this booking."}, status=status.HTTP_403_FORBIDDEN)
+            if booking.status != 'accepted':
+                return Response({"error": "You can only cancel a booking that is in accepted state."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "Only customers and providers can cancel bookings."}, status=status.HTTP_403_FORBIDDEN)
+
+        booking.status = 'cancelled'
+        booking.cancelled_by = user.role
+        booking.save(update_fields=['status', 'cancelled_by', 'updated_at'])
+
+        if user.role == 'customer' and booking.provider:
+            Notification.objects.create(
+                recipient=booking.provider,
+                notification_type="booking_cancelled_by_customer",
+                extra_data={
+                    "customer_name": booking.customer.first_name,
+                    "service_name_key": booking.service.name_key,
+                },
+                booking=booking,
+            )
+        elif user.role == 'provider':
+            Notification.objects.create(
+                recipient=booking.customer,
+                notification_type="booking_cancelled_by_provider",
+                extra_data={
+                    "provider_name": booking.provider.first_name,
+                    "service_name_key": booking.service.name_key,
+                },
+                booking=booking,
+            )
+
+        return Response(BookingSerializer(booking, context={"request": request}).data)
 
     @action(detail=True, methods=['post'], url_path='initialize-payment')
     def initialize_payment(self, request, pk=None):

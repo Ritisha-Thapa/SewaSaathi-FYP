@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../shared/components/ui/Button';
+import FileUploadField from '../../../shared/components/ui/FileUploadField';
 import {
     getLocalDateString,
     isSlotSelectable,
@@ -22,6 +22,7 @@ const BookingForm = ({
     setIssueDescription,
     issueImage,
     handleImageChange,
+    clearIssueImage,
     handleBookService,
     orderingStatus,
     errorMessage,
@@ -147,17 +148,13 @@ const BookingForm = ({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                     {t('booking_form.upload_image')}
                 </label>
-                <div className="flex items-center justify-center w-full">
-                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100">
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <Upload className="w-6 h-6 text-gray-400 mb-1" />
-                            <p className="text-xs text-gray-500 pt-1">
-                                {issueImage ? issueImage.name : t('booking_form.click_to_upload')}
-                            </p>
-                        </div>
-                        <input type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
-                    </label>
-                </div>
+                <FileUploadField
+                    accept="image/*"
+                    file={issueImage}
+                    onChange={handleImageChange}
+                    onClear={clearIssueImage}
+                    hint={t('booking_form.click_to_upload')}
+                />
             </div>
 
             {errorMessage && (

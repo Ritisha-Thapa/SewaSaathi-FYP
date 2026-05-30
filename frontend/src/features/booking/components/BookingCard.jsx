@@ -1,7 +1,37 @@
-import React from 'react';
-import { Calendar, MapPin, CheckCircle, User, Phone, Banknote, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, MapPin, CheckCircle, User, Phone, Banknote, Image as ImageIcon, AlertCircle, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../shared/components/ui/Button';
+
+const CancelConfirmDialog = ({ onConfirm, onClose, loading }) => {
+    const { t } = useTranslation();
+    return (
+        <div className="fixed inset-0 bg-[#F9F5F0]/80 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-[#1B3C53]">{t('bookings.cancel_booking', 'Cancel Booking')}</h3>
+                    <Button type="button" onClick={onClose} variant="icon" fullWidth={false} disabled={loading}>
+                        <X size={24} />
+                    </Button>
+                </div>
+                <div className="flex flex-col items-center p-6 rounded-xl bg-red-50 border border-red-200 mb-6">
+                    <AlertCircle size={48} className="text-red-500" />
+                    <p className="text-center text-gray-700 mt-4">
+                        {t('bookings.cancel_confirm_message', 'Are you sure you want to cancel this booking?')}
+                    </p>
+                </div>
+                <div className="flex gap-3">
+                    <Button type="button" onClick={onClose} variant="secondary" size="md" disabled={loading} className="flex-1">
+                        {t('common.dismiss', 'Dismiss')}
+                    </Button>
+                    <Button type="button" onClick={onConfirm} variant="danger" size="md" isLoading={loading} loadingText={t('common.processing', 'Processing...')} className="flex-1">
+                        {t('bookings.confirm_cancel', 'Yes, Cancel')}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const BookingCard = ({
     booking,
@@ -9,9 +39,32 @@ const BookingCard = ({
     isEligibleForClaim,
     onViewImage,
     handleResolution,
-    onPayNow
+    onPayNow,
+    onCancelBooking
 }) => {
     const { t } = useTranslation();
+    const [showCancelDialog, setShowCancelDialog] = useState(false);
+    const [cancelLoading, setCancelLoading] = useState(false);
+    const [resolutionLoading, setResolutionLoading] = useState(null);
+
+    const handleResolutionClick = async (bookingId, type) => {
+        setResolutionLoading(type);
+        try {
+            await handleResolution(bookingId, type);
+        } finally {
+            setResolutionLoading(null);
+        }
+    };
+
+    const handleConfirmCancel = async () => {
+        setCancelLoading(true);
+        try {
+            await onCancelBooking(booking.id);
+        } finally {
+            setCancelLoading(false);
+            setShowCancelDialog(false);
+        }
+    };
 
     const getStatusStyles = (status) => {
         switch (status) {
@@ -30,6 +83,7 @@ const BookingCard = ({
     const claim = claims[booking.id];
 
     return (
+        <>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="flex-1">
                 <div className="flex flex-wrap items-center justify-start gap-x-2 gap-y-1 text-left mb-2">
@@ -53,6 +107,14 @@ const BookingCard = ({
                         </span>
                     )}
                 </div>
+
+                {booking.status === 'cancelled' && booking.cancelled_by && (
+                    <p className="text-xs text-gray-500 mt-1">
+                        {booking.cancelled_by === 'customer'
+                            ? t('bookings.cancelled_by_you', 'Cancelled by you')
+                            : t('bookings.cancelled_by_provider', 'Cancelled by provider')}
+                    </p>
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 text-gray-600 text-sm">
                     <div className="flex items-center gap-2">
@@ -109,18 +171,24 @@ const BookingCard = ({
                             <p className="font-bold text-green-800 mb-2">{t('bookings.claim_approved')}</p>
                             <div className="flex flex-wrap gap-3">
                                 <Button
-                                    onClick={() => handleResolution(booking.id, 'refund')}
+                                    onClick={() => handleResolutionClick(booking.id, 'refund')}
                                     variant="pay"
                                     size="sm"
                                     fullWidth={false}
+                                    isLoading={resolutionLoading === 'refund'}
+                                    loadingText={t('common.processing', 'Processing...')}
+                                    disabled={resolutionLoading !== null}
                                 >
                                     {t('bookings.refund_80')}
                                 </Button>
                                 <Button
-                                    onClick={() => handleResolution(booking.id, 'rework')}
+                                    onClick={() => handleResolutionClick(booking.id, 'rework')}
                                     variant="primary"
                                     size="sm"
                                     fullWidth={false}
+                                    isLoading={resolutionLoading === 'rework'}
+                                    loadingText={t('common.processing', 'Processing...')}
+                                    disabled={resolutionLoading !== null}
                                 >
                                     {t('bookings.request_rework')}
                                 </Button>
@@ -165,8 +233,27 @@ const BookingCard = ({
                 >
                     {t('bookings.view_service')}
                 </Button>
+
+                {booking.status === 'pending' && onCancelBooking && (
+                    <Button
+                        onClick={() => setShowCancelDialog(true)}
+                        variant="danger-outline"
+                        size="sm"
+                    >
+                        {t('bookings.cancel_booking', 'Cancel Booking')}
+                    </Button>
+                )}
             </div>
         </div>
+
+        {showCancelDialog && (
+            <CancelConfirmDialog
+                onConfirm={handleConfirmCancel}
+                onClose={() => !cancelLoading && setShowCancelDialog(false)}
+                loading={cancelLoading}
+            />
+        )}
+        </>
     );
 };
 

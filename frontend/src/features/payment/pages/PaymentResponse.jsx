@@ -47,10 +47,10 @@ const PaymentResponse = () => {
             setMessage('Payment verified successfully!');
             toast.success('Payment completed successfully!');
 
-            // ✅ Store booking data
+            //Store booking data
             setBookingData(response.booking);
 
-            // ✅ OPEN MODAL IMMEDIATELY (no delay)
+            //OPEN MODAL IMMEDIATELY (no delay)
             setShowReviewModal(true);
 
         } catch (err) {
@@ -73,10 +73,10 @@ const PaymentResponse = () => {
                             <div className="relative w-20 h-20 mx-auto">
                                 <Loader2 className="w-20 h-20 text-primary animate-spin" />
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                                    {/* <div className="w-2 h-2 bg-primary rounded-full"></div> */}
                                 </div>
                             </div>
-                            <h2 className="text-3xl font-black text-primary uppercase tracking-tight">Verifying</h2>
+                            <h2 className="text-3xl font-bold text-primary uppercase tracking-tight">Verifying</h2>
                             <p className="text-gray-500 font-medium">{message}</p>
                         </div>
                     )}

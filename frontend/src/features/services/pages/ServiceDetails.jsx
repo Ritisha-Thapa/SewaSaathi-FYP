@@ -116,6 +116,8 @@ const ServiceDetails = () => {
     }
   };
 
+  const clearIssueImage = () => setIssueImage(null);
+
   const handleBookService = async () => {
     setErrorMessage("");
     setOrderingStatus("submitting");
@@ -159,6 +161,17 @@ const ServiceDetails = () => {
       console.error("Booking Error:", err);
       setErrorMessage("Failed to book service. Please check your inputs.");
       setOrderingStatus("");
+    }
+  };
+
+  const handleCancelBooking = async (bookingId) => {
+    try {
+      await api.post(`/booking/bookings/${bookingId}/cancel/`);
+      toast.success(t('bookings.cancel_success_toast', 'Booking cancelled.'));
+      setBookingDetails(prev => ({ ...prev, status: 'cancelled' }));
+    } catch (err) {
+      const msg = err.response?.data?.error || t('bookings.cancel_failed_toast', 'Could not cancel booking.');
+      toast.error(msg);
     }
   };
 
@@ -292,13 +305,14 @@ const ServiceDetails = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           <ServiceHero item={item} />
           
-          <BookingSidebar 
+          <BookingSidebar
             bookingDetails={bookingDetails}
             item={item}
             currentStatusMsg={currentStatusMsg}
             onViewImage={() => setIsImageModalOpen(true)}
             onShowPayment={() => setShowPaymentModal(true)}
             handleResolution={handleResolution}
+            onCancelBooking={handleCancelBooking}
             orderingStatus={orderingStatus}
             address={address}
             setAddress={setAddress}
@@ -312,6 +326,7 @@ const ServiceDetails = () => {
             setIssueDescription={setIssueDescription}
             issueImage={issueImage}
             handleImageChange={handleImageChange}
+            clearIssueImage={clearIssueImage}
             handleBookService={handleBookService}
             errorMessage={errorMessage}
             authError={authError}

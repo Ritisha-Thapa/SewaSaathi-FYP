@@ -89,6 +89,13 @@ class ServiceProvider(User):
         verbose_name = "Service Provider"
         verbose_name_plural = "Service Providers"
 
+
+class AdminUser(User):
+    class Meta:
+        proxy = True
+        verbose_name = "Admin"
+        verbose_name_plural = "Admin Management"
+
 class PasswordResetOTP(BaseModel):
     OTP_TYPE_CHOICES = [
         ('send', 'Send'),

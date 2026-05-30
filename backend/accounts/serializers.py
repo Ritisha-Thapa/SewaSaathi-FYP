@@ -11,7 +11,6 @@ from django.utils import timezone
 from datetime import timedelta
 
 User = get_user_model()
-from services.serializers import ProviderServiceSerializer
 
 
 

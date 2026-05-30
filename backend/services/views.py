@@ -1,6 +1,6 @@
 # Create your views here.
-from .models import ServiceCategory, Service, ProviderService, ProviderAvailability
-from .serializers import ServiceCategorySerializer,ServiceSerializer,ProviderServiceSerializer,ProviderAvailabilitySerializer
+from .models import ServiceCategory, Service
+from .serializers import ServiceCategorySerializer, ServiceSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -9,8 +9,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.permissions import IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .utils import ServiceFilter,ProviderServiceFilter
-from .provider_category import get_services_for_provider  
+from .utils import ServiceFilter
+from .provider_category import get_services_for_provider
 
 
 
@@ -42,42 +42,6 @@ class ServiceViewSet(ModelViewSet):
     ordering_fields = ["base_price", "name_key"]
     ordering = ["name_key"]
 
-
-class ProviderServiceViewSet(ModelViewSet):
-    serializer_class = ProviderServiceSerializer
-    queryset = ProviderService.objects.select_related("provider", "service", "service__category") #fetch related provider and service in one query
-
-    filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
-    filterset_class = ProviderServiceFilter  
-    search_fields = ["service__name_key","provider__first_name","provider__last_name","provider__phone",]
-    ordering_fields = ["price", "rating", "created_at"]
-    ordering = ["created_at"]
-
-    def get_permissions(self):
-    # Only logged-in users can access
-        return [IsAuthenticated()]
-
-    def get_queryset(self):
-        # If the user is a provider, maybe they want to see only their own services via 'me' or just default all.
-        # It's better to fetch user-specific services if they provide a query param, e.g., ?my_services=true
-        qs = self.queryset
-        if self.request.query_params.get('my_services') == 'true' and self.request.user.is_authenticated:
-            qs = qs.filter(provider=self.request.user)
-        return qs
-
-class ProviderAvailabilityViewSet(ModelViewSet):
-    serializer_class = ProviderAvailabilitySerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        qs = ProviderAvailability.objects.all()
-        provider_id = self.request.query_params.get('provider_id')
-        if provider_id:
-            qs = qs.filter(provider_id=provider_id)
-        elif user.role == 'provider':
-            qs = qs.filter(provider=user)
-        return qs
 
 
 class ProviderCategoryServicesView(APIView):

@@ -24,33 +24,28 @@ const Login = () => {
 
   // Auto-hide success message (No longer needed since we use toast, but kept apiError)
 
-  // Input change handling
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // allow user to type email or phone freely now
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
+    if (name === "phone") {
+      const numeric = value.replace(/\D/g, "").slice(0, 10);
+      setFormData((prev) => ({ ...prev, phone: numeric }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+    if (apiError) setApiError("");
   };
 
-  // Login submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setApiError("");
     const newErrors = {};
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone is required";
-    }
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    }
+    if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
+    else if (!/^\d{10}$/.test(formData.phone)) newErrors.phone = "Phone must be exactly 10 digits";
+
+    if (!formData.password) newErrors.password = "Password is required";
+    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -127,6 +122,7 @@ const Login = () => {
         <form
           className="mt-8 space-y-6"
           onSubmit={handleSubmit}
+          noValidate
         >
           <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">
             {/* Email or Phone Field */}
@@ -136,13 +132,12 @@ const Login = () => {
               </label>
               <input
                 name="phone"
-                type="text"
-                required
+                type="tel"
                 value={formData.phone}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-lg ${errors.phone ? "border-red-300" : "border-gray-300"
-                  }`}
-                placeholder="Enter phone"
+                maxLength={10}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent ${errors.phone ? "border-red-300" : "border-gray-300"}`}
+                placeholder="10-digit phone number"
               />
               {errors.phone && (
                 <p className="text-sm text-red-600">{errors.phone}</p>
@@ -158,12 +153,10 @@ const Login = () => {
                 <input
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  required
-                                  autoComplete="off"
+                  autoComplete="off"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-lg ${errors.password ? "border-red-300" : "border-gray-300"
-                    }`}
+                  className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent ${errors.password ? "border-red-300" : "border-gray-300"}`}
                   placeholder="Password"
                 />
 

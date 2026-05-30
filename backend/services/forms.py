@@ -1,5 +1,5 @@
 from django import forms
-from .models import ProviderService, Service, ServiceCategory
+from .models import Service, ServiceCategory
 
 
 class ServiceCategoryAdminForm(forms.ModelForm):
@@ -25,7 +25,3 @@ class ServiceAdminForm(forms.ModelForm):
         ]
 
 
-class ProviderServiceAdminForm(forms.ModelForm):
-    class Meta:
-        model = ProviderService
-        fields = "__all__"

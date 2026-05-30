@@ -230,10 +230,10 @@ const Contact = () => {
               </div>
 
               <div className="bg-[#1B3C53] text-white rounded-xl p-6">
-                <h3 className="text-xl font-bold mb-3">{t('contact.support_hours', 'Support Hours')}</h3>
-                <p className="flex justify-between"><span>{t('contact.mon_fri', 'Mon - Fri')}</span> <span>9 AM - 6 PM</span></p>
-                <p className="flex justify-between"><span>{t('contact.saturday', 'Saturday')}</span> <span>10 AM - 4 PM</span></p>
-                <p className="flex justify-between"><span>{t('contact.sunday', 'Sunday')}</span> <span>{t('contact.closed', 'Closed')}</span></p>
+                <h3 className="text-xl font-bold text-white mb-3">{t('contact.support_hours', 'Support Hours')}</h3>
+                <p className="flex justify-between text-gray-300" ><span>{t('contact.mon_fri', 'Mon - Fri')}</span> <span>9 AM - 6 PM</span></p>
+                <p className="flex justify-between text-gray-300"><span>{t('contact.saturday', 'Saturday')}</span> <span>10 AM - 4 PM</span></p>
+                <p className="flex justify-between text-gray-300"><span>{t('contact.sunday', 'Sunday')}</span> <span>{t('contact.closed', 'Closed')}</span></p>
 
                 <p className="mt-4 text-sm text-gray-200">
                   {t('contact.urgent', 'For urgent matters')}: +977-9800000000

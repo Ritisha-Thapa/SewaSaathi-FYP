@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Star, MessageSquare } from 'lucide-react';
 import { api } from '../../../utils/api';
 import Skeleton from '../../../shared/components/layout/Skeleton';
+import Pagination from '../../../shared/components/layout/Pagination';
 
 const Reviews = () => {
    const [reviews, setReviews] = useState([]);
    const [loading, setLoading] = useState(true);
+   const [currentPage, setCurrentPage] = useState(1);
+   const itemsPerPage = 12;
 
    useEffect(() => {
       fetchReviews();
@@ -29,6 +32,9 @@ const Reviews = () => {
          setLoading(false);
       }
    };
+
+   const totalPages = Math.ceil(reviews.length / itemsPerPage);
+   const paginatedReviews = reviews.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
    const averageRating = reviews.length > 0
       ? (reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviews.length).toFixed(1)
@@ -79,7 +85,7 @@ const Reviews = () => {
                   No reviews yet. Complete more jobs to earn reviews!
                </div>
             ) : (
-               reviews.map((review) => (
+               paginatedReviews.map((review) => (
                   <div key={review.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                      <div className="flex justify-between items-start mb-2">
                         <div>
@@ -100,6 +106,12 @@ const Reviews = () => {
                ))
             )}
          </div>
+
+         <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+         />
       </div>
    );
 };

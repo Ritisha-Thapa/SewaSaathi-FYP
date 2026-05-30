@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 from django.utils.text import slugify
 from base.models import BaseModel
 
@@ -49,26 +48,3 @@ class Service(BaseModel):
         return f"{self.name_key} - {self.category.name_key}"
 
 
-class ProviderService(BaseModel):
-    provider = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,limit_choices_to={"role": "provider"},related_name="provider_services")
-    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="provider_services")
-
-    pricing_type = models.CharField(max_length=20,choices=Service.PRICING_TYPE,default="fixed")
-
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    is_available = models.BooleanField(default=True)
-    rating = models.FloatField(default=0.0)
-
-    class Meta:
-        unique_together = ("provider", "service")
-
-    def __str__(self):
-        return f"{self.provider.username} → {self.service.name_key}"
-
-class ProviderAvailability(BaseModel):
-    provider = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="availability", limit_choices_to={"role": "provider"})
-    # JSONField to store true/false for days: {"Sunday": true, "Monday": true, ...}
-    days = models.JSONField(default=dict)
-    
-    def __str__(self):
-        return f"Availability for {self.provider.username}"

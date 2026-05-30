@@ -21,17 +21,18 @@ const ServiceFilters = ({
       className="bg-white rounded-[2rem] shadow-xl shadow-primary/5 border border-gray-100 self-start sticky top-[100px] max-h-[calc(100vh-140px)] overflow-y-auto overflow-x-hidden scrollbar-hide"
     >
       {/* Sidebar Header */}
-      <div className="px-6 py-5 border-b border-gray-50 flex items-center justify-between bg-primary text-white">
+      <div className="px-6 py-3 border-b border-gray-50 flex items-center justify-between bg-primary text-white">
         <div className="flex items-center gap-2">
           <Filter size={18} />
-          <h3 className="text-sm font-black uppercase tracking-widest">{t('bookings.filter_by', 'Filters')}</h3>
+          <h3 className="text-sm font-bold text-white uppercase tracking-widest m-0">{t('bookings.filter_by', 'Filters')}</h3>
         </div>
       </div>
+ 
 
       <div className="px-6 py-6 space-y-8">
         {/* Search Input */}
         <div>
-          <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{t('labels.search', 'Search')}</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">{t('labels.search', 'Search')}</label>
           <div className="relative group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary transition-colors" />
             <input
@@ -45,11 +46,11 @@ const ServiceFilters = ({
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-50" />
+        <div className="border-t border-gray-100" />
 
         {/* Category Filter */}
         <div>
-          <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Category</h4>
+          <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Category</h4>
           <div className="space-y-3">
             {categories.map((cat) => (
               <label
@@ -71,7 +72,7 @@ const ServiceFilters = ({
                   />
                   <Check size={12} className="absolute left-1 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
                 </div>
-                <span className="text-sm font-bold text-gray-600 group-hover:text-primary transition-colors">
+                <span className="text-sm font-semibold text-gray-600 group-hover:text-primary transition-colors">
                   {t(`categories.${cat.name_key}`)}
                 </span>
               </label>
@@ -80,11 +81,11 @@ const ServiceFilters = ({
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-50" />
+        <div className="border-t border-gray-100" />
 
         {/* Price Range */}
         <div>
-          <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Price Range</h4>
+          <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Price Range</h4>
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <input
@@ -109,22 +110,22 @@ const ServiceFilters = ({
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-50" />
+        <div className="border-t border-gray-100" />
 
         {/* Sort By */}
-        <div>
-          <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Sort By</h4>
+        {/* <div>
+          <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Sort By</h4>
           <select
             value={ordering}
             onChange={(e) => setOrdering(e.target.value)}
-            className="w-full px-4 py-3 text-sm border border-gray-100 rounded-xl bg-gray-50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all cursor-pointer font-bold text-gray-600"
+            className="w-full px-4 py-3 text-xs border border-gray-100 rounded-xl bg-gray-50 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all cursor-pointer font-bold text-gray-600"
           >
             <option value="">{t('bookings.default_ordering', 'Default Ordering')}</option>
             <option value="base_price">{t('bookings.price_low_high', 'Price: Low → High')}</option>
             <option value="-base_price">{t('bookings.price_high_low', 'Price: High → Low')}</option>
             <option value="name_key">{t('bookings.name_az', 'Name A–Z')}</option>
           </select>
-        </div>
+        </div> */}
 
         {/* Clear All Button */}
         {(searchQuery || selectedCategories.length > 0 || minPrice || maxPrice || ordering) && (
@@ -137,7 +138,7 @@ const ServiceFilters = ({
               setOrdering('');
             }}
             variant="ghost"
-            className="w-full py-4 text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-50 hover:text-red-600 transition-all border border-red-100"
+            className="w-full py-1 text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-50 hover:text-red-600 transition-all border border-red-100"
           >
             <RotateCcw size={14} className="mr-2" />
             Reset All

@@ -6,6 +6,7 @@ import HowItWorks from "../../../shared/components/ui/HowItWorks";
 import FeaturedCategories from "../../../shared/components/ui/FeaturedCategories";
 import OurFeatures from "../../../shared/components/ui/OurFeatures";
 import Testimonials from "../../../shared/components/ui/Testimonials";
+import CoverageSection from "../../../shared/components/ui/CoverageSection";
 import Footer from "../../../shared/components/layout/Footer";
 
 const Landing = () => {
@@ -17,6 +18,7 @@ const Landing = () => {
       {/* <FeaturedServices /> */}
       <FeaturedCategories />
       <OurFeatures />
+      <CoverageSection />
       <Testimonials />
       <Footer />
     </div>

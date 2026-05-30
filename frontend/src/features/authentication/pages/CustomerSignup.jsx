@@ -53,20 +53,26 @@ const CustomerSignup = () => {
     e.preventDefault();
     const newErrors = {};
 
-    // Validation
     if (!formData.first_name.trim()) newErrors.first_name = 'First name is required';
-    if (!formData.last_name.trim()) newErrors.last_name = 'Last name is required';
-    if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
-    else if (!/^\d{10}$/.test(formData.phone)) newErrors.phone = 'Phone must be exactly 10 digits';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
-    if (!formData.address.trim()) newErrors.address = 'Address is required';
-    if (!formData.password) newErrors.password = 'Password is required';
-    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    else if (!/^[a-zA-Z\s]+$/.test(formData.first_name)) newErrors.first_name = 'Only letters allowed';
 
-    if (formData.password !== formData.confirm_password) {
-      newErrors.confirm_password = 'Passwords do not match';
-    }
+    if (!formData.last_name.trim()) newErrors.last_name = 'Last name is required';
+    else if (!/^[a-zA-Z\s]+$/.test(formData.last_name)) newErrors.last_name = 'Only letters allowed';
+
+    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
+    else if (!/^\d{10}$/.test(formData.phone)) newErrors.phone = 'Phone must be exactly 10 digits';
+
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Enter a valid email address';
+
+    if (!formData.address.trim()) newErrors.address = 'Address is required';
+    else if (formData.address.trim().length < 5) newErrors.address = 'Address is too short';
+
+    if (!formData.password) newErrors.password = 'Password is required';
+    else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
+
+    if (!formData.confirm_password) newErrors.confirm_password = 'Please confirm your password';
+    else if (formData.password !== formData.confirm_password) newErrors.confirm_password = 'Passwords do not match';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -173,7 +179,7 @@ const CustomerSignup = () => {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
           <div className="bg-white rounded-xl shadow-lg p-6 space-y-4">
 
             {/* FIRST NAME & LAST NAME */}
@@ -284,9 +290,8 @@ const CustomerSignup = () => {
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={handleChange}
-                  className={`appearance-none block w-full px-3 py-2 border ${errors.password ? 'border-red-300' : 'border-gray-300'
-                    } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
-                  placeholder="Password"
+                  className={`appearance-none block w-full px-3 py-2 pr-10 border ${errors.password ? 'border-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
+                  placeholder="Password (min. 8 characters)"
                 />
 
                 <button
@@ -315,8 +320,7 @@ const CustomerSignup = () => {
                   type={showConfirmPassword ? "text" : "password"}
                   value={formData.confirm_password}
                   onChange={handleChange}
-                  className={`appearance-none block w-full px-3 py-2 border ${errors.confirm_password ? 'border-red-300' : 'border-gray-300'
-                    } rounded-lg focus:ring-2 focus:ring-[#1B3C53]`}
+                  className={`appearance-none block w-full px-3 py-2 pr-10 border ${errors.confirm_password ? 'border-red-300' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent`}
                   placeholder="Confirm password"
                 />
 

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
   ClipboardList,
-  Briefcase,
   CheckCircle,
   Banknote,
   Star,
+  AlertTriangle,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { getCached } from "../../../utils/api";
 import Skeleton from "../../../shared/components/layout/Skeleton";
 import { useTranslation } from "react-i18next";
@@ -26,12 +27,13 @@ const ProviderDashboard = () => {
   const { t } = useTranslation();
   const [stats, setStats] = useState({
     pendingRequests: 0,
-    activeJobs: 0,
     completedJobs: 0,
     totalEarnings: 0,
     averageRating: 0,
   });
   const [recentWork, setRecentWork] = useState([]);
+  const [codDues, setCodDues] = useState([]);
+  const [pendingPayouts, setPendingPayouts] = useState([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingTable, setLoadingTable] = useState(true);
 
@@ -55,7 +57,6 @@ const ProviderDashboard = () => {
       if (statsData) {
         setStats({
           pendingRequests: statsData.pending,
-          activeJobs: statsData.active,
           completedJobs: statsData.completed,
           totalEarnings: statsData.earnings,
           averageRating: statsData.average_rating || 0,
@@ -83,6 +84,22 @@ const ProviderDashboard = () => {
         }));
 
       setRecentWork(recentWorkData);
+
+      // COD dues: cash bookings where commission is still owed to the platform
+      const dues = (bookingsData || []).filter(b =>
+        b.is_paid &&
+        b.payment_method === 'cash' &&
+        b.commission_status === 'due'
+      );
+      setCodDues(dues);
+
+      // Pending payouts: Khalti bookings where platform hasn't sent the 90% yet
+      const pending = (bookingsData || []).filter(b =>
+        b.is_paid &&
+        b.payment_method === 'khalti_v2' &&
+        b.payout_status === 'pending'
+      );
+      setPendingPayouts(pending);
     } catch (err) {
       console.error("Failed to load dashboard data", err);
       setRecentWork([]);
@@ -96,8 +113,8 @@ const ProviderDashboard = () => {
     return (
       <div className="space-y-6">
         <Skeleton className="w-56 h-8" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
               className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
@@ -124,20 +141,14 @@ const ProviderDashboard = () => {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-[#1B3C53]">Dashboard Overview</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Pending Requests"
           value={stats.pendingRequests}
           icon={ClipboardList}
           color="bg-blue-500"
         />
-        <StatCard
-          title="Active Jobs"
-          value={stats.activeJobs}
-          icon={Briefcase}
-          color="bg-orange-500"
-        />
-        <StatCard
+<StatCard
           title="Completed Jobs"
           value={stats.completedJobs}
           icon={CheckCircle}
@@ -156,6 +167,62 @@ const ProviderDashboard = () => {
           color="bg-yellow-500"
         />
       </div>
+
+      {/* Pending Payout from Platform (Khalti) */}
+      {pendingPayouts.length > 0 && (
+        <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex items-start gap-3 flex-1">
+            <Banknote className="text-blue-500 shrink-0 mt-0.5" size={22} />
+            <div>
+              <p className="font-bold text-blue-700 text-base">
+                Platform Owes You — Rs.{" "}
+                {pendingPayouts
+                  .reduce((s, b) => s + Number(b.provider_payout_amount || 0), 0)
+                  .toLocaleString()}
+              </p>
+              <p className="text-sm text-blue-600 mt-0.5">
+                You have {pendingPayouts.length} Khalti job{pendingPayouts.length > 1 ? "s" : ""} where
+                the platform received the payment but hasn't transferred your 90% yet.
+                The admin will process these shortly.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/provider/earnings"
+            className="shrink-0 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition"
+          >
+            View Details
+          </Link>
+        </div>
+      )}
+
+      {/* COD Commission Dues Alert */}
+      {codDues.length > 0 && (
+        <div className="rounded-xl border-2 border-red-200 bg-red-50 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex items-start gap-3 flex-1">
+            <AlertTriangle className="text-red-500 shrink-0 mt-0.5" size={22} />
+            <div>
+              <p className="font-bold text-red-700 text-base">
+                Platform Commission Due — Rs.{" "}
+                {codDues
+                  .reduce((s, b) => s + Number(b.commission_amount || 0), 0)
+                  .toLocaleString()}
+              </p>
+              <p className="text-sm text-red-600 mt-0.5">
+                You have {codDues.length} COD job{codDues.length > 1 ? "s" : ""} where
+                the platform's 10% commission hasn't been settled yet. Please contact
+                the admin to clear this.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/provider/earnings"
+            className="shrink-0 px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition"
+          >
+            View Details
+          </Link>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <h3 className="text-lg font-bold text-[#1B3C53] mb-4">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Filter, TrendingUp } from 'lucide-react';
+import { Download, Filter, TrendingUp, AlertTriangle } from 'lucide-react';
 import { getCached } from '../../../utils/api';
 import Skeleton from '../../../shared/components/layout/Skeleton';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,8 @@ import Button from '../../../shared/components/ui/Button';
 const Earnings = () => {
   const { t } = useTranslation();
   const [bookings, setBookings] = useState([]);
+  const [codDues, setCodDues] = useState([]);
+  const [pendingPayouts, setPendingPayouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('monthly'); // 'daily' or 'monthly'
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -26,9 +28,31 @@ const Earnings = () => {
     setLoading(true);
     try {
       const data = await getCached('/booking/bookings/', { ttlMs: 30000 });
-      // Only paid bookings count as earnings
-      const paidBookings = data.filter(b => b.is_paid && (b.status === 'paid' || b.status === 'completed'));
-      setBookings(paidBookings);
+      const earnedBookings = data.filter(b => {
+        if (!b.is_paid) return false;
+        if (b.status !== 'paid' && b.status !== 'completed') return false;
+        // Khalti: money sits in platform account until admin marks payout as sent
+        if (b.payment_method === 'khalti_v2') return b.payout_status === 'sent';
+        // COD: provider already collected cash from customer
+        return true;
+      });
+      setBookings(earnedBookings);
+
+      // COD dues: paid cash bookings where commission is still owed to the platform
+      const dues = data.filter(b =>
+        b.is_paid &&
+        b.payment_method === 'cash' &&
+        b.commission_status === 'due'
+      );
+      setCodDues(dues);
+
+      // Pending payouts: online/Khalti bookings where platform hasn't sent the 90% yet
+      const pending = data.filter(b =>
+        b.is_paid &&
+        b.payment_method === 'khalti_v2' &&
+        b.payout_status === 'pending'
+      );
+      setPendingPayouts(pending);
     } catch (err) {
       console.error("Failed to fetch earnings", err);
     } finally {
@@ -36,12 +60,27 @@ const Earnings = () => {
     }
   };
 
-  const totalLifetimeEarnings = bookings.reduce((sum, b) => sum + Number(b.total_price), 0);
+  const getCommissionDue = (b) => {
+    if (b.commission_amount != null) return Number(b.commission_amount);
+    const base = Number(b.total_price) - Number(b.insurance_fee || 0);
+    return parseFloat((base * 0.10).toFixed(2));
+  };
+
+  // Returns the provider's actual take-home for a booking.
+  // Uses provider_payout_amount when available (set by the commission engine).
+  // Falls back to 90% of (total_price - insurance_fee) for older bookings.
+  const getProviderEarning = (b) => {
+    if (b.provider_payout_amount != null) return Number(b.provider_payout_amount);
+    const base = Number(b.total_price) - Number(b.insurance_fee || 0);
+    return base * 0.9;
+  };
+
+  const totalLifetimeEarnings = bookings.reduce((sum, b) => sum + getProviderEarning(b), 0);
 
   const currentMonthEarnings = bookings.filter(b => {
     const d = new Date(b.paid_at || b.updated_at);
     return d.getMonth() === new Date().getMonth() && d.getFullYear() === new Date().getFullYear();
-  }).reduce((sum, b) => sum + Number(b.total_price), 0);
+  }).reduce((sum, b) => sum + getProviderEarning(b), 0);
 
   // Grouping for the chart/list
   const getAggregatedData = () => {
@@ -58,7 +97,7 @@ const Earnings = () => {
         key = d.toLocaleDateString();
       }
 
-      groups[key] = (groups[key] || 0) + Number(b.total_price);
+      groups[key] = (groups[key] || 0) + getProviderEarning(b);
     });
 
     return Object.entries(groups).sort((a, b) => {
@@ -193,6 +232,114 @@ const Earnings = () => {
         </div>
       </div>
 
+      {/* Pending Payouts from Platform (Khalti) */}
+      {pendingPayouts.length > 0 && (
+        <div className="bg-white rounded-2xl border-2 border-blue-200 overflow-hidden">
+          <div className="p-6 bg-blue-50 border-b border-blue-100 flex items-start gap-3">
+            <TrendingUp className="text-blue-500 shrink-0 mt-0.5" size={20} />
+            <div>
+              <h3 className="text-lg font-bold text-blue-700">Pending Payouts from Platform (Khalti)</h3>
+              <p className="text-sm text-blue-600 mt-1">
+                These are online payments where the customer paid via Khalti and the money
+                landed in the platform's account. The platform owes you 90% of each booking.
+                This section clears once the admin transfers your payout and marks it as sent.
+              </p>
+            </div>
+            <div className="ml-auto text-right shrink-0">
+              <p className="text-xs text-blue-500 font-medium uppercase tracking-wide">Total Pending</p>
+              <p className="text-2xl font-black text-blue-600">
+                Rs. {pendingPayouts.reduce((s, b) => s + getProviderEarning(b), 0).toLocaleString()}
+              </p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left">
+              <thead className="bg-blue-50 text-[10px] uppercase font-bold text-blue-400 tracking-wider">
+                <tr>
+                  <th className="px-6 py-3 font-black">Date</th>
+                  <th className="px-6 py-3 font-black">Service</th>
+                  <th className="px-6 py-3 font-black text-right">Booking Amount</th>
+                  <th className="px-6 py-3 font-black text-right">Your Payout (90%)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-blue-50 text-sm">
+                {pendingPayouts.map(b => (
+                  <tr key={b.id} className="hover:bg-blue-50 transition">
+                    <td className="px-6 py-4 text-gray-500 font-medium">
+                      {new Date(b.paid_at || b.updated_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-[#1B3C53] font-bold">{getServiceLabel(b.service_name_key)}</p>
+                      <p className="text-[10px] text-gray-400">Booking #{b.id}</p>
+                    </td>
+                    <td className="px-6 py-4 text-right text-gray-600 font-medium">
+                      Rs. {Number(b.total_price).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-right font-black text-blue-600">
+                      Rs. {getProviderEarning(b).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* COD Commission Dues */}
+      {codDues.length > 0 && (
+        <div className="bg-white rounded-2xl border-2 border-red-200 overflow-hidden">
+          <div className="p-6 bg-red-50 border-b border-red-100 flex items-start gap-3">
+            <AlertTriangle className="text-red-500 shrink-0 mt-0.5" size={20} />
+            <div>
+              <h3 className="text-lg font-bold text-red-700">Platform Commission Dues (COD)</h3>
+              <p className="text-sm text-red-600 mt-1">
+                For COD jobs, you collected cash directly from the customer. The platform's
+                10% commission on these bookings is pending — please settle with the admin.
+                This section clears once the admin marks each payment as received.
+              </p>
+            </div>
+            <div className="ml-auto text-right shrink-0">
+              <p className="text-xs text-red-500 font-medium uppercase tracking-wide">Total Due</p>
+              <p className="text-2xl font-black text-red-600">
+                Rs. {codDues.reduce((s, b) => s + getCommissionDue(b), 0).toLocaleString()}
+              </p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left">
+              <thead className="bg-red-50 text-[10px] uppercase font-bold text-red-400 tracking-wider">
+                <tr>
+                  <th className="px-6 py-3 font-black">Date</th>
+                  <th className="px-6 py-3 font-black">Service</th>
+                  <th className="px-6 py-3 font-black text-right">Booking Amount</th>
+                  <th className="px-6 py-3 font-black text-right">Commission Due (10%)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-red-50 text-sm">
+                {codDues.map(b => (
+                  <tr key={b.id} className="hover:bg-red-50 transition">
+                    <td className="px-6 py-4 text-gray-500 font-medium">
+                      {new Date(b.paid_at || b.updated_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-[#1B3C53] font-bold">{getServiceLabel(b.service_name_key)}</p>
+                      <p className="text-[10px] text-gray-400">Booking #{b.id}</p>
+                    </td>
+                    <td className="px-6 py-4 text-right text-gray-600 font-medium">
+                      Rs. {Number(b.total_price).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-right font-black text-red-600">
+                      Rs. {getCommissionDue(b).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Transaction History (Real) */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-50">
@@ -226,7 +373,7 @@ const Earnings = () => {
                       {txn.payment_method}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right font-black text-[#1B3C53]">Rs. {Number(txn.total_price).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-right font-black text-[#1B3C53]">Rs. {getProviderEarning(txn).toLocaleString()}</td>
                 </tr>
               ))}
               {bookings.length === 0 && (

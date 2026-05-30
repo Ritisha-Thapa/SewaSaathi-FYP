@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Booking, Review, ProviderBookingResponse
 from .validators import validate_scheduled_slot
-from services.models import Service, ProviderService
+from services.models import Service
 from accounts.models import User
 
 class BookingSerializer(serializers.ModelSerializer):
@@ -75,9 +75,11 @@ class BookingSerializer(serializers.ModelSerializer):
             'service_price', 'final_price', 'price_note', 'insurance_fee', 'total_price',  
             'payment_method', 'is_paid', 'is_rework', 'created_at', 'updated_at', 'completed_at', 'paid_at',
             'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id', 'has_reviewed',
-            'provider_has_declined',
+            'provider_has_declined', 'cancelled_by',
+            'provider_payout_amount', 'payout_status',
+            'commission_amount', 'commission_status',
         ]
-        read_only_fields = ['id', 'customer', 'service_price', 'created_at', 'updated_at', 'total_price', 'insurance_fee', 'is_paid', 'completed_at', 'paid_at', 'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id', 'provider_has_declined']
+        read_only_fields = ['id', 'customer', 'service_price', 'created_at', 'updated_at', 'total_price', 'insurance_fee', 'is_paid', 'completed_at', 'paid_at', 'latest_claim_status', 'latest_claim_resolution', 'latest_claim_id', 'provider_has_declined', 'cancelled_by', 'provider_payout_amount', 'payout_status', 'commission_amount', 'commission_status']
 
     def validate(self, attrs):
         scheduled_date = attrs.get("scheduled_date")
@@ -88,17 +90,7 @@ class BookingSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         service = validated_data.get('service')
-        provider = validated_data.get('provider')
-        
-        if provider:
-            try:
-                provider_service = ProviderService.objects.get(provider=provider, service=service)
-                validated_data['service_price'] = provider_service.price
-            except ProviderService.DoesNotExist:
-                validated_data['service_price'] = service.base_price
-        else:
-            validated_data['service_price'] = service.base_price
-            
+        validated_data['service_price'] = service.base_price
         return super().create(validated_data)
 
 class BookingStatusUpdateSerializer(serializers.ModelSerializer):

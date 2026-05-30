@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, User, Phone, Image as ImageIcon, Banknote, CheckCircle } from 'lucide-react';
+import { Clock, User, Phone, Image as ImageIcon, Banknote, CheckCircle, AlertCircle, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../shared/components/ui/Button';
 
@@ -10,9 +10,32 @@ const BookingStatusSummary = ({
     currentStatusMsg,
     onViewImage,
     onShowPayment,
-    handleResolution
+    handleResolution,
+    onCancelBooking
 }) => {
     const { t, i18n } = useTranslation();
+    const [showCancelDialog, setShowCancelDialog] = useState(false);
+    const [cancelLoading, setCancelLoading] = useState(false);
+    const [resolutionLoading, setResolutionLoading] = useState(null);
+
+    const handleResolutionClick = async (type) => {
+        setResolutionLoading(type);
+        try {
+            await handleResolution(type);
+        } finally {
+            setResolutionLoading(null);
+        }
+    };
+
+    const handleConfirmCancel = async () => {
+        setCancelLoading(true);
+        try {
+            await onCancelBooking(bookingDetails.id);
+        } finally {
+            setCancelLoading(false);
+            setShowCancelDialog(false);
+        }
+    };
     const formatPrice = (n) => {
         const locale = i18n.language === "ne" ? "ne-NP" : "en-IN";
         return `${t("common.currency_prefix", "Rs.")} ${new Intl.NumberFormat(locale).format(Number(n || 0))}`;
@@ -131,17 +154,23 @@ const BookingStatusSummary = ({
             {bookingDetails.latest_claim_status === 'approved' && bookingDetails.latest_claim_resolution === 'none' && (
                 <div className="space-y-3">
                     <Button
-                        onClick={() => handleResolution('refund')}
+                        onClick={() => handleResolutionClick('refund')}
                         variant="pay"
                         size="md"
+                        isLoading={resolutionLoading === 'refund'}
+                        loadingText="Processing..."
+                        disabled={resolutionLoading !== null}
                     >
                         <CheckCircle size={18} className="shrink-0" />
                         80% Refund
                     </Button>
                     <Button
-                        onClick={() => handleResolution('rework')}
+                        onClick={() => handleResolutionClick('rework')}
                         variant="primary"
                         size="md"
+                        isLoading={resolutionLoading === 'rework'}
+                        loadingText="Processing..."
+                        disabled={resolutionLoading !== null}
                     >
                         Request Rework
                     </Button>
@@ -169,9 +198,46 @@ const BookingStatusSummary = ({
                 </div>
             )}
 
+            {bookingDetails.status === 'pending' && onCancelBooking && (
+                <Button
+                    onClick={() => setShowCancelDialog(true)}
+                    variant="danger-outline"
+                    size="md"
+                >
+                    {t('bookings.cancel_booking', 'Cancel Booking')}
+                </Button>
+            )}
+
             <div className="pt-2">
                 <Link to="/customer-dashboard" className="text-[#1B3C53] underline text-sm hover:text-blue-700">Go to Dashboard</Link>
             </div>
+
+            {showCancelDialog && (
+                <div className="fixed inset-0 bg-[#F9F5F0]/80 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xl font-bold text-[#1B3C53]">{t('bookings.cancel_booking', 'Cancel Booking')}</h3>
+                            <Button type="button" onClick={() => !cancelLoading && setShowCancelDialog(false)} variant="icon" fullWidth={false} disabled={cancelLoading}>
+                                <X size={24} />
+                            </Button>
+                        </div>
+                        <div className="flex flex-col items-center p-6 rounded-xl bg-red-50 border border-red-200 mb-6">
+                            <AlertCircle size={48} className="text-red-500" />
+                            <p className="text-center text-gray-700 mt-4">
+                                {t('bookings.cancel_confirm_message', 'Are you sure you want to cancel this booking?')}
+                            </p>
+                        </div>
+                        <div className="flex gap-3">
+                            <Button type="button" onClick={() => !cancelLoading && setShowCancelDialog(false)} variant="secondary" size="md" disabled={cancelLoading} className="flex-1">
+                                {t('common.dismiss', 'Dismiss')}
+                            </Button>
+                            <Button type="button" onClick={handleConfirmCancel} variant="danger" size="md" isLoading={cancelLoading} loadingText={t('common.processing', 'Processing...')} className="flex-1">
+                                {t('bookings.confirm_cancel', 'Yes, Cancel')}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

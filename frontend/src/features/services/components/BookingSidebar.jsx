@@ -10,6 +10,7 @@ const BookingSidebar = ({
     onViewImage,
     onShowPayment,
     handleResolution,
+    onCancelBooking,
     orderingStatus,
     address,
     setAddress,
@@ -23,6 +24,7 @@ const BookingSidebar = ({
     setIssueDescription,
     issueImage,
     handleImageChange,
+    clearIssueImage,
     handleBookService,
     errorMessage,
     authError,
@@ -52,6 +54,7 @@ const BookingSidebar = ({
                             onViewImage={onViewImage}
                             onShowPayment={onShowPayment}
                             handleResolution={handleResolution}
+                            onCancelBooking={onCancelBooking}
                         />
                     ) : (
                         <BookingForm
@@ -67,6 +70,7 @@ const BookingSidebar = ({
                             setIssueDescription={setIssueDescription}
                             issueImage={issueImage}
                             handleImageChange={handleImageChange}
+                            clearIssueImage={clearIssueImage}
                             handleBookService={handleBookService}
                             orderingStatus={orderingStatus}
                             errorMessage={errorMessage}

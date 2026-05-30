@@ -5,7 +5,8 @@ import { api } from "../../../utils/api";
 import Navbar from "../../../shared/components/layout/Navbar";
 import Footer from "../../../shared/components/layout/Footer";
 import Skeleton from "../../../shared/components/layout/Skeleton";
-import { ArrowLeft, Upload, CheckCircle, AlertTriangle } from "lucide-react";
+import { ArrowLeft, CheckCircle, AlertTriangle } from "lucide-react";
+import FileUploadField from "../../../shared/components/ui/FileUploadField";
 import Button from "../../../shared/components/ui/Button";
 
 const ClaimInsurancePage = () => {
@@ -62,8 +63,11 @@ const ClaimInsurancePage = () => {
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             setEvidence(e.target.files[0]);
+            setError("");
         }
     };
+
+    const clearEvidence = () => setEvidence(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -201,17 +205,13 @@ const ClaimInsurancePage = () => {
 
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Evidence (Photo/Video) *</label>
-                                <div className="flex items-center justify-center w-full">
-                                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
-                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                                            <p className="text-sm text-gray-500 font-medium">
-                                                {evidence ? evidence.name : "Click to upload evidence"}
-                                            </p>
-                                        </div>
-                                        <input type="file" className="hidden" onChange={handleFileChange} accept="image/*,video/*" required />
-                                    </label>
-                                </div>
+                                <FileUploadField
+                                    accept="image/*,video/*"
+                                    file={evidence}
+                                    onChange={handleFileChange}
+                                    onClear={clearEvidence}
+                                    hint="Images or videos up to 50MB"
+                                />
                             </div>
 
                             {error && (

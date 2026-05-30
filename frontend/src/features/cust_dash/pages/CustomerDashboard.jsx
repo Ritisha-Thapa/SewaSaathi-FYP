@@ -7,6 +7,7 @@ import FeaturedServices from "../../../shared/components/ui/FeaturedServices";
 // import FeaturedProviders from "../../components/customer/FeaturedProviders";
 import OurFeatures from "../../../shared/components/ui/OurFeatures";
 import Testimonials from "../../../shared/components/ui/Testimonials";
+import CoverageSection from "../../../shared/components/ui/CoverageSection";
 import Footer from "../../../shared/components/layout/Footer";
 
 const CustomerDashboard = () => {
@@ -19,6 +20,7 @@ const CustomerDashboard = () => {
       <FeaturedCategories />
       <OurFeatures />
       <FeaturedServices />
+      <CoverageSection />
       <Testimonials />
       <Footer />
 
