@@ -39,7 +39,7 @@ const ResetPassword = () => {
     setInfo('Resetting password...');
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/accounts/reset-password/', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/accounts/reset-password/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, new_password: password }),

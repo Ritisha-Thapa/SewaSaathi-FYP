@@ -64,7 +64,7 @@ const OTPVerification = () => {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/accounts/forgot-password/",
+        `${import.meta.env.VITE_API_BASE_URL}/accounts/forgot-password/`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -116,7 +116,7 @@ const OTPVerification = () => {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/accounts/verify-otp/",
+        `${import.meta.env.VITE_API_BASE_URL}/accounts/verify-otp/`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

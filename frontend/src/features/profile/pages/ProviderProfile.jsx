@@ -43,7 +43,7 @@ const ProviderProfile = () => {
             window.location.href = "/login";
             return;
          }
-         const response = await fetch("http://127.0.0.1:8000/accounts/profile/", {
+         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/accounts/profile/`, {
             headers: { "Authorization": `Bearer ${token}` }
          });
          if (response.ok) {
@@ -102,7 +102,7 @@ const ProviderProfile = () => {
             }
          });
 
-         const response = await fetch("http://127.0.0.1:8000/accounts/profile/", {
+         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/accounts/profile/`, {
             method: "PATCH",
             headers: { "Authorization": `Bearer ${token}` },
             body: data
@@ -130,7 +130,7 @@ const ProviderProfile = () => {
    const avatarSrc = previewImage || (formData.profile_image
       ? (typeof formData.profile_image === 'string' && formData.profile_image.startsWith('http')
          ? formData.profile_image
-         : `http://127.0.0.1:8000${formData.profile_image}`)
+         : `${import.meta.env.VITE_API_BASE_URL}${formData.profile_image}`)
       : `https://ui-avatars.com/api/?name=${formData.first_name || "U"}+${formData.last_name || "S"}&background=E5E7EB&color=1B3C53&bold=true`);
 
    return (

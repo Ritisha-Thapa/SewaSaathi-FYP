@@ -15,7 +15,7 @@ const ServicesCategory = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/services/service-categories/", {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/services/service-categories/`, {
           headers: buildLocalizedHeaders(),
         });
         const data = await res.json();

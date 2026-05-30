@@ -20,7 +20,7 @@ const SubServices = () => {
       try {
         // Fetch all categories first to get the category ID
         const categoriesRes = await fetch(
-          "http://127.0.0.1:8000/services/service-categories/",
+          `${import.meta.env.VITE_API_BASE_URL}/services/service-categories/`,
           { headers: buildLocalizedHeaders() }
         );
         const categoriesData = await categoriesRes.json();
@@ -37,7 +37,7 @@ const SubServices = () => {
 
         // Fetch services for this category
         const servicesRes = await fetch(
-          `http://127.0.0.1:8000/services/service/?category=${cat.id}`,
+          `${import.meta.env.VITE_API_BASE_URL}/services/service/?category=${cat.id}`,
           { headers: buildLocalizedHeaders() }
         );
         const servicesData = await servicesRes.json();

@@ -36,13 +36,13 @@ const Navbar = () => {
       try {
         const token = localStorage.getItem("access");
         if (!token) return;
-        const response = await fetch("http://127.0.0.1:8000/accounts/profile/", {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/accounts/profile/`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (response.ok) {
           const data = await response.json();
           if (data.profile_image) {
-            setProfileImg(data.profile_image.startsWith('http') ? data.profile_image : `http://127.0.0.1:8000${data.profile_image}`);
+            setProfileImg(data.profile_image.startsWith('http') ? data.profile_image : `${import.meta.env.VITE_API_BASE_URL}${data.profile_image}`);
           }
         }
       } catch (error) {

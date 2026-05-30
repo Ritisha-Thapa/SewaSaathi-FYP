@@ -13,7 +13,7 @@ const FeaturedServices = () => {
 
     useEffect(() => {
         // Fetch random services
-        fetch("http://127.0.0.1:8000/services/service/", {
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/services/service/`, {
             headers: buildLocalizedHeaders(),
         })
             .then((res) => res.json())

@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
       if (!refreshToken) { logout(); return; }
       try {
         const { data } = await axios.post(
-          'http://127.0.0.1:8000/accounts/api/token/refresh/',
+          `${import.meta.env.VITE_API_BASE_URL}/accounts/api/token/refresh/`,
           { refresh: refreshToken }
         );
         if (data?.access) {
