@@ -44,6 +44,15 @@ const MyBookings = () => {
         fetchData();
     }, [i18n.language]);
 
+    // Poll claims every 5s while any claim is still pending (waiting for admin action).
+    // Stops automatically once all claims are approved/rejected.
+    useEffect(() => {
+        const hasPendingClaim = Object.values(claims).some(c => c.status === 'pending');
+        if (!hasPendingClaim) return;
+        const id = setInterval(fetchClaims, 5000);
+        return () => clearInterval(id);
+    }, [claims]);
+
     // Reset to page 1 when filters change
     useEffect(() => {
         setCurrentPage(1);

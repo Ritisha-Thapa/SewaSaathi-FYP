@@ -76,22 +76,22 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-6">{t("services.popular_services", "Popular Services")}</h3>
             <ul className="space-y-4">
               <li>
-                <Link to="/services/Cleaning" className="text-gray-300 hover:text-white transition">
+                <Link to="/services/cleaning" className="text-gray-300 hover:text-white transition">
                   {t("footer.popular_home_cleaning", "Home Cleaning")}
                 </Link>
               </li>
               <li>
-                <Link to="/services/Plumbing" className="text-gray-300 hover:text-white transition">
+                <Link to="/services/plumbing" className="text-gray-300 hover:text-white transition">
                   {t("footer.popular_plumbing_services", "Plumbing Services")}
                 </Link>
               </li>
               <li>
-                <Link to="/services/Electrical" className="text-gray-300 hover:text-white transition">
+                <Link to="/services/electrical-repairing" className="text-gray-300 hover:text-white transition">
                   {t("footer.popular_electrical_repairs", "Electrical Repairs")}
                 </Link>
               </li>
               <li>
-                <Link to="/services/Painting" className="text-gray-300 hover:text-white transition">
+                <Link to="/services/painting" className="text-gray-300 hover:text-white transition">
                   {t("footer.popular_painting_renovation", "Painting & Renovation")}
                 </Link>
               </li>
@@ -123,10 +123,10 @@ const Footer = () => {
             {t("footer.copyright", "© {{year}} SewaSaathi. All rights reserved.", { year: new Date().getFullYear() })}
           </p>
           <div className="flex space-x-6">
-            <Link to="/privacy" className="text-gray-400 hover:text-white text-sm transition">
+            <Link to="/about-us" className="text-gray-400 hover:text-white text-sm transition">
               {t("footer.privacy_policy", "Privacy Policy")}
             </Link>
-            <Link to="/terms" className="text-gray-400 hover:text-white text-sm transition">
+            <Link to="/about-us" className="text-gray-400 hover:text-white text-sm transition">
               {t("footer.terms_of_service", "Terms of Service")}
             </Link>
           </div>

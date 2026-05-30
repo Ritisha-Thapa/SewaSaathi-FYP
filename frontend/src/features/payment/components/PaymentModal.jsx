@@ -6,6 +6,7 @@ import Button from '../../../shared/components/ui/Button';
 import khaltiLogo from "../../../assets/khalti_logo.png";
 
 const PaymentModal = ({ isOpen, onClose, booking, onPaymentSuccess }) => {
+  const [cashLoading, setCashLoading] = React.useState(false);
   if (!isOpen || !booking) return null;
 
   const formatPrice = (n) => `Rs. ${Number(n).toLocaleString()}`;
@@ -33,6 +34,7 @@ const PaymentModal = ({ isOpen, onClose, booking, onPaymentSuccess }) => {
   };
 
   const handleCashPayment = async () => {
+    setCashLoading(true);
     try {
       await api.patch(`/booking/bookings/${booking.id}/`, { payment_method: 'cash' });
 
@@ -48,6 +50,8 @@ const PaymentModal = ({ isOpen, onClose, booking, onPaymentSuccess }) => {
     } catch (err) {
       console.error('Failed to set payment method', err);
       toast.error('Failed to process cash payment request.');
+    } finally {
+      setCashLoading(false);
     }
   };
 
@@ -149,6 +153,9 @@ const PaymentModal = ({ isOpen, onClose, booking, onPaymentSuccess }) => {
               onClick={handleCashPayment}
               variant="secondary"
               size="md"
+              isLoading={cashLoading}
+              loadingText="Processing..."
+              disabled={cashLoading}
             >
               <Banknote size={18} className="shrink-0 text-gray-500" />
               Pay Offline with Cash

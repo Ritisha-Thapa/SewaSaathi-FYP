@@ -96,7 +96,7 @@ const ReviewModal = ({ isOpen, onClose, booking, onReviewSubmit }) => {
             >
               Submit Review
             </Button>
-            <p className="text-[10px] text-center text-gray-400 font-medium">Nothing is compulsory. Feedbacks are optional.</p>
+            <p className="text-[10px] text-center text-gray-400 font-medium">Rating is compulsory. Feedbacks are optional.</p>
           </form>
         </div>
       </div>

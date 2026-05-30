@@ -80,7 +80,7 @@ const BookingCard = ({
         }
     };
 
-    const claim = claims[booking.id];
+    const claim = claims[String(booking.id)];
 
     return (
         <>

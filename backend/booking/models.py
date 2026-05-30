@@ -82,8 +82,10 @@ class Booking(BaseModel):
 
     payment_method = models.CharField(
         max_length=20,
-        choices=(("cash", "Cash"), ("online", "Online")),
-        default="cash"
+        choices=(("cash", "Cash"), ("online", "Online"), ("khalti_v2", "Khalti")),
+        null=True,
+        blank=True,
+        default=None,
     )
     is_paid = models.BooleanField(default=False)
     is_rework = models.BooleanField(default=False)

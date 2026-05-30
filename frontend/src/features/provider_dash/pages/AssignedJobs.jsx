@@ -86,22 +86,15 @@ const JobCard = ({ job, type, onUpdateStatus, onCompleteJob, onCancelJob, isUpda
               {!isUpdating && <ArrowRight size={16} className="shrink-0" />}
               {t('provider.complete_job', 'Complete Job')}
             </Button>
-          ) : actionStatus === 'completed' && !job.is_paid ? (
+          ) : actionStatus === 'completed' && !job.is_paid && job.payment_method === 'cash' ? (
             <Button
-              onClick={() => {
-                if (job.payment_method === 'cash') {
-                  onUpdateStatus(job.id, 'paid', { payment_method: 'cash' });
-                } else {
-                  toast.error('Payment already completed via Khalti');
-                }
-              }}
+              onClick={() => onUpdateStatus(job.id, 'paid', { payment_method: 'cash' })}
               variant="pay"
               size="sm"
               isLoading={isUpdating}
               loadingText={t('provider.updating_payment', 'Updating...')}
-              disabled={job.payment_method !== 'cash'}
             >
-              {job.payment_method === 'cash' ? t('provider.confirm_cash', 'Confirm Cash Received') : t('bookings.paid')}
+              {t('provider.confirm_cash', 'Confirm Cash Received')}
             </Button>
           ) : null}
         </div>
@@ -262,6 +255,7 @@ export const ActiveJobs = () => {
   const [updatingState, setUpdatingState] = useState({ id: null, nextStatus: null, fromStatus: null });
   const [cancelModal, setCancelModal] = useState({ isOpen: false, job: null });
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [reworkModal, setReworkModal] = useState({ isOpen: false, job: null });
 
   useEffect(() => {
     fetchJobs();
@@ -412,9 +406,7 @@ export const ActiveJobs = () => {
             onUpdateStatus={handleUpdateStatus}
             onCompleteJob={(job) => {
               if (job.is_rework) {
-                if (window.confirm("Confirm completion of this rework?")) {
-                  handleCompleteJob(job.id, 'completed', { final_price: 0 });
-                }
+                setReworkModal({ isOpen: true, job });
               } else {
                 openCompleteModal(job);
               }
@@ -447,6 +439,18 @@ export const ActiveJobs = () => {
         message={t('bookings.cancel_confirm_message', 'Are you sure you want to cancel this booking?')}
         actionType="reject"
         loading={cancelLoading}
+      />
+
+      <ConfirmActionModal
+        isOpen={reworkModal.isOpen}
+        onClose={() => setReworkModal({ isOpen: false, job: null })}
+        onConfirm={() => {
+          handleCompleteJob(reworkModal.job.id, 'completed', { final_price: 0 });
+          setReworkModal({ isOpen: false, job: null });
+        }}
+        title={t('provider.complete_rework', 'Complete Rework')}
+        message={t('provider.complete_rework_confirm', 'Mark this rework job as completed? This will close the insurance claim.')}
+        actionType="accept"
       />
     </div>
   )
