@@ -145,6 +145,8 @@ STORAGES = {
 }
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
+WHITENOISE_USE_FINDERS = True
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
