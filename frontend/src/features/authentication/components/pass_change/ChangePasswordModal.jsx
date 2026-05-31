@@ -72,7 +72,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
           onClick={onClose}
           variant="icon"
           fullWidth={false}
-          className="absolute top-4 right-4"
+          className="!absolute top-4 right-4 z-10"
         >
           <X size={24} />
         </Button>
@@ -82,7 +82,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
             <div className="w-16 h-16 bg-blue-50 text-[#1B3C53] rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock size={32} />
             </div>
-            <h2 className="text-2xl font-black text-[#1B3C53] mb-2">Change Password</h2>
+            <h2 className="text-2xl font-bold text-[#1B3C53] mb-2">Change Password</h2>
             <p className="text-gray-500 text-sm">Update your account password to keep it secure.</p>
           </div>
 

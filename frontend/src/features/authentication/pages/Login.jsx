@@ -128,7 +128,7 @@ const Login = () => {
             {/* Email or Phone Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone *
+                Phone <span className= "text-red-500"> * </span>
               </label>
               <input
                 name="phone"
@@ -147,7 +147,7 @@ const Login = () => {
             {/* Password Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password *
+                Password <span className= "text-red-500"> * </span>
               </label>
               <div className="relative">
                 <input

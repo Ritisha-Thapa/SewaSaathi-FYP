@@ -220,7 +220,7 @@ const ProviderSignup = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name *
+                  First Name <span className= "text-red-500"> * </span>
                 </label>
                 <input
                   id="first_name"
@@ -235,7 +235,7 @@ const ProviderSignup = () => {
               </div>
               <div>
                 <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name *
+                  Last Name <span className= "text-red-500"> * </span>
                 </label>
                 <input
                   id="last_name"
@@ -253,7 +253,7 @@ const ProviderSignup = () => {
             {/* Phone */}
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Phone *
+                Phone <span className= "text-red-500"> * </span>
               </label>
               <input
                 id="phone"
@@ -271,7 +271,7 @@ const ProviderSignup = () => {
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email *
+                Email <span className= "text-red-500"> * </span>
               </label>
               <input
                 id="email"
@@ -288,7 +288,7 @@ const ProviderSignup = () => {
             {/* Address */}
             <div>
               <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                Address *
+                Address <span className= "text-red-500"> * </span>
               </label>
               <input
                 id="address"
@@ -305,7 +305,7 @@ const ProviderSignup = () => {
             {/* City */}
             <div>
               <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-                City *
+                City <span className= "text-red-500"> * </span>
               </label>
               <div className="relative">
                 <select
@@ -328,7 +328,7 @@ const ProviderSignup = () => {
             {/* Service Category */}
             <div>
               <label htmlFor="skills" className="block text-sm font-medium text-gray-700 mb-1">
-                Service Category *
+                Service Category <span className= "text-red-500"> * </span>
               </label>
               <div className="relative">
                 <select
@@ -351,7 +351,7 @@ const ProviderSignup = () => {
             {/* Years of Experience */}
             <div>
               <label htmlFor="experience_years" className="block text-sm font-medium text-gray-700 mb-1">
-                Years of Experience *
+                Years of Experience <span className= "text-red-500"> * </span>
               </label>
               <div className="relative">
                 <select
@@ -376,7 +376,7 @@ const ProviderSignup = () => {
             {/* Citizenship Image */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Citizenship Image *
+                Citizenship Image <span className= "text-red-500"> * </span>
               </label>
               <FileUploadField
                 accept="image/*"
@@ -392,7 +392,7 @@ const ProviderSignup = () => {
             {/* Profile Image */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Profile Image *
+                Profile Image <span className= "text-red-500"> * </span>
               </label>
               <FileUploadField
                 accept="image/*"

@@ -193,7 +193,7 @@ const ClaimInsurancePage = () => {
                     <div className="lg:col-span-2">
                         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100 space-y-6">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Issue Description *</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Issue Description <span className= "text-red-500"> * </span></label>
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
@@ -204,7 +204,7 @@ const ClaimInsurancePage = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Evidence (Photo/Video) *</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Evidence (Photo/Video) <span className= "text-red-500"> * </span></label>
                                 <FileUploadField
                                     accept="image/*,video/*"
                                     file={evidence}

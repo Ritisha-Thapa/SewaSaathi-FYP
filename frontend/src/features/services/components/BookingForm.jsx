@@ -137,7 +137,7 @@ const BookingForm = ({
                     {t('booking_form.problem_desc')}
                 </label>
                 <textarea
-                    value={issueDescription}
+                    value={issueDescription} 
                     onChange={(e) => setIssueDescription(e.target.value)}
                     placeholder={t('booking_form.problem_placeholder')}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1B3C53] focus:border-transparent outline-none transition h-24 resize-none"

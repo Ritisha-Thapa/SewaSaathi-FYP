@@ -84,7 +84,7 @@ def admin_analytics_dashboard(request):
 
     # 3. Insurance Pool
     pool = InsurancePool.objects.first()
-    pool_balance = pool.total_funds if pool else 0
+    pool_balance = pool.current_balance if pool else 0
     
     # Calculate Payouts
     refund_claims = InsuranceClaim.objects.filter(resolution='refund').select_related('booking')

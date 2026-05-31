@@ -2,7 +2,7 @@ import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import { ShieldCheck, Clock, CheckCircle, Banknote } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import aboutHero from '../../assets/images/testimonials/image1.png';
+import aboutHero from '../../assets/images/services/aboutUsImage.png';
 import member1 from '../../assets/images/testimonials/image1.png';
 import member2 from '../../assets/images/testimonials/image2.png';
 import member3 from '../../assets/images/testimonials/image3.jpg';

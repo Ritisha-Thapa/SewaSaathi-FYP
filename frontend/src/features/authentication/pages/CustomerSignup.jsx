@@ -108,14 +108,14 @@ const CustomerSignup = () => {
       try {
         data = await response.json();
       } catch (err) {
-        console.log("❌ JSON parse failed");
+        console.log("JSON parse failed");
         data = {};
       }
 
       console.log("STATUS:", response.status);
       console.log("DATA:", data);
 
-      // ✅ SUCCESS
+      // SUCCESS
       if (response.ok) {
         toast.success(data.message || "Customer registration successful!");
         setErrors({});
@@ -127,7 +127,7 @@ const CustomerSignup = () => {
         return;
       }
 
-      // ❌ ERROR HANDLING (clean & direct)
+      // ERROR HANDLING (clean & direct)
       let fieldErrors = {};
       let errorMessage = "Registration failed";
 
@@ -161,9 +161,6 @@ const CustomerSignup = () => {
     <div className="min-h-screen bg-[#F9F5F0] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
 
-
-
-
         <div className="flex flex-col items-center">
           <Link to="/" className="flex items-center gap-4 cursor-pointer">
             <img src={Logo} alt="logo" className="h-14 w-auto" />
@@ -186,7 +183,7 @@ const CustomerSignup = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name *
+                  First Name <span className= "text-red-500"> * </span>
                 </label>
                 <input
                   name="first_name"
@@ -204,7 +201,7 @@ const CustomerSignup = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name *
+                  Last Name <span className= "text-red-500"> * </span>
                 </label>
                 <input
                   name="last_name"
@@ -224,7 +221,7 @@ const CustomerSignup = () => {
             {/* PHONE */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone *
+                Phone <span className= "text-red-500"> * </span>
               </label>
               <input
                 name="phone"
@@ -243,7 +240,7 @@ const CustomerSignup = () => {
             {/* EMAIL */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email *
+                Email <span className= "text-red-500"> * </span>
               </label>
               <input
                 name="email"
@@ -262,7 +259,7 @@ const CustomerSignup = () => {
             {/* ADDRESS */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Address *
+                Address <span className= "text-red-500"> * </span>
               </label>
               <input
                 name="address"
@@ -281,7 +278,7 @@ const CustomerSignup = () => {
             {/* PASSWORD FIELD WITH EYE */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password *
+                Password <span className= "text-red-500"> * </span>
               </label>
 
               <div className="relative">
@@ -311,7 +308,7 @@ const CustomerSignup = () => {
             {/* CONFIRM PASSWORD WITH EYE */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password *
+                Confirm Password <span className= "text-red-500"> * </span>
               </label>
 
               <div className="relative">
