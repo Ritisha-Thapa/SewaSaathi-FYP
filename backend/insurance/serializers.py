@@ -75,8 +75,8 @@ class InsuranceClaimSerializer(serializers.ModelSerializer):
 
         from django.utils import timezone
         import datetime
-        if timezone.now() > booking.paid_at + datetime.timedelta(days=3):
-            raise serializers.ValidationError("Claims must be submitted within 3 days of payment.")
+        if timezone.now() > booking.paid_at + datetime.timedelta(days=2):
+            raise serializers.ValidationError("Claims must be submitted within 2 days of payment.")
 
         if InsuranceClaim.objects.filter(booking=booking).exists():
             raise serializers.ValidationError("A claim has already been filed for this booking.")
